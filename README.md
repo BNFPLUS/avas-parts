@@ -221,6 +221,37 @@ copied to the clipboard as a fallback.
 
 ---
 
+## 8. Deployment
+
+Live at **https://bnfplus.github.io/avas-parts/** — GitHub Pages, served from the `site`
+branch at root. Every push to `site` redeploys. `sh wait-live.sh` polls until Pages has
+finished building.
+
+### Putting it on avas.parts
+
+The domain is already on Cloudflare nameservers (`opal`/`lloyd.ns.cloudflare.com`) but has
+no address records. Add these in the Cloudflare dashboard for the `avas.parts` zone, all
+with proxy **off** (grey cloud — GitHub terminates TLS itself, and an orange cloud breaks
+certificate issuance):
+
+| Type | Name | Value |
+|---|---|---|
+| A | `@` | `185.199.108.153` |
+| A | `@` | `185.199.109.153` |
+| A | `@` | `185.199.110.153` |
+| A | `@` | `185.199.111.153` |
+| CNAME | `www` | `bnfplus.github.io` |
+
+Then run:
+
+```sh
+sh set-domain.sh          # writes CNAME, pushes, points Pages at avas.parts
+```
+
+Do it in that order. Setting the custom domain before DNS resolves makes GitHub redirect
+the working github.io URL to a domain that does not answer, taking the site offline until
+DNS catches up. HTTPS certificate issuance takes a few minutes after the domain verifies.
+
 ## Sources
 
 Ministry of Transport / Maldives Bureau of Statistics vehicle registration data · Maldives
