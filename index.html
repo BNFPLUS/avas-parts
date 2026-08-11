@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>avas.parts — motorcycle parts, delivered to every island</title>
+<meta name="description" content="Motorcycle and scooter spare parts for the Maldives. Search by bike or part number, check what interchanges, order to any island.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+Thaana:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23C8102E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<!-- ============ COMMAND BAR ============ -->
+<header class="bar">
+  <a class="logo" href="./"><b>avas</b><span class="dot">.</span>parts</a>
+
+  <div class="searchwrap">
+    <input id="q" class="search" type="search" autocomplete="off"
+           placeholder="Part number, bike model, or what it does…  (press / )"
+           aria-label="Search parts">
+  </div>
+
+  <div class="barspacer"></div>
+
+  <div class="mode" id="modeSwitch" role="group" aria-label="View mode">
+    <button data-skin="public" aria-pressed="true">Shop</button>
+    <button data-skin="staff"  aria-pressed="false">Counter</button>
+  </div>
+
+  <button class="cartbtn" id="cartOpen">
+    Order <span class="n" id="cartN" data-empty="1">0</span>
+  </button>
+</header>
+
+<main class="shell">
+
+  <!-- ============ HERO: the finder IS the hero ============ -->
+  <section class="hero">
+    <div class="kicker">Maldives · nationwide delivery · <span class="dv">އަވަސް</span></div>
+    <h1>Find the part that<br><em>actually fits</em>.</h1>
+    <p class="lede">
+      Every scooter on these islands runs ASEAN-spec parts, and one wrong digit in a part
+      number means a wasted ferry trip. Pick your bike, and we will show you the exact
+      number, what it interchanges with, and what it costs.
+    </p>
+
+    <div class="pickrow">
+      <div class="picklabel">Step 1 — pick the make</div>
+      <div class="chips" id="brandChips"></div>
+    </div>
+
+    <div class="pickrow" id="modelRow" hidden>
+      <div class="picklabel">Step 2 — pick the model <span style="color:var(--hot)">●</span> = common here</div>
+      <div class="chips" id="modelChips"></div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <div class="work">
+    <aside class="rail">
+      <div class="railhead">Category</div>
+      <div class="catwrap" id="catWrap"></div>
+    </aside>
+
+    <section>
+      <div class="rhead">
+        <h2 id="rTitle">All parts</h2>
+        <span class="count" id="rCount"></span>
+        <button class="clearbtn" id="clearBtn" hidden>Reset</button>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
+  </div>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div class="footin">
+    <div>
+      <h5>avas.parts</h5>
+      <p>Motorcycle and scooter parts for the Maldives. Order online, we ship to every inhabited island.</p>
+      <p><a href="mailto:order@avas.parts">order@avas.parts</a></p>
+      <p>Sat–Thu 09:00–18:00 · Fri 14:00–18:00</p>
+    </div>
+    <div>
+      <h5>Delivery</h5>
+      <ul id="zoneList"></ul>
+    </div>
+    <div>
+      <h5>Reading a part number</h5>
+      <p>A Honda number splits into three blocks: <b>23100</b> is what the part is,
+         <b>K36</b> is the model family, and the last block is the revision.</p>
+      <p>Two parts that share the first two blocks almost always interchange. That is what
+         the finder checks for you.</p>
+    </div>
+    <div>
+      <h5>Before you order</h5>
+      <p>Numbers marked <span class="unver">verify</span> are cited by suppliers but not yet
+         confirmed against a published catalogue. Send us your frame number and we will
+         confirm the fit before we pick and pack.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ DRAWERS ============ -->
+<div class="scrim" id="scrim"></div>
+
+<aside class="drawer" id="cart" aria-label="Your order">
+  <div class="dhead">
+    <h3>Your order</h3>
+    <button class="xbtn" data-close aria-label="Close">×</button>
+  </div>
+  <div class="dbody" id="cartBody"></div>
+  <div class="dfoot" id="cartFoot" hidden>
+    <div class="field">
+      <label for="zone">Deliver to</label>
+      <select id="zone"></select>
+    </div>
+    <div class="field">
+      <label for="custName">Name</label>
+      <input id="custName" type="text" autocomplete="name" placeholder="Your name">
+    </div>
+    <div class="field">
+      <label for="custPhone">Phone</label>
+      <input id="custPhone" type="tel" autocomplete="tel" placeholder="7xxxxxx">
+    </div>
+    <div class="field">
+      <label for="custIsland">Island / address</label>
+      <input id="custIsland" type="text" placeholder="Island, house or shop name">
+    </div>
+    <div class="field">
+      <label for="custNote">Bike and frame number</label>
+      <textarea id="custNote" placeholder="e.g. Vario 125 2021, frame MH1JM…"></textarea>
+      <div class="hint">Give us the frame number and we will confirm the fit before we pack.</div>
+    </div>
+
+    <div class="totals">
+      <div><span>Subtotal</span><span id="tSub">0</span></div>
+      <div><span>Delivery</span><span id="tDel">0</span></div>
+      <div><span>GST 8%</span><span id="tGst">0</span></div>
+      <div class="grand"><span>Total</span><span id="tAll">MVR 0</span></div>
+    </div>
+
+    <button class="gobtn" id="goBtn" disabled>Send order on WhatsApp</button>
+    <p class="hint" style="margin-top:8px">We confirm stock and the final total before you pay.</p>
+  </div>
+</aside>
+
+<aside class="drawer" id="detail" aria-label="Part detail">
+  <div class="dhead">
+    <h3 id="detailTitle">Part</h3>
+    <button class="xbtn" data-close aria-label="Close">×</button>
+  </div>
+  <div class="dbody" id="detailBody"></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
