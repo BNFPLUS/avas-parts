@@ -1,0 +1,1649 @@
+<title>avas.parts — motorcycle parts, delivered to every island</title>
+<meta name="description" content="Motorcycle and scooter spare parts for the Maldives. Search by bike or part number, check what interchanges, order to any island.">
+<style>
+/* avas.parts — parts-catalogue interface
+   Light skin  = customer browse ("catalogue paper")
+   Dark skin   = staff counter ("terminal"), so cost prices can never be
+                 mistaken for a customer-facing screen. */
+
+:root {
+  --ground:  #E9EAE4;
+  --panel:   #F7F7F3;
+  --panel-2: #FFFFFF;
+  --ink:     #14181A;
+  --ink-2:   #5C645F;
+  --ink-3:   #8A918C;
+  --rule:    #C6CAC2;
+  --rule-2:  #DCDFD8;
+  --hot:     #C8102E;
+  --hot-ink: #FFFFFF;
+  --sea:     #0B5D66;
+  --amber:   #96650F;
+  --ok:      #2E6B3E;
+
+  --r: 3px;
+  --shadow: 0 1px 0 rgba(20,24,26,.06), 0 8px 24px -12px rgba(20,24,26,.28);
+
+  --f-disp: "Avenir Next Condensed", "Helvetica Neue Condensed", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --f-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --f-dv: "MV Faseyha", "Faruma", "A_Faruma", var(--f-body);
+}
+
+[data-skin="staff"] {
+  --ground:  #0D1315;
+  --panel:   #151D20;
+  --panel-2: #1B2529;
+  --ink:     #E2E8E6;
+  --ink-2:   #93A09D;
+  --ink-3:   #6B7875;
+  --rule:    #2B3639;
+  --rule-2:  #222D30;
+  --hot:     #FF5252;
+  --hot-ink: #14181A;
+  --sea:     #45D6CE;
+  --amber:   #E8A33D;
+  --ok:      #5FCB7E;
+  --shadow: 0 1px 0 rgba(0,0,0,.4), 0 14px 34px -14px rgba(0,0,0,.7);
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.5;
+  transition: background .25s ease, color .25s ease;
+}
+
+:focus-visible {
+  outline: 2px solid var(--hot);
+  outline-offset: 2px;
+}
+
+button { font: inherit; color: inherit; cursor: pointer; }
+
+.dv { font-family: var(--f-dv); direction: rtl; unicode-bidi: isolate; }
+
+/* ============ COMMAND BAR ============ */
+.bar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px clamp(12px, 3vw, 28px);
+  background: var(--panel);
+  border-bottom: 1px solid var(--rule);
+}
+
+.logo {
+  display: flex; align-items: baseline; gap: 2px;
+  font-family: var(--f-disp);
+  font-weight: 700; font-size: 21px; letter-spacing: -.02em;
+  text-decoration: none; color: var(--ink);
+  white-space: nowrap;
+}
+.logo b { color: var(--hot); font-weight: 700; }
+.logo .dot { color: var(--ink-3); font-weight: 400; }
+
+.searchwrap { position: relative; flex: 1; min-width: 0; max-width: 620px; }
+
+.search {
+  width: 100%;
+  padding: 9px 12px 9px 34px;
+  font-family: var(--f-mono); font-size: 13.5px;
+  color: var(--ink);
+  background: var(--panel-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+}
+.search::placeholder { color: var(--ink-3); }
+.search:focus { border-color: var(--hot); outline: none; }
+
+.searchwrap::before {
+  content: "▸"; position: absolute; left: 13px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--hot); font-size: 12px; pointer-events: none;
+}
+
+.barspacer { flex: 1; }
+
+.mode {
+  display: flex; border: 1px solid var(--rule); border-radius: var(--r);
+  overflow: hidden; background: var(--panel-2); flex-shrink: 0;
+}
+.mode button {
+  border: 0; background: transparent;
+  padding: 7px 11px;
+  font-family: var(--f-disp); font-size: 12px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-2);
+}
+.mode button[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
+
+.cartbtn {
+  display: flex; align-items: center; gap: 7px;
+  border: 1px solid var(--rule); border-radius: var(--r);
+  background: var(--panel-2); padding: 7px 12px;
+  font-family: var(--f-disp); font-size: 12px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  flex-shrink: 0;
+}
+.cartbtn:hover { border-color: var(--hot); }
+.cartbtn .n {
+  min-width: 19px; height: 19px; padding: 0 5px;
+  display: grid; place-items: center;
+  background: var(--hot); color: var(--hot-ink);
+  border-radius: 999px;
+  font-family: var(--f-mono); font-size: 11px; font-weight: 600;
+}
+.cartbtn .n[data-empty="1"] { background: var(--rule); color: var(--ink-2); }
+
+/* ============ SHELL ============ */
+.shell { max-width: 1360px; margin: 0 auto; padding: 0 clamp(12px, 3vw, 28px); }
+
+/* ============ HERO — the finder is the hero ============ */
+.hero { padding: 28px 0 18px; }
+
+/* At the counter the pitch is dead weight — go straight to the pickers. */
+[data-skin="staff"] .hero { padding: 16px 0 12px; }
+[data-skin="staff"] .hero h1,
+[data-skin="staff"] .hero .lede { display: none; }
+
+.kicker {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--ink-3);
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+}
+.kicker::after { content:""; flex:1; height:1px; background: var(--rule); }
+
+.hero h1 {
+  font-family: var(--f-disp);
+  font-size: clamp(30px, 5.2vw, 54px);
+  line-height: .98; letter-spacing: -.025em;
+  font-weight: 700; margin: 0 0 8px;
+  text-transform: uppercase;
+}
+.hero h1 em { font-style: normal; color: var(--hot); }
+
+.hero p.lede {
+  margin: 0 0 22px; max-width: 54ch;
+  color: var(--ink-2); font-size: 15.5px;
+}
+
+/* Brand + model pickers */
+.pickrow { margin-bottom: 14px; }
+.picklabel {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 7px;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.chip {
+  border: 1px solid var(--rule); background: var(--panel);
+  border-radius: var(--r); padding: 6px 11px;
+  font-family: var(--f-disp); font-size: 13.5px; font-weight: 500;
+  color: var(--ink); white-space: nowrap;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.chip:hover { border-color: var(--ink-2); }
+.chip[aria-pressed="true"] {
+  background: var(--ink); color: var(--ground); border-color: var(--ink);
+}
+.chip .cc {
+  font-family: var(--f-mono); font-size: 10.5px;
+  color: var(--ink-3); margin-left: 5px;
+}
+.chip[aria-pressed="true"] .cc { color: var(--ground); opacity: .65; }
+
+.chip.hotpick { border-color: var(--hot); }
+.chip.hotpick::before {
+  content:"●"; color: var(--hot); font-size: 8px;
+  vertical-align: middle; margin-right: 5px;
+}
+.chip.hotpick[aria-pressed="true"]::before { color: var(--ground); }
+
+/* ============ RESULTS LAYOUT ============ */
+.work { display: grid; grid-template-columns: 208px 1fr; gap: 24px; padding-bottom: 60px; }
+/* grid children default to min-width:auto, which lets the scrolling category
+   rail push the whole page wide on narrow screens */
+.work > * { min-width: 0; }
+
+.rail { position: sticky; top: 68px; align-self: start; }
+
+.railhead {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-3);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule); margin-bottom: 6px;
+}
+
+.catbtn {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  width: 100%; text-align: left;
+  border: 0; background: transparent;
+  padding: 6px 8px; border-radius: var(--r);
+  font-size: 14px; color: var(--ink-2);
+  border-left: 2px solid transparent;
+}
+.catbtn:hover { background: var(--panel); color: var(--ink); }
+.catbtn[aria-pressed="true"] {
+  background: var(--panel); color: var(--ink);
+  border-left-color: var(--hot); font-weight: 600;
+}
+.catbtn .k { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+
+/* ============ RESULT HEADER ============ */
+.rhead {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap;
+  padding-bottom: 10px; margin-bottom: 14px;
+  border-bottom: 2px solid var(--ink);
+}
+.rhead h2 {
+  font-family: var(--f-disp); font-size: 22px; font-weight: 700;
+  letter-spacing: -.01em; margin: 0; text-transform: uppercase;
+}
+.rhead .count { font-family: var(--f-mono); font-size: 12px; color: var(--ink-2); }
+
+.clearbtn {
+  border: 1px solid var(--rule); background: transparent;
+  border-radius: var(--r); padding: 4px 9px;
+  font-family: var(--f-mono); font-size: 11px; color: var(--ink-2);
+}
+.clearbtn:hover { border-color: var(--hot); color: var(--hot); }
+
+/* ============ PART CARD ============ */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 12px; }
+
+.card {
+  background: var(--panel); border: 1px solid var(--rule);
+  border-radius: var(--r); padding: 13px 14px 12px;
+  display: flex; flex-direction: column; gap: 9px;
+  transition: border-color .14s, transform .14s;
+}
+.card:hover { border-color: var(--ink-2); }
+
+.cardtop { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+
+.cardname {
+  font-family: var(--f-disp); font-size: 16.5px; font-weight: 600;
+  line-height: 1.18; margin: 0; letter-spacing: -.005em;
+}
+
+.tier {
+  font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em;
+  text-transform: uppercase; padding: 2px 6px; border-radius: 2px;
+  border: 1px solid currentColor; white-space: nowrap; flex-shrink: 0;
+}
+.tier.genuine    { color: var(--hot); }
+.tier.oem-alt    { color: var(--sea); }
+.tier.aftermarket{ color: var(--ink-3); }
+
+/* --- SIGNATURE: the segmented part-number plate --- */
+.plate {
+  display: inline-flex; align-items: stretch;
+  border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--panel-2); overflow: hidden; align-self: flex-start;
+  max-width: 100%;
+}
+.seg { padding: 4px 8px 3px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.seg + .seg { border-left: 1px solid var(--rule-2); }
+.seg .val {
+  font-family: var(--f-mono); font-size: 14px; font-weight: 600;
+  letter-spacing: .02em; line-height: 1.1; white-space: nowrap;
+}
+.seg .lab {
+  font-family: var(--f-mono); font-size: 8px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink-3); line-height: 1;
+}
+.seg.g .val { color: var(--ink); }
+.seg.f .val { color: var(--hot); }
+.seg.r .val { color: var(--ink-2); }
+.plate.plain .seg .val { color: var(--ink); }
+
+.decode {
+  font-size: 12px; color: var(--ink-2); line-height: 1.4;
+}
+.decode b { color: var(--ink); font-weight: 600; }
+
+.unver {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--amber);
+}
+.unver::before { content: "▲"; font-size: 8px; }
+
+/* fitment ribbon */
+.ribbon { display: flex; flex-wrap: wrap; gap: 4px; }
+.fitchip {
+  font-family: var(--f-mono); font-size: 10.5px;
+  padding: 2px 6px; border-radius: 2px;
+  background: var(--rule-2); color: var(--ink-2);
+  white-space: nowrap;
+}
+.fitchip.on { background: var(--hot); color: var(--hot-ink); font-weight: 600; }
+.fitchip.uni { background: transparent; border: 1px dashed var(--rule); color: var(--ink-3); }
+
+.cardfoot {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 10px; margin-top: auto; padding-top: 9px;
+  border-top: 1px solid var(--rule-2);
+}
+
+.price { display: flex; flex-direction: column; line-height: 1.05; }
+.price .cur { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .1em; }
+.price .amt { font-family: var(--f-disp); font-size: 23px; font-weight: 700; letter-spacing: -.02em; }
+
+.addbtn {
+  border: 1px solid var(--ink); background: var(--ink); color: var(--ground);
+  border-radius: var(--r); padding: 7px 13px;
+  font-family: var(--f-disp); font-size: 13px; font-weight: 600;
+  letter-spacing: .03em; white-space: nowrap;
+}
+.addbtn:hover { background: var(--hot); border-color: var(--hot); color: var(--hot-ink); }
+.addbtn:disabled { background: transparent; color: var(--ink-3); border-color: var(--rule); cursor: not-allowed; }
+
+.moreb {
+  border: 0; background: transparent; padding: 0;
+  font-family: var(--f-mono); font-size: 11px; color: var(--sea);
+  text-decoration: underline; text-underline-offset: 3px; text-align: left;
+}
+
+/* staff-only block */
+.staffbox {
+  display: none;
+  border: 1px dashed var(--rule); border-radius: 2px;
+  padding: 7px 9px; gap: 4px 14px;
+  font-family: var(--f-mono); font-size: 11px;
+  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+}
+[data-skin="staff"] .staffbox { display: grid; }
+.staffbox div { display: flex; flex-direction: column; }
+.staffbox .l { color: var(--ink-3); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
+.staffbox .v { color: var(--ink); }
+.staffbox .v.low { color: var(--hot); font-weight: 600; }
+.staffbox .v.marg { color: var(--ok); }
+
+.stockline { font-family: var(--f-mono); font-size: 11px; color: var(--ink-2); }
+.stockline .dotg { color: var(--ok); }
+.stockline .doty { color: var(--amber); }
+.stockline .dotr { color: var(--hot); }
+
+/* ============ EMPTY ============ */
+.empty {
+  border: 1px dashed var(--rule); border-radius: var(--r);
+  padding: 40px 24px; text-align: center; color: var(--ink-2);
+}
+.empty h3 { font-family: var(--f-disp); font-size: 19px; margin: 0 0 6px; color: var(--ink); }
+.empty p { margin: 0 0 14px; font-size: 14px; }
+
+/* ============ DRAWER (cart + detail) ============ */
+.scrim {
+  position: fixed; inset: 0; background: rgba(10,14,16,.5);
+  opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 90;
+}
+.scrim.on { opacity: 1; pointer-events: auto; }
+
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(430px, 100%);
+  background: var(--panel); border-left: 1px solid var(--rule);
+  z-index: 100; transform: translateX(100%);
+  transition: transform .26s cubic-bezier(.4,0,.2,1);
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow);
+}
+.drawer.on { transform: none; }
+
+.dhead {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 1px solid var(--rule); flex-shrink: 0;
+}
+.dhead h3 {
+  font-family: var(--f-disp); font-size: 17px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .02em; margin: 0;
+}
+.xbtn { border: 0; background: transparent; font-size: 21px; line-height: 1; color: var(--ink-2); padding: 0 4px; }
+.xbtn:hover { color: var(--hot); }
+
+.dbody { overflow-y: auto; padding: 16px; flex: 1; }
+.dfoot { border-top: 1px solid var(--rule); padding: 14px 16px; flex-shrink: 0; background: var(--panel-2); }
+
+/* cart lines */
+.line { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--rule-2); }
+.line:last-child { border-bottom: 0; }
+.line .info { flex: 1; min-width: 0; }
+.line .nm { font-family: var(--f-disp); font-size: 14.5px; font-weight: 600; line-height: 1.2; }
+.line .pn { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.line .rt { text-align: right; }
+.line .lp { font-family: var(--f-mono); font-size: 13px; }
+
+.qty { display: inline-flex; border: 1px solid var(--rule); border-radius: 2px; margin-top: 5px; }
+.qty button { border: 0; background: transparent; width: 24px; height: 22px; font-size: 14px; line-height: 1; color: var(--ink-2); }
+.qty button:hover { color: var(--hot); }
+.qty span { min-width: 26px; display: grid; place-items: center; font-family: var(--f-mono); font-size: 12px; border-left: 1px solid var(--rule); border-right: 1px solid var(--rule); }
+
+/* form */
+.field { margin-bottom: 11px; }
+.field label {
+  display: block; font-family: var(--f-mono); font-size: 10px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px;
+}
+.field input, .field select, .field textarea {
+  width: 100%; padding: 8px 10px; font-family: var(--f-body); font-size: 14px;
+  color: var(--ink); background: var(--panel-2);
+  border: 1px solid var(--rule); border-radius: var(--r);
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--hot); outline: none; }
+.field textarea { resize: vertical; min-height: 56px; }
+.hint { font-size: 11.5px; color: var(--ink-3); margin-top: 4px; }
+
+.totals { font-family: var(--f-mono); font-size: 13px; margin-bottom: 11px; }
+.totals div { display: flex; justify-content: space-between; padding: 3px 0; }
+.totals .grand {
+  border-top: 1px solid var(--rule); margin-top: 5px; padding-top: 7px;
+  font-size: 17px; font-weight: 600;
+}
+.totals .grand span:last-child { color: var(--hot); }
+
+.gobtn {
+  width: 100%; border: 0; border-radius: var(--r);
+  background: var(--hot); color: var(--hot-ink);
+  padding: 12px; font-family: var(--f-disp); font-size: 15px;
+  font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+}
+.gobtn:hover { filter: brightness(1.08); }
+.gobtn:disabled { background: var(--rule); color: var(--ink-3); cursor: not-allowed; }
+
+/* detail drawer bits */
+.dsec { margin-bottom: 18px; }
+.dsec h4 {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-3);
+  margin: 0 0 7px; padding-bottom: 5px; border-bottom: 1px solid var(--rule-2);
+}
+.altlist { display: flex; flex-direction: column; gap: 5px; }
+.altrow {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--f-mono); font-size: 12.5px;
+  padding: 5px 8px; background: var(--panel-2);
+  border: 1px solid var(--rule-2); border-radius: 2px;
+}
+.altrow .tag {
+  font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-3); margin-left: auto; white-space: nowrap;
+}
+.fitfull { display: flex; flex-wrap: wrap; gap: 5px; }
+.fitfull .m {
+  font-size: 12px; padding: 3px 8px; border-radius: 2px;
+  background: var(--panel-2); border: 1px solid var(--rule-2);
+}
+.fitfull .m b { font-weight: 600; }
+.notebox {
+  border-left: 2px solid var(--sea); padding: 6px 0 6px 10px;
+  font-size: 13.5px; color: var(--ink-2);
+}
+
+/* ============ FOOTER ============ */
+.foot {
+  border-top: 1px solid var(--rule); background: var(--panel);
+  padding: 30px clamp(12px,3vw,28px) 40px; margin-top: 20px;
+}
+.footin { max-width: 1360px; margin: 0 auto; display: grid; gap: 26px; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); }
+.foot h5 {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0 0 8px;
+}
+.foot p, .foot li { font-size: 13.5px; color: var(--ink-2); margin: 0 0 5px; }
+.foot ul { list-style: none; padding: 0; margin: 0; }
+.foot a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
+.foot a:hover { color: var(--hot); border-color: var(--hot); }
+.zline { display: flex; justify-content: space-between; gap: 10px; font-family: var(--f-mono); font-size: 12px; }
+.zline span:last-child { color: var(--ink-3); white-space: nowrap; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px);
+  background: var(--ink); color: var(--ground);
+  padding: 10px 18px; border-radius: var(--r);
+  font-family: var(--f-disp); font-size: 14px; font-weight: 600;
+  opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 200;
+}
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 880px) {
+  .work { grid-template-columns: 1fr; }
+  .rail { position: static; }
+  .rail .catwrap { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 6px; }
+  .catbtn { width: auto; white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; }
+  .catbtn[aria-pressed="true"] { border-left: 0; border-bottom-color: var(--hot); }
+  .catbtn .k { display: none; }
+}
+@media (max-width: 640px) {
+  .bar { flex-wrap: wrap; gap: 9px; }
+  .searchwrap { order: 3; flex-basis: 100%; max-width: none; }
+  .barspacer { display: none; }
+  .grid { grid-template-columns: 1fr; }
+  .mode button { padding: 7px 9px; font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+</style>
+<!-- ============ COMMAND BAR ============ -->
+<header class="bar">
+  <a class="logo" href="./"><b>avas</b><span class="dot">.</span>parts</a>
+
+  <div class="searchwrap">
+    <input id="q" class="search" type="search" autocomplete="off"
+           placeholder="Part number, bike model, or what it does…  (press / )"
+           aria-label="Search parts">
+  </div>
+
+  <div class="barspacer"></div>
+
+  <div class="mode" id="modeSwitch" role="group" aria-label="View mode">
+    <button data-skin="public" aria-pressed="true">Shop</button>
+    <button data-skin="staff"  aria-pressed="false">Counter</button>
+  </div>
+
+  <button class="cartbtn" id="cartOpen">
+    Order <span class="n" id="cartN" data-empty="1">0</span>
+  </button>
+</header>
+
+<main class="shell">
+
+  <!-- ============ HERO: the finder IS the hero ============ -->
+  <section class="hero">
+    <div class="kicker">Maldives · nationwide delivery · <span class="dv">އަވަސް</span></div>
+    <h1>Find the part that<br><em>actually fits</em>.</h1>
+    <p class="lede">
+      Every scooter on these islands runs ASEAN-spec parts, and one wrong digit in a part
+      number means a wasted ferry trip. Pick your bike, and we will show you the exact
+      number, what it interchanges with, and what it costs.
+    </p>
+
+    <div class="pickrow">
+      <div class="picklabel">Step 1 — pick the make</div>
+      <div class="chips" id="brandChips"></div>
+    </div>
+
+    <div class="pickrow" id="modelRow" hidden>
+      <div class="picklabel">Step 2 — pick the model <span style="color:var(--hot)">●</span> = common here</div>
+      <div class="chips" id="modelChips"></div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <div class="work">
+    <aside class="rail">
+      <div class="railhead">Category</div>
+      <div class="catwrap" id="catWrap"></div>
+    </aside>
+
+    <section>
+      <div class="rhead">
+        <h2 id="rTitle">All parts</h2>
+        <span class="count" id="rCount"></span>
+        <button class="clearbtn" id="clearBtn" hidden>Reset</button>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
+  </div>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div class="footin">
+    <div>
+      <h5>avas.parts</h5>
+      <p>Motorcycle and scooter parts for the Maldives. Order online, we ship to every inhabited island.</p>
+      <p><a href="mailto:order@avas.parts">order@avas.parts</a></p>
+      <p>Sat–Thu 09:00–18:00 · Fri 14:00–18:00</p>
+    </div>
+    <div>
+      <h5>Delivery</h5>
+      <ul id="zoneList"></ul>
+    </div>
+    <div>
+      <h5>Reading a part number</h5>
+      <p>A Honda number splits into three blocks: <b>23100</b> is what the part is,
+         <b>K36</b> is the model family, and the last block is the revision.</p>
+      <p>Two parts that share the first two blocks almost always interchange. That is what
+         the finder checks for you.</p>
+    </div>
+    <div>
+      <h5>Before you order</h5>
+      <p>Numbers marked <span class="unver">verify</span> are cited by suppliers but not yet
+         confirmed against a published catalogue. Send us your frame number and we will
+         confirm the fit before we pick and pack.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ DRAWERS ============ -->
+<div class="scrim" id="scrim"></div>
+
+<aside class="drawer" id="cart" aria-label="Your order">
+  <div class="dhead">
+    <h3>Your order</h3>
+    <button class="xbtn" data-close aria-label="Close">×</button>
+  </div>
+  <div class="dbody" id="cartBody"></div>
+  <div class="dfoot" id="cartFoot" hidden>
+    <div class="field">
+      <label for="zone">Deliver to</label>
+      <select id="zone"></select>
+    </div>
+    <div class="field">
+      <label for="custName">Name</label>
+      <input id="custName" type="text" autocomplete="name" placeholder="Your name">
+    </div>
+    <div class="field">
+      <label for="custPhone">Phone</label>
+      <input id="custPhone" type="tel" autocomplete="tel" placeholder="7xxxxxx">
+    </div>
+    <div class="field">
+      <label for="custIsland">Island / address</label>
+      <input id="custIsland" type="text" placeholder="Island, house or shop name">
+    </div>
+    <div class="field">
+      <label for="custNote">Bike and frame number</label>
+      <textarea id="custNote" placeholder="e.g. Vario 125 2021, frame MH1JM…"></textarea>
+      <div class="hint">Give us the frame number and we will confirm the fit before we pack.</div>
+    </div>
+
+    <div class="totals">
+      <div><span>Subtotal</span><span id="tSub">0</span></div>
+      <div><span>Delivery</span><span id="tDel">0</span></div>
+      <div><span>GST 8%</span><span id="tGst">0</span></div>
+      <div class="grand"><span>Total</span><span id="tAll">MVR 0</span></div>
+    </div>
+
+    <button class="gobtn" id="goBtn" disabled>Send order on WhatsApp</button>
+    <p class="hint" style="margin-top:8px">We confirm stock and the final total before you pay.</p>
+  </div>
+</aside>
+
+<aside class="drawer" id="detail" aria-label="Part detail">
+  <div class="dhead">
+    <h3 id="detailTitle">Part</h3>
+    <button class="xbtn" data-close aria-label="Close">×</button>
+  </div>
+  <div class="dbody" id="detailBody"></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* avas.parts — catalogue dataset
+ * Prices in MVR. `cost` is a landed-cost estimate, shown in staff mode only.
+ * v:1 = OEM number confirmed against a published parts source.
+ * v:0 = number is industry-cited but NOT yet confirmed — verify before ordering.
+ */
+
+const BRANDS = ["Honda", "Yamaha", "Suzuki"];
+
+/* ---- Family-code decoder: the middle 3 characters of a part number ---- */
+const FAMILY = {
+  KVY: "Beat / Scoopy 110 (carb)",
+  KZR: "Beat / Scoopy 110 FI eSP",
+  K44: "Beat FI / Wave 110i AT",
+  KVB: "Vario 110 / Click 110",
+  K35: "PCX125 / Click125 / Air Blade 125",
+  KWN: "PCX125–150 / Click125 / Air Blade 125",
+  K36: "PCX150 / Vario 150 / Click 150",
+  K59: "Vario 125 / Click 125i",
+  K60: "Vario 125 eSP",
+  K97: "Vario 160 / Click 160",
+  K1Z: "PCX160 / ADV160",
+  K0S: "ADV160 / PCX160 CVT",
+  KRE: "PCX125/150/160 (2018+)",
+  K84: "PCX125/150 / ADV150",
+  K20: "PCX150 (2014–2017)",
+  KWW: "Wave 110i / Alpha",
+  KPH: "Wave 125i / Supra X 125",
+  KWH: "Lead 125",
+  K1F: "Air Blade 125 / 160",
+  KZL: "Dio 110",
+  B65: "Yamaha NMAX / Aerox 155",
+  B6H: "Yamaha NMAX / Aerox Connected",
+  "2DP": "Yamaha NMAX 125 / 155",
+  "3C1": "Yamaha NMAX rear brake",
+  B63: "Yamaha Aerox 155",
+  "54P": "Yamaha NMAX / Aerox filters",
+  B7B: "Yamaha Exciter 150 / Y15ZR",
+  "1S7": "Yamaha LC135",
+  P99: "Honda genuine oils & chemicals",
+  M99: "Honda genuine gear oil",
+};
+
+/* ---- Group-code decoder: the first 5 digits say what the part IS ---- */
+const GROUP = {
+  "23100": "Drive belt",
+  "22123": "CVT roller weight set",
+  "22535": "Clutch weight / shoe set",
+  "22401": "Clutch spring",
+  "06455": "Front brake pad set",
+  "06430": "Rear brake shoe set",
+  "06406": "Sprocket set",
+  "45530": "Master cylinder kit",
+  "15412": "Oil filter / strainer",
+  "17210": "Air filter element",
+  "17620": "Fuel tank cap",
+  "14401": "Cam chain",
+  "14520": "Cam chain tensioner",
+  "14711": "Valve set",
+  "13101": "Piston kit",
+  "12191": "Cylinder gasket",
+  "91201": "Crankshaft oil seal",
+  "91051": "Wheel bearing",
+  "31500": "Battery",
+  "31600": "Regulator / rectifier",
+  "31200": "Starter motor",
+  "31120": "Stator / ACG",
+  "30510": "Ignition coil",
+  "16700": "Fuel pump",
+  "33100": "Headlight unit",
+  "37200": "Speedometer / LCD",
+  "38100": "Horn",
+  "35100": "Ignition switch",
+  "35130": "Handlebar switch",
+  "35070": "Side stand switch",
+  "51490": "Fork oil seal",
+  "52400": "Rear shock absorber",
+  "52100": "Swing arm",
+  "53210": "Steering head bearing",
+  "53175": "Brake lever",
+  "53165": "Handle grip",
+  "50500": "Main stand",
+  "17910": "Throttle cable",
+  "43460": "Rear brake cable",
+  "44830": "Speedometer cable",
+  "44711": "Front tyre",
+  "42711": "Rear tyre",
+  "42753": "Tyre valve",
+  "40530": "Drive chain",
+  "08234": "Engine oil",
+  "08232": "Gear oil",
+  "64300": "Windshield",
+  "64301": "Front cover",
+  "88110": "Mirror",
+};
+
+/* ---- Categories ---- */
+const CATS = [
+  { id: "cvt",     name: "CVT & transmission",   dv: "ސީވީޓީ" },
+  { id: "brake",   name: "Brakes",               dv: "ބްރޭކް" },
+  { id: "engine",  name: "Engine & service",     dv: "އިންޖީނު" },
+  { id: "elec",    name: "Electrical",           dv: "ކަރަންޓު" },
+  { id: "tyre",    name: "Tyres & tubes",        dv: "ޓަޔަރު" },
+  { id: "chassis", name: "Chassis & suspension", dv: "ސަސްޕެންޝަން" },
+  { id: "body",    name: "Body & plastics",      dv: "ބޮޑީ" },
+  { id: "control", name: "Controls & cables",    dv: "ކޭބަލް" },
+  { id: "drive",   name: "Chain & sprockets",    dv: "ޗޭނު" },
+  { id: "fluid",   name: "Oils & fluids",        dv: "އޮއިލް" },
+  { id: "acc",     name: "Accessories & safety", dv: "އެކްސެސަރީޒް" },
+];
+
+/* ---- The fleet: models actually on Maldivian roads ---- */
+const MODELS = [
+  { id:"scoopy110", brand:"Honda", name:"Scoopy 110",        cc:110, years:"2017–2026", seg:"auto", pop:5 },
+  { id:"beat110",   brand:"Honda", name:"Beat 110 FI",       cc:110, years:"2016–2026", seg:"auto", pop:5 },
+  { id:"vario110",  brand:"Honda", name:"Vario 110",         cc:110, years:"2014–2019", seg:"auto", pop:4 },
+  { id:"click110",  brand:"Honda", name:"Click 110",         cc:110, years:"2013–2018", seg:"auto", pop:3 },
+  { id:"vario125",  brand:"Honda", name:"Vario 125",         cc:125, years:"2018–2026", seg:"auto", pop:5 },
+  { id:"click125",  brand:"Honda", name:"Click 125i",        cc:125, years:"2018–2026", seg:"auto", pop:4 },
+  { id:"vario160",  brand:"Honda", name:"Vario 160",         cc:160, years:"2022–2026", seg:"auto", pop:4 },
+  { id:"click160",  brand:"Honda", name:"Click 160i",        cc:160, years:"2022–2026", seg:"auto", pop:3 },
+  { id:"ab125",     brand:"Honda", name:"Air Blade 125",     cc:125, years:"2020–2026", seg:"auto", pop:5 },
+  { id:"ab160",     brand:"Honda", name:"Air Blade 160",     cc:160, years:"2023–2026", seg:"auto", pop:5 },
+  { id:"lead125",   brand:"Honda", name:"Lead 125",          cc:125, years:"2018–2026", seg:"auto", pop:3 },
+  { id:"pcx125",    brand:"Honda", name:"PCX 125",           cc:125, years:"2018–2021", seg:"auto", pop:3 },
+  { id:"pcx150",    brand:"Honda", name:"PCX 150",           cc:150, years:"2014–2020", seg:"auto", pop:4 },
+  { id:"pcx160",    brand:"Honda", name:"PCX 160",           cc:160, years:"2021–2026", seg:"auto", pop:5 },
+  { id:"adv150",    brand:"Honda", name:"ADV 150",           cc:150, years:"2019–2022", seg:"auto", pop:2 },
+  { id:"adv160",    brand:"Honda", name:"ADV 160",           cc:160, years:"2022–2026", seg:"auto", pop:4 },
+  { id:"dio110",    brand:"Honda", name:"Dio 110",           cc:110, years:"2018–2026", seg:"auto", pop:3 },
+  { id:"genio110",  brand:"Honda", name:"Genio 110",         cc:110, years:"2019–2026", seg:"auto", pop:2 },
+  { id:"wave110",   brand:"Honda", name:"Wave 110i / Alpha", cc:110, years:"2012–2026", seg:"underbone", pop:3 },
+  { id:"wave125",   brand:"Honda", name:"Wave 125i / Supra X",cc:125, years:"2012–2026", seg:"underbone", pop:3 },
+  { id:"nmax155",   brand:"Yamaha",name:"NMAX 155",          cc:155, years:"2015–2026", seg:"auto", pop:4 },
+  { id:"aerox155",  brand:"Yamaha",name:"Aerox 155 / NVX",   cc:155, years:"2017–2026", seg:"auto", pop:4 },
+  { id:"mio125",    brand:"Yamaha",name:"Mio / Fino 125",    cc:125, years:"2016–2026", seg:"auto", pop:2 },
+  { id:"exciter150",brand:"Yamaha",name:"Exciter 150 / Y15ZR",cc:150, years:"2015–2026", seg:"underbone", pop:3 },
+  { id:"lc135",     brand:"Yamaha",name:"LC135",             cc:135, years:"2010–2024", seg:"underbone", pop:2 },
+  { id:"address",   brand:"Suzuki",name:"Address 110",       cc:110, years:"2015–2024", seg:"auto", pop:2 },
+  { id:"nex115",    brand:"Suzuki",name:"Nex II 115",        cc:115, years:"2018–2025", seg:"auto", pop:1 },
+  { id:"raider150", brand:"Suzuki",name:"Raider R150",       cc:150, years:"2016–2025", seg:"underbone", pop:2 },
+];
+
+/* ---- Parts ---- */
+const PARTS = [
+  /* ===== CVT & TRANSMISSION ===== */
+  { id:"p001", cat:"cvt", name:"Belt, drive (V-belt)", oem:"23100-KVY-901", v:1,
+    alts:["23100-KVY-900","Bando 23100-KVY","Aspira KVY belt"],
+    fits:["scoopy110","beat110"], tier:"genuine", price:465, cost:275, stock:24, bin:"A1-03", rop:8,
+    note:"Carb-era Beat and Scoopy. Replace every 20,000–24,000 km." },
+  { id:"p002", cat:"cvt", name:"Belt, drive (V-belt)", oem:"23100-K44-V01", v:1,
+    alts:["23100-K44-V00","Bando K44"],
+    fits:["beat110","wave110"], tier:"genuine", price:485, cost:288, stock:18, bin:"A1-04", rop:8,
+    note:"Beat FI and Wave 110i automatic." },
+  { id:"p003", cat:"cvt", name:"Belt, drive (V-belt)", oem:"23100-KVB-901", v:1,
+    alts:["23100-KVB-9010","23100-KVB-900","Bando KVB","Aspira KVB"],
+    fits:["vario110","click110"], tier:"genuine", price:470, cost:280, stock:21, bin:"A1-05", rop:8 },
+  { id:"p004", cat:"cvt", name:"Belt, drive (V-belt)", oem:"23100-K35-V01", v:1,
+    alts:["23100-KWN-671","23100-K35-V00"],
+    fits:["pcx125","click125","ab125","vario125"], tier:"genuine", price:610, cost:365, stock:30, bin:"A1-06", rop:12,
+    note:"The fastest mover across the 125cc fleet. Stock this deep." },
+  { id:"p005", cat:"cvt", name:"Belt, drive (V-belt)", oem:"23100-K36-J01", v:1,
+    alts:["23100-K35-V01","Bando K36"],
+    fits:["pcx150","adv150"], tier:"genuine", price:645, cost:388, stock:16, bin:"A1-07", rop:8,
+    note:"Also fits Vario 150, Click 150 and Air Blade 150." },
+  { id:"p006", cat:"cvt", name:"Belt, drive (V-belt)", oem:"23100-K1Z-J11", v:1, alts:["23100-K1Z-J01"],
+    fits:["pcx160","adv160"], tier:"genuine", price:720, cost:432, stock:22, bin:"A1-08", rop:10,
+    note:"PCX160 and ADV160 share one belt — one SKU covers both." },
+  { id:"p007", cat:"cvt", name:"Belt, drive (V-belt)", oem:"23100-K97-T01", v:0, alts:["23100-K97-T010-M1"],
+    fits:["vario160","click160","ab160"], tier:"genuine", price:690, cost:415, stock:14, bin:"A1-09", rop:8,
+    note:"160cc Vario, Click and Air Blade. Confirm the suffix against the frame number." },
+  { id:"p008", cat:"cvt", name:"Roller set, weight (6 pcs)", oem:"22123-KWN-900", v:1,
+    alts:["22123-KWN-901","TDR roller KWN"],
+    fits:["pcx125","pcx150","ab125","click125"], tier:"genuine", price:335, cost:190, stock:26, bin:"A2-01", rop:10,
+    note:"Sell with the belt. Belt plus rollers is the standard CVT service." },
+  { id:"p009", cat:"cvt", name:"Roller set, weight 18 g", oem:"22123-K36-H00", v:1, alts:["22123-KWN-780"],
+    fits:["pcx150","adv150"], tier:"genuine", price:355, cost:205, stock:12, bin:"A2-02", rop:6 },
+  { id:"p010", cat:"cvt", name:"Roller set, weight 19 g", oem:"22123-K0S-V00", v:1, alts:[],
+    fits:["pcx160","adv160"], tier:"genuine", price:390, cost:225, stock:15, bin:"A2-03", rop:8 },
+  { id:"p011", cat:"cvt", name:"Roller set, weight", oem:"22123-KVB-000", v:0,
+    alts:["22123-KZR-900","Aspira KVB roller"],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:280, cost:158, stock:20, bin:"A2-04", rop:10 },
+  { id:"p012", cat:"cvt", name:"Roller weight set 12 g, performance", oem:"22123-KWN-A12HT", v:1, alts:[],
+    fits:["pcx125","pcx150","ab125","click125"], tier:"aftermarket", price:420, cost:250, stock:6, bin:"A2-05", rop:3,
+    note:"Quicker off the line. Delivery riders ask for this." },
+  { id:"p013", cat:"cvt", name:"Clutch weight / shoe set", oem:"22535-KVB-900", v:0,
+    alts:["22535-KZR-900","Aspira clutch lining KVB"],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:610, cost:360, stock:11, bin:"A2-08", rop:5,
+    note:"Fit this when the bike judders pulling away from a stop." },
+  { id:"p014", cat:"cvt", name:"Clutch weight / shoe set", oem:"22535-KWN-900", v:0, alts:[],
+    fits:["pcx125","pcx150","ab125","click125","vario125"], tier:"genuine", price:735, cost:440, stock:9, bin:"A2-09", rop:4 },
+  { id:"p015", cat:"cvt", name:"Spring, clutch (3 pcs)", oem:"22401-KVB-901", v:0, alts:["TDR 1500 rpm spring"],
+    fits:["vario110","click110","beat110","scoopy110","vario125"], tier:"genuine", price:225, cost:125, stock:14, bin:"A2-10", rop:6 },
+  { id:"p016", cat:"cvt", name:"V-belt, drive", oem:"B65-E7641-00", v:1, alts:["B65-E7641-10"],
+    fits:["nmax155","aerox155"], tier:"genuine", price:735, cost:445, stock:13, bin:"A1-12", rop:6,
+    note:"NMAX and Aerox 155 share the belt." },
+  { id:"p017", cat:"cvt", name:"Gear, primary drive", oem:"B65-E6111-01", v:1, alts:[],
+    fits:["nmax155","aerox155"], tier:"genuine", price:980, cost:590, stock:4, bin:"A2-12", rop:2 },
+  { id:"p018", cat:"cvt", name:"Primary sliding sheave assembly", oem:"B65-E7620-00", v:1, alts:[],
+    fits:["nmax155","aerox155"], tier:"genuine", price:1450, cost:880, stock:3, bin:"A2-13", rop:2 },
+
+  /* ===== BRAKES ===== */
+  { id:"p020", cat:"brake", name:"Pad set, front brake (Nissin)", oem:"06455-KRE-K02", v:1,
+    alts:["06455-K84-902","06455-K84-901"],
+    fits:["pcx125","pcx150","pcx160","adv160","adv150"], tier:"genuine", price:415, cost:245, stock:28, bin:"B1-01", rop:12,
+    note:"2018-on PCX family. Highest-turnover brake pad you will carry." },
+  { id:"p021", cat:"brake", name:"Pad set, front brake (Nissin)", oem:"06455-K84-901", v:1,
+    alts:["06455-K84-902","06455-KRE-K02"],
+    fits:["pcx150","adv150"], tier:"genuine", price:395, cost:232, stock:14, bin:"B1-02", rop:6 },
+  { id:"p022", cat:"brake", name:"Pad set, front brake", oem:"06455-K20-911", v:1, alts:["06455-K20-912"],
+    fits:["pcx150"], tier:"genuine", price:365, cost:215, stock:9, bin:"B1-03", rop:4,
+    note:"PCX150 2014–2017 only. Superseded on later frames." },
+  { id:"p023", cat:"brake", name:"Pad set, front brake", oem:"06455-KVB-901", v:0,
+    alts:["06455-KZR-901","Aspira KVB pad"],
+    fits:["vario110","click110","beat110","scoopy110","vario125","click125","dio110","genio110"],
+    tier:"genuine", price:305, cost:178, stock:34, bin:"B1-04", rop:14,
+    note:"Covers most 110–125 Honda scooters. Your volume brake line." },
+  { id:"p024", cat:"brake", name:"Pad set, front brake", oem:"06455-K1Z-901", v:0, alts:[],
+    fits:["vario160","click160","ab160"], tier:"genuine", price:430, cost:255, stock:12, bin:"B1-05", rop:6 },
+  { id:"p025", cat:"brake", name:"Shoe set, rear brake", oem:"06430-KVB-900", v:1,
+    alts:["06430-KVB-901","Aspira KVB shoe"],
+    fits:["vario110","click110","beat110","scoopy110","dio110","genio110"],
+    tier:"genuine", price:245, cost:142, stock:30, bin:"B2-01", rop:12 },
+  { id:"p026", cat:"brake", name:"Shoe set, rear brake", oem:"06430-KWN-900", v:1, alts:["06430-KVB-900"],
+    fits:["click125","vario125","pcx150","ab125","pcx125"], tier:"genuine", price:275, cost:160, stock:22, bin:"B2-02", rop:10,
+    note:"Click 125/150, Beat, PCX150 and Air Blade 150." },
+  { id:"p027", cat:"brake", name:"Brake pad kit, front", oem:"2DP-F5805-00", v:1, alts:["2DP-F5805-10"],
+    fits:["nmax155"], tier:"genuine", price:445, cost:265, stock:11, bin:"B1-10", rop:5 },
+  { id:"p028", cat:"brake", name:"Brake pad kit, rear", oem:"3C1-F5805-10", v:1, alts:[],
+    fits:["nmax155","aerox155"], tier:"genuine", price:410, cost:245, stock:10, bin:"B2-10", rop:5 },
+  { id:"p029", cat:"brake", name:"Brake pad kit, front", oem:"B63-F5805-00", v:1, alts:["2DP-F5805-00"],
+    fits:["aerox155","exciter150"], tier:"genuine", price:455, cost:272, stock:9, bin:"B1-11", rop:4 },
+  { id:"p030", cat:"brake", name:"Brake fluid DOT 4, 500 ml", oem:"DOT 4 · 500 ml", v:0,
+    alts:["Motul DOT 4","Prestone DOT 4"],
+    fits:[], universal:1, tier:"genuine", price:165, cost:88, stock:40, bin:"F1-02", rop:15 },
+  { id:"p031", cat:"brake", name:"Master cylinder repair kit, front", oem:"45530-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110","vario125"], tier:"genuine", price:340, cost:198, stock:7, bin:"B3-01", rop:3 },
+  { id:"p032", cat:"brake", name:"Brake lever, front", oem:"53175-KPH-901", v:0,
+    alts:["53175-KWW-901","CNC adjustable lever"],
+    fits:["wave125","wave110","lc135"], tier:"genuine", price:385, cost:210, stock:12, bin:"B4-01", rop:5,
+    note:"Local market benchmark MVR 385." },
+
+  /* ===== ENGINE & SERVICE ===== */
+  { id:"p040", cat:"engine", name:"Oil filter / strainer screen", oem:"15412-KWN-901", v:0,
+    alts:["15412-KVB-901","15412-K36-J01"],
+    fits:["pcx125","pcx150","pcx160","adv160","ab125","click125","vario125"],
+    tier:"genuine", price:135, cost:72, stock:45, bin:"C1-01", rop:18,
+    note:"Clean or replace at every second oil change." },
+  { id:"p041", cat:"engine", name:"Oil filter / strainer screen", oem:"15412-KVB-901", v:0, alts:["15412-KZR-901"],
+    fits:["vario110","click110","beat110","scoopy110","dio110","genio110"],
+    tier:"genuine", price:115, cost:62, stock:38, bin:"C1-02", rop:15 },
+  { id:"p042", cat:"engine", name:"Oil strainer, drain plug", oem:"54P-E3411-00", v:1, alts:[],
+    fits:["nmax155","aerox155"], tier:"genuine", price:155, cost:85, stock:16, bin:"C1-10", rop:6 },
+  { id:"p043", cat:"engine", name:"Air filter element", oem:"17210-KZR-600", v:0,
+    alts:["17210-KVB-900","Aspira KZR filter"],
+    fits:["beat110","scoopy110","genio110","dio110"], tier:"genuine", price:225, cost:128, stock:28, bin:"C2-01", rop:12 },
+  { id:"p044", cat:"engine", name:"Air filter element", oem:"17210-K59-A10", v:0, alts:["17210-K60-900"],
+    fits:["vario125","click125","ab125"], tier:"genuine", price:265, cost:152, stock:24, bin:"C2-02", rop:10 },
+  { id:"p045", cat:"engine", name:"Air cleaner element", oem:"17210-K1Z-N10", v:0, alts:["17210-K0S-N10"],
+    fits:["pcx160","adv160","vario160","click160","ab160"], tier:"genuine", price:315, cost:182, stock:18, bin:"C2-03", rop:8 },
+  { id:"p046", cat:"engine", name:"Air filter element", oem:"B6H-E4451-00", v:1, alts:["B65-E4451-00"],
+    fits:["nmax155","aerox155"], tier:"genuine", price:340, cost:198, stock:12, bin:"C2-10", rop:5,
+    note:"2020-on Connected models." },
+  { id:"p047", cat:"engine", name:"Fuel filter", oem:"54P-E3915-00", v:1, alts:[],
+    fits:["nmax155","aerox155"], tier:"genuine", price:395, cost:235, stock:8, bin:"C3-10", rop:4 },
+  { id:"p048", cat:"engine", name:"Spark plug, NGK CPR6EA-9", oem:"CPR6EA-9", v:1,
+    alts:["31916-KZR-601","Denso U20EPR9","ND U24EPR9"],
+    fits:["scoopy110","beat110","vario110","click110","dio110","genio110","wave110"],
+    tier:"oem-alt", price:125, cost:62, stock:60, bin:"C4-01", rop:24,
+    note:"The single most frequent consumable in the shop. Never run out of this." },
+  { id:"p049", cat:"engine", name:"Spark plug, NGK CPR7EA-9", oem:"CPR7EA-9", v:0, alts:["Denso U22EPR9"],
+    fits:["vario125","click125","ab125","pcx125","pcx150","lead125","wave125"],
+    tier:"oem-alt", price:135, cost:68, stock:48, bin:"C4-02", rop:20 },
+  { id:"p050", cat:"engine", name:"Spark plug, NGK CPR8EA-9", oem:"CPR8EA-9", v:0, alts:["NGK CPR8EAIX-9 iridium"],
+    fits:["pcx160","adv160","vario160","click160","ab160","nmax155","aerox155"],
+    tier:"oem-alt", price:180, cost:92, stock:30, bin:"C4-03", rop:12 },
+  { id:"p051", cat:"engine", name:"Cam chain", oem:"14401-KVB-901", v:0, alts:["14401-KZR-901"],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:395, cost:230, stock:8, bin:"C5-01", rop:4 },
+  { id:"p052", cat:"engine", name:"Cam chain tensioner lifter", oem:"14520-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110","vario125"], tier:"genuine", price:445, cost:262, stock:6, bin:"C5-02", rop:3,
+    note:"Fit this when the engine rattles on a cold start." },
+  { id:"p053", cat:"engine", name:"Auto tensioner assembly", oem:"B7B-E2210-00", v:0, alts:[],
+    fits:["exciter150","lc135"], tier:"genuine", price:350, cost:195, stock:7, bin:"C5-10", rop:3,
+    note:"Local market benchmark MVR 350." },
+  { id:"p054", cat:"engine", name:"Gasket kit, cylinder head", oem:"12191-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:285, cost:165, stock:9, bin:"C6-01", rop:4 },
+  { id:"p055", cat:"engine", name:"Piston kit, standard", oem:"13101-KVB-900", v:0, alts:["13101-KZR-900"],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:820, cost:495, stock:5, bin:"C7-01", rop:2 },
+  { id:"p056", cat:"engine", name:"Valve set, intake and exhaust", oem:"14711-KVB-900", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:465, cost:275, stock:6, bin:"C7-02", rop:3 },
+  { id:"p057", cat:"engine", name:"Crankshaft oil seal set", oem:"91201-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110","vario125"], tier:"genuine", price:165, cost:88, stock:14, bin:"C8-01", rop:6 },
+  { id:"p058", cat:"engine", name:"Radiator coolant, 1 L", oem:"08CLA-G01-P02", v:0,
+    alts:["Honda Type 2 coolant","Prestone moto coolant"],
+    fits:[], universal:1, tier:"genuine", price:145, cost:78, stock:32, bin:"F1-04", rop:12 },
+
+  /* ===== ELECTRICAL ===== */
+  { id:"p060", cat:"elec", name:"Battery GTZ6V, 12V 5Ah maintenance-free", oem:"31500-KZR-602", v:1,
+    alts:["YTZ6V","GTZ6V","Yuasa YTZ6V","Aspira GTZ6V"],
+    fits:["beat110","scoopy110","vario110","click110","vario125","click125","ab125","dio110","genio110"],
+    tier:"genuine", price:825, cost:480, stock:26, bin:"D1-01", rop:10,
+    note:"Fits almost the whole 110–125 Honda fleet. Anchor stock item." },
+  { id:"p061", cat:"elec", name:"Battery GTZ7V, 12V 6Ah", oem:"31500-K1Z-901", v:0,
+    alts:["YTZ7V","Yuasa YTZ7V","GS GTZ7V"],
+    fits:["pcx125","pcx150","pcx160","adv160","vario160","click160","ab160","nmax155","aerox155"],
+    tier:"oem-alt", price:1050, cost:625, stock:18, bin:"D1-02", rop:8 },
+  { id:"p062", cat:"elec", name:"Regulator / rectifier", oem:"31600-KVB-901", v:0, alts:["31600-KZR-901"],
+    fits:["vario110","click110","beat110","scoopy110","vario125","click125"],
+    tier:"genuine", price:640, cost:375, stock:10, bin:"D2-01", rop:4 },
+  { id:"p063", cat:"elec", name:"Starter motor assembly", oem:"31200-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:1180, cost:710, stock:5, bin:"D3-01", rop:2 },
+  { id:"p064", cat:"elec", name:"ACG starter / stator assembly", oem:"31120-K59-A11", v:0, alts:[],
+    fits:["vario125","click125","ab125"], tier:"genuine", price:1650, cost:990, stock:3, bin:"D3-02", rop:2 },
+  { id:"p065", cat:"elec", name:"LCD instrument cluster", oem:"37200-K1F-901", v:0, alts:[],
+    fits:["ab125","ab160"], tier:"genuine", price:1200, cost:690, stock:4, bin:"D4-01", rop:2,
+    note:"Local market benchmark MVR 1,200." },
+  { id:"p066", cat:"elec", name:"LED headlight unit", oem:"33100-K59-A01", v:0, alts:["Universal LED conversion"],
+    fits:["vario125","click125","ab125"], tier:"genuine", price:1450, cost:870, stock:4, bin:"D4-02", rop:2 },
+  { id:"p067", cat:"elec", name:"LED headlight bulb, universal", oem:"AVS-LED-H4", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:100, cost:48, stock:50, bin:"D4-05", rop:20,
+    note:"Local market benchmark MVR 100." },
+  { id:"p068", cat:"elec", name:"LED turn signal set, 4 pcs", oem:"AVS-LED-TS4", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:400, cost:185, stock:24, bin:"D4-06", rop:10,
+    note:"Local market benchmark MVR 400." },
+  { id:"p069", cat:"elec", name:"Ignition coil", oem:"30510-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110","vario125"], tier:"genuine", price:520, cost:305, stock:8, bin:"D5-01", rop:3 },
+  { id:"p070", cat:"elec", name:"Fuel pump assembly", oem:"16700-K59-A11", v:0, alts:[],
+    fits:["vario125","click125","ab125"], tier:"genuine", price:2150, cost:1290, stock:3, bin:"D6-01", rop:2 },
+  { id:"p071", cat:"elec", name:"Horn, 12V", oem:"38100-KVB-901", v:0, alts:["Universal 12V disc horn"],
+    fits:["vario110","click110","beat110","scoopy110","vario125","click125"],
+    tier:"genuine", price:185, cost:98, stock:20, bin:"D7-01", rop:8 },
+  { id:"p072", cat:"elec", name:"Security alarm system, 12V", oem:"AVS-ALM-12", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:350, cost:165, stock:22, bin:"D8-01", rop:10,
+    note:"Local market benchmark MVR 300–350." },
+  { id:"p073", cat:"elec", name:"GPS tracker, Bluetooth", oem:"AVS-GPS-A201", v:0, alts:["AIRMEZ A201"],
+    fits:[], universal:1, tier:"aftermarket", price:499, cost:255, stock:14, bin:"D8-02", rop:6,
+    note:"Local market benchmark MVR 499." },
+
+  /* ===== TYRES & TUBES ===== */
+  { id:"p080", cat:"tyre", name:"Tyre 80/90-14 tubeless, front", oem:"80/90-14 TL", v:0,
+    alts:["IRC NR87","FDR Sport XR","Aspira Premio","Corsa Platinum"],
+    fits:["scoopy110","beat110","vario110","click110","dio110","genio110"],
+    tier:"aftermarket", price:585, cost:335, stock:26, bin:"E1-01", rop:10,
+    note:"Scoopy runs 80/90-14 front and rear — one size covers both ends." },
+  { id:"p081", cat:"tyre", name:"Tyre 90/90-14 tubeless, rear", oem:"90/90-14 TL", v:0,
+    alts:["IRC NR87","FDR Sport XR","Aspira Premio"],
+    fits:["scoopy110","beat110","vario110","click110","dio110","genio110"],
+    tier:"aftermarket", price:645, cost:370, stock:24, bin:"E1-02", rop:10 },
+  { id:"p082", cat:"tyre", name:"Tyre 100/80-14 tubeless, rear", oem:"100/80-14 TL", v:0,
+    alts:["FDR Genzi Pro","Corsa S1","Michelin City Grip"],
+    fits:["vario125","click125","ab125","vario160","click160","ab160","lead125"],
+    tier:"aftermarket", price:735, cost:425, stock:20, bin:"E1-03", rop:8 },
+  { id:"p083", cat:"tyre", name:"Tyre 110/70-13 tubeless, front", oem:"110/70-13 TL", v:0,
+    alts:["Michelin City Grip 2","IRC SS-560","Maxxis M6320"],
+    fits:["pcx125","pcx150","pcx160","nmax155","aerox155"],
+    tier:"aftermarket", price:950, cost:560, stock:16, bin:"E2-01", rop:6 },
+  { id:"p084", cat:"tyre", name:"Tyre 130/70-13 tubeless, rear", oem:"130/70-13 TL", v:0,
+    alts:["Michelin City Grip 2","IRC SS-560","Maxxis M6320"],
+    fits:["pcx125","pcx150","pcx160","nmax155","aerox155","adv150","adv160"],
+    tier:"aftermarket", price:1150, cost:685, stock:14, bin:"E2-02", rop:6,
+    note:"Also the rear on ADV 150 and ADV 160." },
+  { id:"p085", cat:"tyre", name:"Tyre 110/80-14 tubeless, front", oem:"110/80-14 TL", v:0,
+    alts:["Michelin City Grip 2","IRC"],
+    fits:["adv150","adv160"], tier:"aftermarket", price:990, cost:590, stock:8, bin:"E2-03", rop:4 },
+  { id:"p086", cat:"tyre", name:"Tyre 70/90-17 tube type, front", oem:"70/90-17 TT", v:0,
+    alts:["IRC NF63","FDR Sport"],
+    fits:["wave110","wave125","exciter150","lc135"], tier:"aftermarket", price:465, cost:265, stock:14, bin:"E3-01", rop:6 },
+  { id:"p087", cat:"tyre", name:"Tyre 80/90-17 tube type, rear", oem:"80/90-17 TT", v:0,
+    alts:["IRC NR63","FDR Sport"],
+    fits:["wave110","wave125","exciter150","lc135"], tier:"aftermarket", price:520, cost:298, stock:12, bin:"E3-02", rop:6 },
+  { id:"p088", cat:"tyre", name:"Inner tube 17 inch", oem:"TUBE 17 x 2.50", v:0, alts:["IRC tube 17"],
+    fits:["wave110","wave125","exciter150","lc135","raider150"],
+    tier:"aftermarket", price:145, cost:72, stock:40, bin:"E3-05", rop:15 },
+  { id:"p089", cat:"tyre", name:"Tubeless valve and cap", oem:"TL VALVE + CAP", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:45, cost:18, stock:80, bin:"E4-01", rop:30 },
+
+  /* ===== CHASSIS & SUSPENSION ===== */
+  { id:"p100", cat:"chassis", name:"Rear shock absorber, pair", oem:"52400-KVB-901", v:0,
+    alts:["YSS rear shock","Aspira shock"],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:895, cost:520, stock:8, bin:"G1-01", rop:4 },
+  { id:"p101", cat:"chassis", name:"Rear shock absorber, pair", oem:"52400-K59-A01", v:0, alts:["YSS G-series"],
+    fits:["vario125","click125","ab125"], tier:"genuine", price:1050, cost:625, stock:6, bin:"G1-02", rop:3 },
+  { id:"p102", cat:"chassis", name:"Front fork oil seal set", oem:"51490-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110","vario125","click125"],
+    tier:"genuine", price:225, cost:125, stock:16, bin:"G2-01", rop:6,
+    note:"Salt air makes fork seals a steady seller here." },
+  { id:"p103", cat:"chassis", name:"Wheel bearing 6301-2RS, pair", oem:"91051-KVB-901", v:0,
+    alts:["NTN 6301-2RS","Koyo 6301-2RS"],
+    fits:["vario110","click110","beat110","scoopy110","vario125","click125","ab125"],
+    tier:"oem-alt", price:195, cost:98, stock:30, bin:"G3-01", rop:12 },
+  { id:"p104", cat:"chassis", name:"Steering head bearing set", oem:"53210-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110","vario125"], tier:"genuine", price:315, cost:180, stock:10, bin:"G3-02", rop:4 },
+  { id:"p105", cat:"chassis", name:"Swing arm / rear fork", oem:"52100-KPH-901", v:0, alts:[],
+    fits:["wave125","wave110"], tier:"genuine", price:1200, cost:700, stock:3, bin:"G4-01", rop:1,
+    note:"Local market benchmark MVR 1,200." },
+  { id:"p106", cat:"chassis", name:"Main stand / centre stand", oem:"50500-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:485, cost:280, stock:7, bin:"G4-02", rop:3 },
+  { id:"p107", cat:"chassis", name:"Side stand switch", oem:"35070-K59-A01", v:0, alts:[],
+    fits:["vario125","click125","ab125","pcx150","pcx160"], tier:"genuine", price:265, cost:150, stock:12, bin:"G4-03", rop:5 },
+
+  /* ===== BODY & PLASTICS ===== */
+  { id:"p110", cat:"body", name:"Windshield", oem:"64300-K1Z-901", v:0, alts:["Givi Airflow PCX160"],
+    fits:["pcx160","adv160"], tier:"genuine", price:800, cost:455, stock:9, bin:"H1-01", rop:4,
+    note:"Local market benchmark MVR 800." },
+  { id:"p111", cat:"body", name:"Mirror set, left and right", oem:"88110-KVB-901", v:0,
+    alts:["Bar-end cruiser mirror","Universal 8 mm / 10 mm mirror"],
+    fits:["vario110","click110","beat110","scoopy110","vario125","click125"],
+    tier:"genuine", price:300, cost:155, stock:26, bin:"H2-01", rop:10,
+    note:"Local market benchmark MVR 300." },
+  { id:"p112", cat:"body", name:"Seat cover, waterproof", oem:"AVS-SEAT-CVR", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:500, cost:245, stock:18, bin:"H2-02", rop:8,
+    note:"Local market benchmark MVR 500." },
+  { id:"p113", cat:"body", name:"Body cover, waterproof", oem:"AVS-BODY-CVR", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:385, cost:180, stock:22, bin:"H2-03", rop:10,
+    note:"Sells all year. Salt spray and sun destroy plastics on island parking." },
+  { id:"p114", cat:"body", name:"Front cover / fairing panel", oem:"64301-K59-A00ZA", v:0, alts:[],
+    fits:["vario125","click125"], tier:"genuine", price:1350, cost:810, stock:3, bin:"H3-01", rop:1,
+    note:"Colour-coded. Read the colour code off the frame plate before you order." },
+  { id:"p115", cat:"body", name:"Visor / head cowl screen", oem:"B7B-F83B0-00", v:0, alts:[],
+    fits:["exciter150"], tier:"genuine", price:300, cost:160, stock:6, bin:"H3-02", rop:3,
+    note:"Local market benchmark MVR 300." },
+  { id:"p116", cat:"body", name:"Fuel tank cap", oem:"17620-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:245, cost:138, stock:10, bin:"H4-01", rop:4 },
+
+  /* ===== CONTROLS & CABLES ===== */
+  { id:"p120", cat:"control", name:"Throttle cable", oem:"17910-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:185, cost:98, stock:20, bin:"J1-01", rop:8 },
+  { id:"p121", cat:"control", name:"Rear brake cable", oem:"43460-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110","dio110"], tier:"genuine", price:165, cost:88, stock:22, bin:"J1-02", rop:8 },
+  { id:"p122", cat:"control", name:"Speedometer cable", oem:"44830-KWW-901", v:0, alts:[],
+    fits:["wave110","wave125"], tier:"genuine", price:145, cost:76, stock:14, bin:"J1-03", rop:6 },
+  { id:"p123", cat:"control", name:"Handle grip set", oem:"53165-KVB-901", v:0, alts:["Domino grips","ODI grips"],
+    fits:[], universal:1, tier:"genuine", price:135, cost:68, stock:34, bin:"J2-01", rop:14 },
+  { id:"p124", cat:"control", name:"Ignition switch and key set", oem:"35100-K59-A01", v:0, alts:[],
+    fits:["vario125","click125","ab125"], tier:"genuine", price:685, cost:400, stock:6, bin:"J3-01", rop:3 },
+  { id:"p125", cat:"control", name:"Handlebar switch, right", oem:"35130-KVB-901", v:0, alts:[],
+    fits:["vario110","click110","beat110","scoopy110"], tier:"genuine", price:295, cost:168, stock:9, bin:"J3-02", rop:4 },
+
+  /* ===== CHAIN & SPROCKETS ===== */
+  { id:"p130", cat:"drive", name:"Drive chain 428H x 108L", oem:"40530-KWW-901", v:0,
+    alts:["DID 428H","RK 428H","SSS 428H"],
+    fits:["wave110","wave125"], tier:"oem-alt", price:385, cost:210, stock:18, bin:"K1-01", rop:8 },
+  { id:"p131", cat:"drive", name:"Sprocket set, front and rear", oem:"06406-KWW-901", v:0, alts:["SSS sprocket kit"],
+    fits:["wave110","wave125"], tier:"genuine", price:565, cost:325, stock:10, bin:"K1-02", rop:4,
+    note:"Always sell chain and sprockets together. A new chain on worn sprockets wears out fast." },
+  { id:"p132", cat:"drive", name:"Drive chain 428 x 120L", oem:"CHAIN 428 x 120L", v:0, alts:["DID 428","RK 428"],
+    fits:["exciter150","lc135","raider150"], tier:"oem-alt", price:425, cost:238, stock:12, bin:"K1-03", rop:5 },
+  { id:"p133", cat:"drive", name:"Chain lubricant spray, 400 ml", oem:"AVS-CHAIN-LUB", v:0, alts:["Motul C2","WD-40 Specialist"],
+    fits:[], universal:1, tier:"aftermarket", price:165, cost:82, stock:26, bin:"K2-01", rop:10 },
+
+  /* ===== OILS & FLUIDS ===== */
+  { id:"p140", cat:"fluid", name:"Engine oil, scooter 10W-30 MB, 0.8 L", oem:"08234-P99-K3LM3", v:0,
+    alts:["Honda SPX2","Yamalube Sport","Shell Advance AX7 Scooter"],
+    fits:[], universal:1, tier:"genuine", price:155, cost:82, stock:96, bin:"F1-01", rop:36,
+    note:"Every scooter in the country needs this every 2,000–3,000 km. Your highest-turn item." },
+  { id:"p141", cat:"fluid", name:"Engine oil, scooter 10W-30 MB, 1 L", oem:"08234-P99-K1LM3", v:0,
+    alts:["Yamalube Sport","Castrol Power1 Scooter"],
+    fits:[], universal:1, tier:"genuine", price:185, cost:98, stock:64, bin:"F1-03", rop:24 },
+  { id:"p142", cat:"fluid", name:"Gear oil, final drive, 120 ml", oem:"08232-M99-K1LM", v:0, alts:["Yamalube gear oil"],
+    fits:[], universal:1, tier:"genuine", price:75, cost:36, stock:70, bin:"F1-05", rop:28,
+    note:"Changed at every second engine-oil service on a CVT scooter." },
+  { id:"p143", cat:"fluid", name:"Fork oil SS-8 10W, 500 ml", oem:"08208-0010", v:0, alts:["Motul fork oil 10W"],
+    fits:[], universal:1, tier:"genuine", price:195, cost:105, stock:20, bin:"F1-06", rop:8 },
+  { id:"p144", cat:"fluid", name:"CVT and contact cleaner, 400 ml", oem:"AVS-CLN-400", v:0, alts:["WD-40","CRC"],
+    fits:[], universal:1, tier:"aftermarket", price:125, cost:58, stock:30, bin:"F2-01", rop:12 },
+
+  /* ===== ACCESSORIES & SAFETY ===== */
+  { id:"p150", cat:"acc", name:"Full-face helmet, ECE", oem:"AVS-HLM-FF", v:0, alts:["Steelbird","MDS","LS2"],
+    fits:[], universal:1, tier:"aftermarket", price:550, cost:280, stock:24, bin:"L1-01", rop:10,
+    note:"Local market benchmark MVR 550." },
+  { id:"p151", cat:"acc", name:"Open-face retro helmet", oem:"AVS-HLM-OF", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:395, cost:195, stock:28, bin:"L1-02", rop:12 },
+  { id:"p152", cat:"acc", name:"Motocross helmet SB-42", oem:"AVS-HLM-MX42", v:0, alts:["Steelbird Bang SB-42"],
+    fits:[], universal:1, tier:"aftermarket", price:750, cost:390, stock:8, bin:"L1-03", rop:3 },
+  { id:"p153", cat:"acc", name:"Kids pillion helmet", oem:"AVS-HLM-KID", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:285, cost:135, stock:16, bin:"L1-04", rop:6 },
+  { id:"p154", cat:"acc", name:"Disc lock with alarm", oem:"AVS-LCK-DSC", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:325, cost:155, stock:18, bin:"L2-01", rop:8 },
+  { id:"p155", cat:"acc", name:"Phone holder, handlebar mount", oem:"AVS-PHN-MNT", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:185, cost:82, stock:30, bin:"L2-02", rop:12,
+    note:"Moves well with delivery riders." },
+  { id:"p156", cat:"acc", name:"USB charger, waterproof 12V", oem:"AVS-USB-12", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:225, cost:105, stock:22, bin:"L2-03", rop:9 },
+  { id:"p157", cat:"acc", name:"Rain suit, two piece", oem:"AVS-RAIN-2P", v:0, alts:[],
+    fits:[], universal:1, tier:"aftermarket", price:365, cost:175, stock:20, bin:"L3-01", rop:8,
+    note:"The May–November monsoon doubles sell-through on this." },
+  { id:"p158", cat:"acc", name:"Top box 32 L with mounting plate", oem:"AVS-BOX-32", v:0, alts:["Givi E340","SHAD SH33"],
+    fits:[], universal:1, tier:"aftermarket", price:1150, cost:620, stock:9, bin:"L3-02", rop:4 },
+];
+
+/* ---- Delivery zones ---- */
+const ZONES = [
+  { id:"male",    name:"Malé, Hulhumalé & Villimalé", eta:"Same day", fee:50,
+    note:"Order before 14:00 for a same-day drop." },
+  { id:"greater", name:"Greater Malé link road", eta:"1 day", fee:120 },
+  { id:"kaafu",   name:"K. Atoll islands", eta:"1–2 days", fee:150, note:"Daily ferry and speedboat runs." },
+  { id:"north",   name:"North atolls — HA, HDh, Sh, N, R, B, Lh", eta:"2–4 days", fee:250 },
+  { id:"central", name:"Central atolls — AA, ADh, V, M, F, Dh", eta:"2–4 days", fee:250 },
+  { id:"south",   name:"South atolls — Th, L, GA, GDh, Gn, S", eta:"3–5 days", fee:300,
+    note:"Cargo vessel, or air cargo when you need it faster." },
+  { id:"resort",  name:"Resort & liveaboard", eta:"2–5 days", fee:400,
+    note:"Add your resort logistics contact to the order." },
+];
+
+const SHOP = {
+  name: "avas.parts",
+  tagline: "Motorcycle parts, delivered to every island.",
+  whatsapp: "9600000",
+  email: "order@avas.parts",
+  hours: "Sat–Thu 09:00–18:00 · Fri 14:00–18:00",
+  gstRate: 0.08,
+};
+
+/* avas.parts — part finder, interchange engine, ordering */
+
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = (s) => String(s).replace(/[&<>"']/g, c =>
+  ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+const MODEL_BY_ID = Object.fromEntries(MODELS.map(m => [m.id, m]));
+const CAT_BY_ID   = Object.fromEntries(CATS.map(c => [c.id, c]));
+
+const state = {
+  brand: null,
+  model: null,
+  cat: null,
+  q: "",
+  skin: localStorage.getItem("avas.skin") || "public",
+  cart: JSON.parse(localStorage.getItem("avas.cart") || "{}"),
+};
+
+const money = (n) => n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+
+/* ---------- Part-number parsing: the decoder behind the plate ---------- */
+function parsePN(oem) {
+  const p = String(oem).split("-");
+  if (p.length === 3) {
+    if (/^\d{5}$/.test(p[0])) {
+      return { style: "honda", segs: [
+        { val: p[0], lab: "group",  cls: "g" },
+        { val: p[1], lab: "family", cls: "f" },
+        { val: p[2], lab: "var",    cls: "r" },
+      ], group: p[0], family: p[1] };
+    }
+    if (FAMILY[p[0]]) {
+      return { style: "yamaha", segs: [
+        { val: p[0], lab: "family",   cls: "f" },
+        { val: p[1], lab: "function", cls: "g" },
+        { val: p[2], lab: "var",      cls: "r" },
+      ], group: null, family: p[0] };
+    }
+  }
+  return { style: "plain", segs: [{ val: oem, lab: "part no", cls: "g" }], group: null, family: null };
+}
+
+function plateHTML(oem, plain) {
+  const pn = parsePN(oem);
+  return `<span class="plate${plain || pn.style === "plain" ? " plain" : ""}">` +
+    pn.segs.map(s => `<span class="seg ${s.cls}"><span class="val">${esc(s.val)}</span><span class="lab">${s.lab}</span></span>`).join("") +
+    `</span>`;
+}
+
+function decodeHTML(oem) {
+  const pn = parsePN(oem);
+  const bits = [];
+  if (pn.group && GROUP[pn.group]) bits.push(`<b>${esc(GROUP[pn.group])}</b>`);
+  if (pn.family && FAMILY[pn.family]) bits.push(esc(FAMILY[pn.family]));
+  return bits.length ? `<div class="decode">${bits.join(" · ")}</div>` : "";
+}
+
+/* ---------- Search ---------- */
+function haystack(p) {
+  const models = p.fits.map(id => MODEL_BY_ID[id] ? MODEL_BY_ID[id].brand + " " + MODEL_BY_ID[id].name : "").join(" ");
+  const pn = parsePN(p.oem);
+  return [
+    p.name, p.oem, p.oem.replace(/-/g, ""), (p.alts || []).join(" "),
+    (p.alts || []).map(a => a.replace(/-/g, "")).join(" "),
+    models, CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "",
+    pn.group ? GROUP[pn.group] || "" : "",
+    pn.family ? FAMILY[pn.family] || "" : "",
+    p.universal ? "universal fits all any bike" : "",
+    p.note || "",
+  ].join(" ").toLowerCase();
+}
+PARTS.forEach(p => { p._h = haystack(p); });
+
+function results() {
+  const q = state.q.trim().toLowerCase();
+  const terms = q ? q.split(/\s+/) : [];
+  return PARTS.filter(p => {
+    if (state.model && !p.universal && !p.fits.includes(state.model)) return false;
+    if (state.brand && !state.model) {
+      const ok = p.universal || p.fits.some(id => MODEL_BY_ID[id] && MODEL_BY_ID[id].brand === state.brand);
+      if (!ok) return false;
+    }
+    if (state.cat && p.cat !== state.cat) return false;
+    if (terms.length && !terms.every(t => p._h.includes(t))) return false;
+    return true;
+  });
+}
+
+/* ---------- Interchange: other part numbers doing the same job ---------- */
+function sameJob(part) {
+  const g = parsePN(part.oem).group;
+  if (!g) return [];
+  return PARTS.filter(p => p.id !== part.id && parsePN(p.oem).group === g);
+}
+
+/* ---------- Render: brand + model pickers ---------- */
+function renderPickers() {
+  $("#brandChips").innerHTML = BRANDS.map(b =>
+    `<button class="chip" data-brand="${esc(b)}" aria-pressed="${state.brand === b}">${esc(b)}</button>`
+  ).join("");
+
+  const list = state.brand ? MODELS.filter(m => m.brand === state.brand) : [];
+  const wrap = $("#modelRow");
+  if (!list.length) { wrap.hidden = true; $("#modelChips").innerHTML = ""; return; }
+  wrap.hidden = false;
+  $("#modelChips").innerHTML = list
+    .sort((a, b) => b.pop - a.pop || a.name.localeCompare(b.name))
+    .map(m => `<button class="chip${m.pop >= 5 ? " hotpick" : ""}" data-model="${m.id}" aria-pressed="${state.model === m.id}">${esc(m.name)}<span class="cc">${m.cc}cc</span></button>`)
+    .join("");
+}
+
+/* ---------- Render: category rail ---------- */
+function renderRail() {
+  const base = PARTS.filter(p => {
+    if (state.model && !p.universal && !p.fits.includes(state.model)) return false;
+    if (state.brand && !state.model) {
+      if (!(p.universal || p.fits.some(id => MODEL_BY_ID[id] && MODEL_BY_ID[id].brand === state.brand))) return false;
+    }
+    const q = state.q.trim().toLowerCase();
+    if (q && !q.split(/\s+/).every(t => p._h.includes(t))) return false;
+    return true;
+  });
+  const counts = {};
+  base.forEach(p => { counts[p.cat] = (counts[p.cat] || 0) + 1; });
+
+  $("#catWrap").innerHTML =
+    `<button class="catbtn" data-cat="" aria-pressed="${!state.cat}">
+       <span>All parts</span><span class="k">${base.length}</span></button>` +
+    CATS.filter(c => counts[c.id]).map(c =>
+      `<button class="catbtn" data-cat="${c.id}" aria-pressed="${state.cat === c.id}">
+         <span>${esc(c.name)}</span><span class="k">${counts[c.id]}</span></button>`
+    ).join("");
+}
+
+/* ---------- Render: part cards ---------- */
+function stockLine(p) {
+  if (p.stock <= 0)      return `<span class="stockline"><span class="dotr">●</span> On order</span>`;
+  if (p.stock <= p.rop)  return `<span class="stockline"><span class="doty">●</span> Low stock</span>`;
+  return `<span class="stockline"><span class="dotg">●</span> In stock</span>`;
+}
+
+function cardHTML(p) {
+  const fitNames = p.universal
+    ? `<span class="fitchip uni">Fits any bike</span>`
+    : p.fits.slice(0, 5).map(id => {
+        const m = MODEL_BY_ID[id];
+        if (!m) return "";
+        return `<span class="fitchip${state.model === id ? " on" : ""}">${esc(m.name)}</span>`;
+      }).join("") + (p.fits.length > 5 ? `<span class="fitchip">+${p.fits.length - 5} more</span>` : "");
+
+  const margin = p.price ? Math.round(((p.price - p.cost) / p.price) * 100) : 0;
+
+  return `<article class="card">
+    <div class="cardtop">
+      <h3 class="cardname">${esc(p.name)}</h3>
+      <span class="tier ${p.tier}">${p.tier === "oem-alt" ? "OEM alt" : p.tier}</span>
+    </div>
+    ${plateHTML(p.oem)}
+    ${decodeHTML(p.oem)}
+    ${p.v ? "" : `<span class="unver">Verify number before ordering</span>`}
+    <div class="ribbon">${fitNames}</div>
+    <div class="staffbox">
+      <div><span class="l">Cost</span><span class="v">${money(p.cost)}</span></div>
+      <div><span class="l">Margin</span><span class="v marg">${margin}%</span></div>
+      <div><span class="l">Stock</span><span class="v ${p.stock <= p.rop ? "low" : ""}">${p.stock}</span></div>
+      <div><span class="l">Re-order</span><span class="v">${p.rop}</span></div>
+      <div><span class="l">Bin</span><span class="v">${esc(p.bin)}</span></div>
+    </div>
+    <button class="moreb" data-detail="${p.id}">Fitment, alternates &amp; interchange →</button>
+    <div class="cardfoot">
+      <div>
+        <div class="price"><span class="cur">MVR</span><span class="amt">${money(p.price)}</span></div>
+        ${stockLine(p)}
+      </div>
+      <button class="addbtn" data-add="${p.id}">Add</button>
+    </div>
+  </article>`;
+}
+
+function renderResults() {
+  const r = results();
+  const m = state.model ? MODEL_BY_ID[state.model] : null;
+  let title = "All parts";
+  if (m) title = `${m.brand} ${m.name}`;
+  else if (state.brand) title = state.brand;
+  if (state.cat) title += ` · ${CAT_BY_ID[state.cat].name}`;
+  if (state.q.trim()) title = `“${state.q.trim()}”`;
+
+  $("#rTitle").textContent = title;
+  $("#rCount").textContent = `${r.length} ${r.length === 1 ? "part" : "parts"}`;
+  $("#clearBtn").hidden = !(state.brand || state.model || state.cat || state.q.trim());
+
+  if (!r.length) {
+    $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <h3>Nothing matches that yet</h3>
+      <p>Try the part number without dashes, the bike model, or what the part does — “belt”, “brake pad”, “battery”.</p>
+      <button class="clearbtn" data-clear="1">Reset the search</button>
+    </div>`;
+    return;
+  }
+  $("#grid").innerHTML = r.map(cardHTML).join("");
+}
+
+/* ---------- Detail drawer: the full interchange view ---------- */
+function openDetail(id) {
+  const p = PARTS.find(x => x.id === id);
+  if (!p) return;
+  const pn = parsePN(p.oem);
+  const others = sameJob(p);
+
+  const fitBlock = p.universal
+    ? `<p style="margin:0;font-size:13.5px;color:var(--ink-2)">Universal — fits any motorcycle or scooter.</p>`
+    : `<div class="fitfull">${p.fits.map(id2 => {
+        const m = MODEL_BY_ID[id2];
+        return m ? `<span class="m"><b>${esc(m.name)}</b> · ${m.cc}cc · ${esc(m.years)}</span>` : "";
+      }).join("")}</div>`;
+
+  const altBlock = (p.alts && p.alts.length)
+    ? `<div class="altlist">${p.alts.map(a => {
+        const oemish = /^[0-9A-Z]{3,5}-/.test(a);
+        return `<div class="altrow"><span>${esc(a)}</span><span class="tag">${oemish ? "supersession / OEM" : "aftermarket equivalent"}</span></div>`;
+      }).join("")}</div>`
+    : `<p style="margin:0;font-size:13px;color:var(--ink-3)">No alternate numbers recorded.</p>`;
+
+  const jobBlock = others.length
+    ? `<div class="altlist">${others.map(o => `
+        <div class="altrow">
+          <span>${esc(o.oem)}</span>
+          <span class="tag">${esc(o.fits.slice(0,2).map(i => MODEL_BY_ID[i] ? MODEL_BY_ID[i].name : "").filter(Boolean).join(", ")) || "universal"}${o.fits.length > 2 ? " +" + (o.fits.length - 2) : ""}</span>
+        </div>`).join("")}</div>`
+    : `<p style="margin:0;font-size:13px;color:var(--ink-3)">No other numbers in this group yet.</p>`;
+
+  $("#detailBody").innerHTML = `
+    <div class="dsec">
+      <h4>Part number</h4>
+      ${plateHTML(p.oem)}
+      ${decodeHTML(p.oem)}
+      ${p.v
+        ? `<p class="hint" style="margin-top:6px">Confirmed against a published parts source.</p>`
+        : `<p class="hint" style="margin-top:6px"><span class="unver">Not yet confirmed</span> — check this number against the bike’s frame number before you order.</p>`}
+    </div>
+
+    ${pn.group || pn.family ? `<div class="dsec">
+      <h4>How to read this number</h4>
+      <p style="margin:0;font-size:13.5px;color:var(--ink-2)">
+        ${pn.group ? `<b style="color:var(--ink)">${esc(pn.group)}</b> says what the part is — ${esc(GROUP[pn.group] || "an unlisted group")}. ` : ""}
+        ${pn.family ? `<b style="color:var(--hot)">${esc(pn.family)}</b> is the model family — ${esc(FAMILY[pn.family] || "an unlisted family")}. ` : ""}
+        The last block is the revision. Two parts sharing the first two blocks almost always interchange.
+      </p>
+    </div>` : ""}
+
+    <div class="dsec"><h4>Fits these bikes</h4>${fitBlock}</div>
+    <div class="dsec"><h4>Also sold as</h4>${altBlock}</div>
+    <div class="dsec"><h4>Same job, other model families</h4>${jobBlock}</div>
+    ${p.note ? `<div class="dsec"><h4>Counter note</h4><div class="notebox">${esc(p.note)}</div></div>` : ""}
+
+    <div class="dsec">
+      <h4>Price</h4>
+      <div class="price"><span class="cur">MVR</span><span class="amt">${money(p.price)}</span></div>
+      <p class="hint">${stockLine(p).replace(/<[^>]+>/g, "")} · ${esc(CAT_BY_ID[p.cat].name)}</p>
+    </div>
+    <button class="gobtn" data-add="${p.id}">Add to order</button>`;
+
+  $("#detailTitle").textContent = p.name;
+  openDrawer("#detail");
+}
+
+/* ---------- Cart ---------- */
+const cartCount = () => Object.values(state.cart).reduce((a, b) => a + b, 0);
+const cartLines = () => Object.entries(state.cart)
+  .map(([id, q]) => ({ p: PARTS.find(x => x.id === id), q }))
+  .filter(x => x.p);
+
+function saveCart() {
+  localStorage.setItem("avas.cart", JSON.stringify(state.cart));
+  const n = cartCount();
+  $("#cartN").textContent = n;
+  $("#cartN").dataset.empty = n ? "0" : "1";
+}
+
+function addToCart(id, silent) {
+  state.cart[id] = (state.cart[id] || 0) + 1;
+  saveCart();
+  if (!silent) {
+    const p = PARTS.find(x => x.id === id);
+    toast(`${p.name} added`);
+  }
+  renderCart();
+}
+
+function setQty(id, q) {
+  if (q <= 0) delete state.cart[id]; else state.cart[id] = q;
+  saveCart(); renderCart();
+}
+
+function zoneFee() {
+  const z = ZONES.find(z => z.id === $("#zone").value);
+  return z ? z.fee : 0;
+}
+
+function renderCart() {
+  const lines = cartLines();
+  const body = $("#cartBody");
+
+  if (!lines.length) {
+    body.innerHTML = `<div class="empty">
+      <h3>No parts yet</h3>
+      <p>Pick your bike, then add the parts you need. We deliver to every inhabited island.</p>
+    </div>`;
+    $("#cartFoot").hidden = true;
+    return;
+  }
+  $("#cartFoot").hidden = false;
+
+  body.innerHTML = lines.map(({ p, q }) => `
+    <div class="line">
+      <div class="info">
+        <div class="nm">${esc(p.name)}</div>
+        <div class="pn">${esc(p.oem)}</div>
+        <div class="qty">
+          <button data-q="${p.id}|${q - 1}" aria-label="Fewer">−</button>
+          <span>${q}</span>
+          <button data-q="${p.id}|${q + 1}" aria-label="More">+</button>
+        </div>
+      </div>
+      <div class="rt"><div class="lp">${money(p.price * q)}</div></div>
+    </div>`).join("");
+
+  const sub = lines.reduce((a, { p, q }) => a + p.price * q, 0);
+  const del = zoneFee();
+  const gst = Math.round((sub + del) * SHOP.gstRate);
+  $("#tSub").textContent = money(sub);
+  $("#tDel").textContent = money(del);
+  $("#tGst").textContent = money(gst);
+  $("#tAll").textContent = "MVR " + money(sub + del + gst);
+  $("#goBtn").disabled = !$("#custName").value.trim() || !$("#custPhone").value.trim();
+}
+
+function orderText() {
+  const lines = cartLines();
+  const z = ZONES.find(z => z.id === $("#zone").value);
+  const sub = lines.reduce((a, { p, q }) => a + p.price * q, 0);
+  const del = zoneFee();
+  const gst = Math.round((sub + del) * SHOP.gstRate);
+  const ref = "AVAS-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+
+  return [
+    `*avas.parts order ${ref}*`, "",
+    ...lines.map(({ p, q }) => `${q} × ${p.name}\n   ${p.oem} — MVR ${money(p.price * q)}`),
+    "",
+    `Subtotal: MVR ${money(sub)}`,
+    `Delivery (${z.name}): MVR ${money(del)}`,
+    `GST 8%: MVR ${money(gst)}`,
+    `*Total: MVR ${money(sub + del + gst)}*`,
+    "",
+    `Name: ${$("#custName").value.trim()}`,
+    `Phone: ${$("#custPhone").value.trim()}`,
+    `Island: ${$("#custIsland").value.trim() || "—"}`,
+    `Zone: ${z.name} (${z.eta})`,
+    $("#custNote").value.trim() ? `Note: ${$("#custNote").value.trim()}` : "",
+  ].filter(Boolean).join("\n");
+}
+
+function sendOrder() {
+  const txt = orderText();
+  const url = `https://wa.me/960${SHOP.whatsapp}?text=${encodeURIComponent(txt)}`;
+  window.open(url, "_blank", "noopener");
+  navigator.clipboard?.writeText(txt).catch(() => {});
+  toast("Order opened in WhatsApp — also copied");
+}
+
+/* ---------- Drawers, toast, skin ---------- */
+function openDrawer(sel) { $(sel).classList.add("on"); $("#scrim").classList.add("on"); }
+function closeDrawers() {
+  $$(".drawer").forEach(d => d.classList.remove("on"));
+  $("#scrim").classList.remove("on");
+}
+
+let toastT;
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg; t.classList.add("on");
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove("on"), 1900);
+}
+
+function applySkin() {
+  document.documentElement.dataset.skin = state.skin;
+  $$("#modeSwitch button").forEach(b =>
+    b.setAttribute("aria-pressed", b.dataset.skin === state.skin));
+  localStorage.setItem("avas.skin", state.skin);
+}
+
+/* ---------- Zones in footer + select ---------- */
+function renderZones() {
+  $("#zone").innerHTML = ZONES.map(z =>
+    `<option value="${z.id}">${esc(z.name)} — MVR ${z.fee} · ${esc(z.eta)}</option>`).join("");
+  $("#zoneList").innerHTML = ZONES.map(z =>
+    `<li class="zline"><span>${esc(z.name)}</span><span>${esc(z.eta)}</span></li>`).join("");
+}
+
+/* ---------- Wire up ---------- */
+function render() { renderPickers(); renderRail(); renderResults(); }
+
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-brand],[data-model],[data-cat],[data-add],[data-detail],[data-q],[data-clear],[data-skin],[data-close]");
+  if (!t) return;
+
+  if (t.dataset.brand !== undefined) {
+    state.brand = state.brand === t.dataset.brand ? null : t.dataset.brand;
+    state.model = null; render();
+  } else if (t.dataset.model !== undefined) {
+    state.model = state.model === t.dataset.model ? null : t.dataset.model;
+    render();
+  } else if (t.dataset.cat !== undefined) {
+    state.cat = t.dataset.cat || null; render();
+  } else if (t.dataset.add) {
+    addToCart(t.dataset.add);
+  } else if (t.dataset.detail) {
+    openDetail(t.dataset.detail);
+  } else if (t.dataset.q) {
+    const [id, q] = t.dataset.q.split("|"); setQty(id, +q);
+  } else if (t.dataset.clear) {
+    state.brand = state.model = state.cat = null; state.q = ""; $("#q").value = ""; render();
+  } else if (t.dataset.skin) {
+    state.skin = t.dataset.skin; applySkin();
+  } else if (t.dataset.close !== undefined) {
+    closeDrawers();
+  }
+});
+
+$("#q").addEventListener("input", (e) => { state.q = e.target.value; renderRail(); renderResults(); });
+$("#cartOpen").addEventListener("click", () => { renderCart(); openDrawer("#cart"); });
+$("#scrim").addEventListener("click", closeDrawers);
+$("#zone").addEventListener("change", renderCart);
+["custName", "custPhone"].forEach(id => $("#" + id).addEventListener("input", renderCart));
+$("#goBtn").addEventListener("click", sendOrder);
+$("#clearBtn").addEventListener("click", () => {
+  state.brand = state.model = state.cat = null; state.q = ""; $("#q").value = ""; render();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeDrawers();
+  if (e.key === "/" && document.activeElement !== $("#q")) { e.preventDefault(); $("#q").focus(); }
+});
+
+applySkin();
+renderZones();
+render();
+saveCart();
+renderCart();
+
+</script>
