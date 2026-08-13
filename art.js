@@ -184,14 +184,20 @@ function artFor(part) {
   return ART[key] ? key : "panel";
 }
 
+/* A photo, when one exists, otherwise the drawing.
+   The drawing stays in the DOM underneath: if the photo 404s or fails to
+   decode, onerror drops back to it rather than leaving a blank panel. */
 function artHTML(part) {
-  if (part.img) {
-    return `<div class="art"><img src="${part.img}" alt="${part.name}" loading="lazy"></div>`;
-  }
   const key = artFor(part);
-  return `<div class="art" data-art="${key}">
-    <svg viewBox="0 0 120 80" role="img" aria-label="${part.name}, schematic">
-      ${ART[key]}
-    </svg>
-  </div>`;
+  const svg = `<svg viewBox="0 0 120 80" role="img" aria-label="${part.name}, schematic">${ART[key]}</svg>`;
+  const photo = part.img || (typeof IMAGES !== "undefined" && IMAGES[part.id]) || null;
+
+  if (photo) {
+    return `<div class="art has-photo" data-art="${key}">
+      <img src="${photo}" alt="${part.name}" loading="lazy" decoding="async"
+           onerror="this.closest('.art').classList.remove('has-photo'); this.remove();">
+      ${svg}
+    </div>`;
+  }
+  return `<div class="art" data-art="${key}">${svg}</div>`;
 }

@@ -239,16 +239,30 @@ copyrighted, so none were taken.
 
 ### Putting real photos in
 
-Add an `img` field to any part in `data.js` and the photo replaces the drawing:
+Drop the files into `img/`, named after the part number, and run the importer:
 
-```js
-{ id:"p005", cat:"cvt", name:"Belt, drive (V-belt)", oem:"23100-K36-J01",
-  img:"img/23100-K36-J01.jpg", ... }
+```
+img/23100-K36-J01.jpg      # part number
+img/31500KZR602.jpg        # dashes optional
+img/p005.webp              # part id also works
+
+node import-images.js
 ```
 
-Photograph your own stock as it arrives — a part on a plain background, shot square.
-That is the only source that is both accurate and unambiguously yours to use. Start with
-the fast movers; the drawings carry everything else in the meantime.
+That writes `images.js`, a plain `id -> path` map the page reads. `data.js` is never
+touched, so re-running is safe and deleting an image brings its drawing back. Files that
+match no part are listed so you can rename them.
+
+A photo that 404s or fails to decode falls back to the schematic automatically — the
+drawing stays in the DOM underneath and an `onerror` handler reveals it, so a bad path
+never leaves an empty panel.
+
+**On rights.** Only publish images you may publish. Selling into one country does not by
+itself license manufacturer photography — the Maldives is a Berne Convention signatory, so
+OEM catalogue images are protected there as elsewhere. If a distributor has given you
+assets, or you are covered as an authorised reseller, that is a real basis. Photographs of
+your own stock always are. Shoot the part on a plain background, square on; start with the
+fast movers and let the drawings carry the long tail.
 
 ## 9. Deployment
 

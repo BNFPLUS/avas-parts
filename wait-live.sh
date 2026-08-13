@@ -1,6 +1,8 @@
 #!/bin/sh
 # Polls the published site until GitHub Pages serves it, or the build errors.
-URL="https://bnfplus.github.io/avas-parts/"
+# Poll the custom domain. bnfplus.github.io now 301s to it, so polling the
+# github.io URL would never see a 200 again.
+URL="https://avas.parts/"
 REPO="BNFPLUS/avas-parts"
 
 i=0

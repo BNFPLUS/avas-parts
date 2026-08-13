@@ -281,7 +281,17 @@ button { font: inherit; color: inherit; cursor: pointer; }
   stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;
 }
 .art svg .f { stroke: var(--hot); }
-.art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Photo covers the drawing. If the image fails, onerror removes the class
+   and the drawing underneath shows through. */
+.art { position: relative; }
+.art img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  background: var(--panel-2);
+}
+.art.has-photo { background: var(--panel-2); }
+.art.has-photo svg { visibility: hidden; }
 .card:hover .art svg :is(path, rect, circle, ellipse) { stroke: var(--ink); }
 .card:hover .art svg .f { stroke: var(--hot); }
 

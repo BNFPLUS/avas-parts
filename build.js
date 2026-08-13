@@ -11,6 +11,9 @@ let css  = read("styles.css");
 const data = read("data.js");
 const art  = read("art.js");
 const app  = read("app.js");
+/* Optional — only exists once import-images.js has been run. */
+let images = "";
+try { images = read("images.js"); } catch { images = "const IMAGES = {};"; }
 
 /* System-font stack — no CDN available in the sandboxed host.
    Condensed grotesques for display, keeping the technical-catalogue voice. */
@@ -35,8 +38,8 @@ html = html
   .replace(/<link rel="preconnect"[^>]*>\s*/g, "")
   .replace(/<link href="https:\/\/fonts\.googleapis\.com[^>]*>\s*/g, "")
   .replace(/<link rel="stylesheet" href="styles\.css">/, () => `<style>\n${css}\n</style>`)
-  .replace(/<script src="data\.js"><\/script>\s*<script src="art\.js"><\/script>\s*<script src="app\.js"><\/script>/,
-           () => `<script>\n${data}\n${art}\n${app}\n</script>`);
+  .replace(/<script src="data\.js"><\/script>\s*<script src="images\.js"><\/script>\s*<script src="art\.js"><\/script>\s*<script src="app\.js"><\/script>/,
+           () => `<script>\n${data}\n${images}\n${art}\n${app}\n</script>`);
 
 /* Sanity: nothing external may remain */
 const external = [...html.matchAll(/(?:src|href)="(https?:\/\/[^"]+)"/g)].map(m => m[1]);
@@ -44,7 +47,7 @@ if (external.length) {
   console.error("External references still present:\n  " + external.join("\n  "));
   process.exit(1);
 }
-for (const marker of ["styles.css", "data.js", "art.js", "app.js"]) {
+for (const marker of ["styles.css", "data.js", "images.js", "art.js", "app.js"]) {
   if (html.includes(`"${marker}"`)) { console.error("Un-inlined asset: " + marker); process.exit(1); }
 }
 
