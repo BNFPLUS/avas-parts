@@ -56,6 +56,13 @@ function decodeHTML(oem) {
   return bits.length ? `<div class="decode">${bits.join(" · ")}</div>` : "";
 }
 
+/* Our own shop codes — tyre sizes, consumables, accessories. There is no
+   manufacturer number behind these, so "verify before ordering" would be
+   nonsense: we are the ones who assigned them. */
+const OWN_SKU = /^(AVS-|\d+\/\d+-\d+|TUBE\b|TL VALVE|DOT \d|CHAIN \d)/;
+const isOwnSku = (p) => OWN_SKU.test(p.oem);
+const needsCheck = (p) => !p.v && !isOwnSku(p);
+
 /* ---------- Search ---------- */
 function haystack(p) {
   const models = p.fits.map(id => MODEL_BY_ID[id] ? MODEL_BY_ID[id].brand + " " + MODEL_BY_ID[id].name : "").join(" ");
@@ -152,13 +159,14 @@ function cardHTML(p) {
   const margin = p.price ? Math.round(((p.price - p.cost) / p.price) * 100) : 0;
 
   return `<article class="card">
+    ${artHTML(p)}
     <div class="cardtop">
       <h3 class="cardname">${esc(p.name)}</h3>
       <span class="tier ${p.tier}">${p.tier === "oem-alt" ? "OEM alt" : p.tier}</span>
     </div>
     ${plateHTML(p.oem)}
     ${decodeHTML(p.oem)}
-    ${p.v ? "" : `<span class="unver">Verify number before ordering</span>`}
+    ${needsCheck(p) ? `<span class="unver">Verify number before ordering</span>` : ""}
     <div class="ribbon">${fitNames}</div>
     <div class="staffbox">
       <div><span class="l">Cost</span><span class="v">${money(p.cost)}</span></div>
@@ -236,9 +244,7 @@ function openDetail(id) {
       <h4>Part number</h4>
       ${plateHTML(p.oem)}
       ${decodeHTML(p.oem)}
-      ${p.v
-        ? `<p class="hint" style="margin-top:6px">Confirmed against a published parts source.</p>`
-        : `<p class="hint" style="margin-top:6px"><span class="unver">Not yet confirmed</span> — check this number against the bike’s frame number before you order.</p>`}
+      ${p.v ? `<p class="hint" style="margin-top:6px">Confirmed against a published parts source.</p>` : isOwnSku(p) ? `<p class="hint" style="margin-top:6px">An avas.parts shop code. There is no manufacturer number for this item.</p>` : `<p class="hint" style="margin-top:6px"><span class="unver">Not yet confirmed</span> — check this number against the bike’s frame number before you order.</p>`}
     </div>
 
     ${pn.group || pn.family ? `<div class="dsec">

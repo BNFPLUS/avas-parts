@@ -182,9 +182,11 @@ a working tool:
 - **Search** matches part numbers with or without dashes, model names, categories, and
   plain language like "brake pad pcx".
 
-**Verification status.** 26 of 113 OEM numbers are confirmed against published parts
-sources. The other 87 are supplier-cited and carry a visible **"verify number before
-ordering"** flag in the UI and in the checkout copy. Confirm those against a frame number
+**Verification status.** Of 113 lines: **26** OEM numbers are confirmed against published
+parts sources, **29** are avas.parts shop codes for items with no manufacturer number
+(helmets, tyres by size, consumables), and **58** are manufacturer-pattern numbers that are
+supplier-cited or inferred from the numbering convention but **not confirmed**. Only those
+58 carry the **"verify number before ordering"** flag — a shop code has nothing to verify. Confirm those against a frame number
 before you pick and pack. Set `v: 1` in `data.js` as you confirm each one.
 
 ---
@@ -221,7 +223,34 @@ copied to the clipboard as a fallback.
 
 ---
 
-## 8. Deployment
+## 8. Images — read this before you trust them
+
+Every part shows a **schematic line drawing**, not a photograph. There are 28 drawings
+in `art.js`, matched to a part by its group code first (so a drive belt looks like a belt
+whatever bike it fits), then by keyword, then by category.
+
+**These are category illustrations, not pictures of the actual item.** Two different
+brake pads get the same drawing. That is honest for a catalogue — it says "this is a
+brake pad", not "this is what you will receive" — but it is not a substitute for real
+photography.
+
+**No manufacturer photography is used.** Supplier and OEM catalogue images are
+copyrighted, so none were taken.
+
+### Putting real photos in
+
+Add an `img` field to any part in `data.js` and the photo replaces the drawing:
+
+```js
+{ id:"p005", cat:"cvt", name:"Belt, drive (V-belt)", oem:"23100-K36-J01",
+  img:"img/23100-K36-J01.jpg", ... }
+```
+
+Photograph your own stock as it arrives — a part on a plain background, shot square.
+That is the only source that is both accurate and unambiguously yours to use. Start with
+the fast movers; the drawings carry everything else in the meantime.
+
+## 9. Deployment
 
 Live at **https://bnfplus.github.io/avas-parts/** — GitHub Pages, served from the `site`
 branch at root. Every push to `site` redeploys. `sh wait-live.sh` polls until Pages has
