@@ -17,10 +17,27 @@ PAGES_IPS="185.199.108.153 185.199.109.153 185.199.110.153 185.199.111.153"
 WWW_TARGET="bnfplus.github.io"
 API="https://api.cloudflare.com/client/v4"
 
+# Token comes from the environment, or from a file so it never has to be
+# pasted into a chat transcript. Default file: ~/.cf-token (chmod 600).
+TOKEN_FILE="${1:-${HOME}/.cf-token}"
+if [ -z "${CLOUDFLARE_API_TOKEN}" ] && [ -r "${TOKEN_FILE}" ]; then
+  CLOUDFLARE_API_TOKEN=$(tr -d ' \t\r\n' < "${TOKEN_FILE}")
+fi
+
 if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
-  echo "CLOUDFLARE_API_TOKEN is not set. See the header of this script."
+  echo "No token found."
+  echo "  Either:  export CLOUDFLARE_API_TOKEN=..."
+  echo "  Or save it to ${TOKEN_FILE} and re-run."
   exit 1
 fi
+
+# Confirm the token works before touching anything, and never print it.
+echo "Verifying token..."
+verify=$(curl -s -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" "${API}/user/tokens/verify")
+case "$verify" in
+  *'"success":true'*) echo "  token is valid" ;;
+  *) echo "  token rejected by Cloudflare:"; printf '%s\n' "$verify" | head -c 300; echo; exit 1 ;;
+esac
 
 auth() { curl -s -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json" "$@"; }
 
