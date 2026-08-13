@@ -31,13 +31,10 @@ if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
   exit 1
 fi
 
-# Confirm the token works before touching anything, and never print it.
-echo "Verifying token..."
-verify=$(curl -s -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" "${API}/user/tokens/verify")
-case "$verify" in
-  *'"success":true'*) echo "  token is valid" ;;
-  *) echo "  token rejected by Cloudflare:"; printf '%s\n' "$verify" | head -c 300; echo; exit 1 ;;
-esac
+# Authenticate by looking up the zone we are about to edit. Do NOT use
+# /user/tokens/verify — OAuth-issued tokens (cfat_ prefix) authenticate
+# fine against the resource endpoints but are rejected by that one, which
+# makes it a false negative. The token is never printed.
 
 auth() { curl -s -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json" "$@"; }
 
