@@ -17,7 +17,11 @@ const sec = (n) => console.log("\n" + n);
 sec("Dataset shape");
 console.log(`  models ${MODELS.length} · parts ${PARTS.length} · categories ${CATS.length} · zones ${ZONES.length}`);
 ok(MODELS.length >= 25, "expected 25+ models");
-ok(PARTS.length  >= 100, "expected 100+ parts");
+ok(PARTS.length  >= 500, "expected 500+ parts");
+const mdup = MODELS.map(m => m.id).filter((id, i, a) => a.indexOf(id) !== i);
+ok(!mdup.length, "duplicate model ids: " + mdup.join(", "));
+const badBrand = MODELS.filter(m => !BRANDS.includes(m.brand)).map(m => m.id);
+ok(!badBrand.length, "models with unknown brand: " + badBrand.join(", "));
 
 sec("Referential integrity");
 const mids = new Set(MODELS.map(m => m.id));
@@ -33,31 +37,49 @@ ok(!dup.length, "duplicate part ids: " + dup.join(", "));
 console.log(`  ${badFit.length + badCat.length + dup.length === 0 ? "all references resolve" : "problems found"}`);
 
 sec("Required fields");
-const miss = PARTS.filter(p =>
-  !p.name || !p.oem || !p.cat || p.price == null || p.cost == null ||
-  p.stock == null || p.rop == null || !p.bin).map(p => p.id);
-ok(!miss.length, "missing fields: " + miss.join(", "));
-console.log(`  ${miss.length ? miss.length + " incomplete" : "every part complete"}`);
+// Every part is either priced (numeric price > 0) or explicitly ask-for-price
+// (price null + askPrice true). Priced parts carry the full staff fields.
+const isPriced = p => typeof p.price === "number" && p.price > 0 && !p.askPrice;
+const isAsk    = p => p.price == null && p.askPrice === true;
+const PRICED = PARTS.filter(isPriced), ASK = PARTS.filter(isAsk);
+const badPrice = PARTS.filter(p => !isPriced(p) && !isAsk(p)).map(p => p.id);
+ok(!badPrice.length, "neither priced nor askPrice: " + badPrice.join(", "));
+const miss = PARTS.filter(p => !p.name || !p.oem || !p.cat).map(p => p.id);
+ok(!miss.length, "missing name/oem/cat: " + miss.join(", "));
+const missStaff = PRICED.filter(p =>
+  typeof p.cost !== "number" || p.stock == null || p.rop == null || !p.bin).map(p => p.id);
+ok(!missStaff.length, "priced parts missing cost/stock/rop/bin: " + missStaff.join(", "));
+console.log(`  ${PRICED.length} priced · ${ASK.length} ask-for-price · ${miss.length + missStaff.length + badPrice.length ? "problems found" : "every part complete"}`);
 
 sec("Commercial sanity");
-const badMargin = PARTS.filter(p => p.cost >= p.price).map(p => p.id);
+const badMargin = PRICED.filter(p => p.cost >= p.price).map(p => p.id);
 ok(!badMargin.length, "cost >= price: " + badMargin.join(", "));
-const margins = PARTS.map(p => (p.price - p.cost) / p.price);
+const margins = PRICED.map(p => (p.price - p.cost) / p.price);
 const avg = margins.reduce((a, b) => a + b, 0) / margins.length;
-console.log(`  average gross margin ${(avg * 100).toFixed(1)}%`);
+console.log(`  average gross margin (priced parts) ${(avg * 100).toFixed(1)}%`);
 ok(avg > 0.3 && avg < 0.65, "average margin outside a plausible 30–65% band");
 
 sec("Part-number decoding");
-const gCodes = new Set(), fCodes = new Set();
-PARTS.forEach(p => {
-  const s = p.oem.split("-");
-  if (s.length === 3 && /^\d{5}$/.test(s[0])) { gCodes.add(s[0]); fCodes.add(s[1]); }
-});
-const undG = [...gCodes].filter(x => !GROUP[x]);
-const undF = [...fCodes].filter(x => !FAMILY[x]);
-ok(!undG.length, "group codes with no decoder entry: " + undG.join(", "));
-ok(!undF.length, "family codes with no decoder entry: " + undF.join(", "));
-console.log(`  ${gCodes.size} group codes, ${fCodes.size} family codes — all decode`);
+// Priced parts (the previous catalogue) must fully decode. Ask-for-price parts
+// may carry codes the decoder does not describe yet; the UI shows "an unlisted
+// group/family" for those, so they are reported, not failed.
+function codes(list) {
+  const g = new Set(), f = new Set();
+  list.forEach(p => {
+    const s = p.oem.split("-");
+    if (s.length === 3 && /^\d{5}$/.test(s[0])) { g.add(s[0]); f.add(s[1]); }
+  });
+  return { g, f };
+}
+const pc = codes(PRICED);
+const undG = [...pc.g].filter(x => !GROUP[x]);
+const undF = [...pc.f].filter(x => !FAMILY[x]);
+ok(!undG.length, "priced parts: group codes with no decoder entry: " + undG.join(", "));
+ok(!undF.length, "priced parts: family codes with no decoder entry: " + undF.join(", "));
+console.log(`  priced: ${pc.g.size} group codes, ${pc.f.size} family codes — all decode`);
+const ac = codes(PARTS);
+const aUndG = [...ac.g].filter(x => !GROUP[x]).length, aUndF = [...ac.f].filter(x => !FAMILY[x]).length;
+console.log(`  all parts: ${ac.g.size - aUndG}/${ac.g.size} group codes, ${ac.f.size - aUndF}/${ac.f.size} family codes have a decoder entry`);
 
 sec("Fleet coverage");
 const cov = new Set();
@@ -89,7 +111,7 @@ const html = fs.readFileSync("index.html", "utf8");
 const app  = fs.readFileSync("app.js", "utf8");
 const needed = ["q","grid","catWrap","brandChips","modelChips","modelRow","cartOpen","cartN",
   "cartBody","cartFoot","zone","zoneList","custName","custPhone","custIsland","custNote",
-  "tSub","tDel","tGst","tAll","goBtn","scrim","toast","detailBody","detailTitle","rTitle",
+  "tSub","tDel","tGst","tAll","tAskRow","tAsk","goBtn","scrim","toast","detailBody","detailTitle","rTitle",
   "rCount","clearBtn","modeSwitch"];
 const missingIds = needed.filter(id => !html.includes(`id="${id}"`));
 ok(!missingIds.length, "app.js references ids missing from index.html: " + missingIds.join(", "));

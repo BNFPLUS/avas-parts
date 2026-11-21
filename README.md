@@ -7,7 +7,7 @@ interchanges with what.
 Static site — no build step, no server. `index.html`, `styles.css`, `app.js`, `data.js`.
 
 ```
-node test.js     # dataset integrity (113 parts, 28 models, decoder coverage)
+node test.js     # dataset integrity (583 parts, 25 models, decoder coverage)
 node qa.mjs      # drives the real page in Chromium, 28 checks + screenshots
 ```
 

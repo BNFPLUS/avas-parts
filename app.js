@@ -18,6 +18,22 @@ const state = {
 };
 
 const money = (n) => n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+const hasPrice = (p) => !p.askPrice && typeof p.price === "number";
+const dash = (v, asMoney) => (v == null || v === "") ? "—" : (asMoney ? money(v) : esc(String(v)));
+
+function priceHTML(p) {
+  if (!hasPrice(p)) return `<div class="price ask"><span class="asklab">Ask for price</span></div>`;
+  return `<div class="price"><span class="cur">MVR</span><span class="amt">${money(p.price)}</span></div>`;
+}
+
+function cartTotals(lines) {
+  const pricedLines = lines.filter(({ p }) => hasPrice(p));
+  const askQty = lines.filter(({ p }) => !hasPrice(p)).reduce((a, { q }) => a + q, 0);
+  const sub = pricedLines.reduce((a, { p, q }) => a + p.price * q, 0);
+  const del = zoneFee();
+  const gst = Math.round((sub + del) * SHOP.gstRate);
+  return { pricedLines, askQty, sub, del, gst, total: sub + del + gst };
+}
 
 /* ---------- Part-number parsing: the decoder behind the plate ---------- */
 function parsePN(oem) {
@@ -142,6 +158,7 @@ function renderRail() {
 
 /* ---------- Render: part cards ---------- */
 function stockLine(p) {
+  if (p.stock == null)   return "";
   if (p.stock <= 0)      return `<span class="stockline"><span class="dotr">●</span> On order</span>`;
   if (p.stock <= p.rop)  return `<span class="stockline"><span class="doty">●</span> Low stock</span>`;
   return `<span class="stockline"><span class="dotg">●</span> In stock</span>`;
@@ -156,7 +173,10 @@ function cardHTML(p) {
         return `<span class="fitchip${state.model === id ? " on" : ""}">${esc(m.name)}</span>`;
       }).join("") + (p.fits.length > 5 ? `<span class="fitchip">+${p.fits.length - 5} more</span>` : "");
 
-  const margin = p.price ? Math.round(((p.price - p.cost) / p.price) * 100) : 0;
+  const margin = hasPrice(p) && typeof p.cost === "number"
+    ? Math.round(((p.price - p.cost) / p.price) * 100) + "%"
+    : "—";
+  const stockLow = typeof p.stock === "number" && typeof p.rop === "number" && p.stock <= p.rop;
 
   return `<article class="card">
     ${artHTML(p)}
@@ -169,16 +189,16 @@ function cardHTML(p) {
     ${needsCheck(p) ? `<span class="unver">Verify number before ordering</span>` : ""}
     <div class="ribbon">${fitNames}</div>
     <div class="staffbox">
-      <div><span class="l">Cost</span><span class="v">${money(p.cost)}</span></div>
-      <div><span class="l">Margin</span><span class="v marg">${margin}%</span></div>
-      <div><span class="l">Stock</span><span class="v ${p.stock <= p.rop ? "low" : ""}">${p.stock}</span></div>
-      <div><span class="l">Re-order</span><span class="v">${p.rop}</span></div>
-      <div><span class="l">Bin</span><span class="v">${esc(p.bin)}</span></div>
+      <div><span class="l">Cost</span><span class="v">${dash(p.cost, true)}</span></div>
+      <div><span class="l">Margin</span><span class="v marg">${margin}</span></div>
+      <div><span class="l">Stock</span><span class="v ${stockLow ? "low" : ""}">${dash(p.stock)}</span></div>
+      <div><span class="l">Re-order</span><span class="v">${dash(p.rop)}</span></div>
+      <div><span class="l">Bin</span><span class="v">${dash(p.bin)}</span></div>
     </div>
     <button class="moreb" data-detail="${p.id}">Fitment, alternates &amp; interchange →</button>
     <div class="cardfoot">
       <div>
-        <div class="price"><span class="cur">MVR</span><span class="amt">${money(p.price)}</span></div>
+        ${priceHTML(p)}
         ${stockLine(p)}
       </div>
       <button class="addbtn" data-add="${p.id}">Add</button>
@@ -263,8 +283,8 @@ function openDetail(id) {
 
     <div class="dsec">
       <h4>Price</h4>
-      <div class="price"><span class="cur">MVR</span><span class="amt">${money(p.price)}</span></div>
-      <p class="hint">${stockLine(p).replace(/<[^>]+>/g, "")} · ${esc(CAT_BY_ID[p.cat].name)}</p>
+      ${priceHTML(p)}
+      <p class="hint">${[stockLine(p).replace(/<[^>]+>/g, "").trim(), !hasPrice(p) ? "We'll confirm the price on WhatsApp" : "", esc(CAT_BY_ID[p.cat].name)].filter(Boolean).join(" · ")}</p>
     </div>
     <button class="gobtn" data-add="${p.id}">Add to order</button>`;
 
@@ -330,35 +350,40 @@ function renderCart() {
           <button data-q="${p.id}|${q + 1}" aria-label="More">+</button>
         </div>
       </div>
-      <div class="rt"><div class="lp">${money(p.price * q)}</div></div>
+      <div class="rt"><div class="lp${hasPrice(p) ? "" : " ask"}">${hasPrice(p) ? money(p.price * q) : "price to confirm"}</div></div>
     </div>`).join("");
 
-  const sub = lines.reduce((a, { p, q }) => a + p.price * q, 0);
-  const del = zoneFee();
-  const gst = Math.round((sub + del) * SHOP.gstRate);
-  $("#tSub").textContent = money(sub);
+  const { pricedLines, askQty, sub, del, gst, total } = cartTotals(lines);
+  $("#tSub").textContent = pricedLines.length ? money(sub) : "—";
+  $("#tAsk").textContent = askQty ? `${askQty} item${askQty === 1 ? "" : "s"}` : "";
+  $("#tAskRow").hidden = !askQty;
   $("#tDel").textContent = money(del);
   $("#tGst").textContent = money(gst);
-  $("#tAll").textContent = "MVR " + money(sub + del + gst);
+  $("#tAll").textContent = askQty
+    ? "MVR " + money(total) + " + prices to confirm"
+    : "MVR " + money(total);
   $("#goBtn").disabled = !$("#custName").value.trim() || !$("#custPhone").value.trim();
 }
 
 function orderText() {
   const lines = cartLines();
   const z = ZONES.find(z => z.id === $("#zone").value);
-  const sub = lines.reduce((a, { p, q }) => a + p.price * q, 0);
-  const del = zoneFee();
-  const gst = Math.round((sub + del) * SHOP.gstRate);
+  const { pricedLines, askQty, sub, del, gst, total } = cartTotals(lines);
   const ref = "AVAS-" + Math.random().toString(36).slice(2, 7).toUpperCase();
 
   return [
     `*avas.parts order ${ref}*`, "",
-    ...lines.map(({ p, q }) => `${q} × ${p.name}\n   ${p.oem} — MVR ${money(p.price * q)}`),
+    ...lines.map(({ p, q }) => hasPrice(p)
+      ? `${q} × ${p.name}\n   ${p.oem} — MVR ${money(p.price * q)}`
+      : `${q} × ${p.name}\n   ${p.oem} — price to confirm`),
     "",
-    `Subtotal: MVR ${money(sub)}`,
+    pricedLines.length ? `Subtotal: MVR ${money(sub)}` : "Subtotal: —",
+    askQty ? `Price to confirm: ${askQty} item${askQty === 1 ? "" : "s"}` : "",
     `Delivery (${z.name}): MVR ${money(del)}`,
     `GST 8%: MVR ${money(gst)}`,
-    `*Total: MVR ${money(sub + del + gst)}*`,
+    askQty
+      ? `*Total: MVR ${money(total)} + prices to confirm*`
+      : `*Total: MVR ${money(total)}*`,
     "",
     `Name: ${$("#custName").value.trim()}`,
     `Phone: ${$("#custPhone").value.trim()}`,
