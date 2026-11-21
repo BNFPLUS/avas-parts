@@ -11,6 +11,17 @@ node test.js     # dataset integrity (583 parts, 25 models, decoder coverage)
 node qa.mjs      # drives the real page in Chromium, 28 checks + screenshots
 ```
 
+### Marine & equipment catalogue (preview)
+
+A category picker above Step 1 adds Outboards, Marine diesel, Jet skis, Generators,
+Pumps & power products and Heavy machinery. Their data is in `data-equip.js`, generated
+by `node tools/build-equip.js` from the source files in `src-data/` (never edit
+`data-equip.js` by hand). The page fetches it with an injected `<script>` tag only when
+someone picks one of those categories, types a search, or opens a deep link such as
+`?v=outboards&m=yamaha-f250-f300-v6-4.2l-2010`. The bike page never requests it.
+Every equipment part is ask-for-price, and part numbers are shown exactly as printed.
+`node shots-preview.mjs` serves the folder over http and saves preview screenshots.
+
 ---
 
 ## 1. The market

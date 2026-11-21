@@ -204,6 +204,17 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .chip.hotpick[aria-pressed="true"]::before { color: var(--ground); }
 
+/* Vertical picker — what are you fixing? Sits above Step 1. */
+.vrow { margin-bottom: 16px; }
+.vchip { font-weight: 600; padding: 7px 13px; }
+.loading { font-family: var(--f-mono); font-size: 12px; color: var(--ink-2); padding: 6px 0; display: inline-flex; gap: 8px; align-items: center; }
+.loading[role="status"]::before {
+  content: ""; width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid var(--rule); border-top-color: var(--hot);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* ============ RESULTS LAYOUT ============ */
 .work { display: grid; grid-template-columns: 208px 1fr; gap: 24px; padding-bottom: 60px; }
 /* grid children default to min-width:auto, which lets the scrolling category
@@ -344,6 +355,39 @@ button { font: inherit; color: inherit; cursor: pointer; }
   text-transform: uppercase; color: var(--amber);
 }
 .unver::before { content: "▲"; font-size: 8px; }
+
+/* equipment cards */
+.eqtag {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--sea); margin-bottom: -4px;
+}
+.plate.eq .seg .val { white-space: normal; overflow-wrap: anywhere; }
+.serialnote {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--sea);
+}
+.serialnote::before { content: "◆"; font-size: 8px; }
+.eqcard .unver + .serialnote { margin-top: -5px; }
+
+.mnote {
+  border: 1px solid var(--rule); border-left: 3px solid var(--sea);
+  background: var(--panel); border-radius: var(--r);
+  padding: 9px 12px; margin: -4px 0 14px; font-size: 13px; color: var(--ink-2);
+  display: flex; flex-direction: column; gap: 5px;
+}
+.mnote[hidden] { display: none; }
+.mnote-bits { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.mnote-src b, .mnote-bits b {
+  font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-3); font-weight: 500; margin-right: 4px;
+}
+.mnote-note { color: var(--ink); }
+.srclist { display: flex; flex-direction: column; gap: 5px; }
+.srclink {
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--sea);
+  text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere;
+}
 
 /* fitment ribbon */
 .ribbon { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -558,6 +602,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .catbtn .k { display: none; }
 }
 @media (max-width: 640px) {
+  /* one swipeable row of categories instead of three wrapped rows */
+  .vchips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+  .vchips .chip { flex-shrink: 0; }
   .bar { flex-wrap: wrap; gap: 9px; }
   .searchwrap { order: 3; flex-basis: 100%; max-width: none; }
   .barspacer { display: none; }

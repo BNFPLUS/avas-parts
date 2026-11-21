@@ -41,11 +41,16 @@
   <section class="hero">
     <div class="kicker">Maldives · nationwide delivery · <span class="dv">އަވަސް</span></div>
     <h1>Find the part that<br><em>actually fits</em>.</h1>
-    <p class="lede">
+    <p class="lede" id="lede">
       Every scooter on these islands runs ASEAN-spec parts, and one wrong digit in a part
       number means a wasted ferry trip. Pick your bike, and we will show you the exact
       number, what it interchanges with, and what it costs.
     </p>
+
+    <div class="pickrow vrow">
+      <div class="picklabel">What are you fixing?</div>
+      <div class="chips vchips" id="vertChips" role="group" aria-label="What are you fixing?"></div>
+    </div>
 
     <div class="pickrow">
       <div class="picklabel">Step 1 — pick the make</div>
@@ -53,7 +58,7 @@
     </div>
 
     <div class="pickrow" id="modelRow" hidden>
-      <div class="picklabel">Step 2 — pick the model <span style="color:var(--hot)">●</span> = common here</div>
+      <div class="picklabel" id="step2Label">Step 2 — pick the model <span style="color:var(--hot)">●</span> = common here</div>
       <div class="chips" id="modelChips"></div>
     </div>
   </section>
@@ -71,6 +76,7 @@
         <span class="count" id="rCount"></span>
         <button class="clearbtn" id="clearBtn" hidden>Reset</button>
       </div>
+      <div class="mnote" id="rNote" hidden></div>
       <div class="grid" id="grid"></div>
     </section>
   </div>

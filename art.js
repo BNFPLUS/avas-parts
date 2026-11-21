@@ -126,6 +126,26 @@ const ART = {
     <path d="M44 26c4 10 4 22 2 30M76 26c-4 10-4 22-2 30"/>`,
 };
 
+/* Marine and equipment drawings — used only for parts from data-equip.js. */
+Object.assign(ART, {
+  impeller: `<circle cx="60" cy="40" r="25"/><circle cx="60" cy="40" r="8" class="f"/>
+    <path d="M60 32c-4-8-2-14 4-17M68 40c8-4 14-2 17 4M60 48c4 8 2 14-4 17M52 40c-8 4-14 2-17-4M65 34c3-8 9-11 15-9M55 46c-3 8-9 11-15 9"/>`,
+
+  prop: `<circle cx="60" cy="40" r="7" class="f"/>
+    <path d="M60 33c-6-10-4-20 6-22 8 2 6 14-1 23"/>
+    <path d="M66 43c11 1 19 8 15 17-7 4-15-4-18-13"/>
+    <path d="M54 43c-6 9-16 13-21 6 0-8 11-11 20-10"/>`,
+
+  anode: `<path d="M34 30h52l-6 22H40z"/><path d="M40 52h40" class="f"/>
+    <circle cx="60" cy="40" r="4"/><path d="M50 30v-6h20v6"/>`,
+
+  gasket: `<ellipse cx="60" cy="40" rx="30" ry="20"/><ellipse cx="60" cy="40" rx="20" ry="12" class="f"/>
+    <circle cx="34" cy="40" r="2.5"/><circle cx="86" cy="40" r="2.5"/>`,
+
+  kit: `<path d="M28 30h64v30H28z"/><path d="M28 30l8-10h48l8 10" class="f"/>
+    <path d="M44 42h32M44 50h20"/>`,
+});
+
 /* group code (first 5 digits) -> drawing */
 const ART_BY_GROUP = {
   "23100": "belt",     "22123": "roller",   "22535": "clutch",   "22401": "clutch",
@@ -173,7 +193,32 @@ const ART_BY_WORD = [
   [/\bbearing\b/i, "bearing"],
 ];
 
+const ART_EQ_BY_CAT = {
+  m_service: "oilfilter", m_pump: "impeller", m_anode: "anode", m_ign: "plug",
+  m_fuel: "oilfilter", m_gasket: "gasket", m_prop: "prop", m_jet: "impeller",
+  m_wear: "piston", m_ctrl: "switch", e_filter: "oilfilter", e_belt: "belt",
+  e_pumpend: "impeller", e_kit: "kit", e_fluid: "oil", e_other: "kit",
+};
+const ART_EQ_BY_WORD = [
+  [/\bimpeller\b/i, "impeller"],
+  [/\banode\b|\bzinc\b/i, "anode"],
+  [/\bpropell?er\b/i, "prop"],
+  [/\bair (filter|cleaner|element)\b/i, "airfilter"],
+  [/\bfilter\b|\bseparator\b/i, "oilfilter"],
+  [/\bspark plug\b|\bplug, spark\b/i, "plug"],
+  [/\bgasket\b|\bo-ring\b|\bseal\b|\bpacking\b/i, "gasket"],
+  [/\bkit\b/i, "kit"],
+  [/\bbelt\b/i, "belt"],
+  [/\boil\b|\bcoolant\b|\bgrease\b/i, "oil"],
+  [/\bbearing\b/i, "bearing"],
+];
+
 function artFor(part) {
+  if (part.vertical) {
+    const hit = ART_EQ_BY_WORD.find(([re]) => re.test(part.name));
+    const key = hit ? hit[1] : ART_EQ_BY_CAT[part.cat] || "kit";
+    return ART[key] ? key : "kit";
+  }
   const seg = String(part.oem).split("-");
   const group = seg.length === 3 && /^\d{5}$/.test(seg[0]) ? seg[0] : null;
   let key = group && ART_BY_GROUP[group];
@@ -189,7 +234,8 @@ function artFor(part) {
    decode, onerror drops back to it rather than leaving a blank panel. */
 function artHTML(part) {
   const key = artFor(part);
-  const svg = `<svg viewBox="0 0 120 80" role="img" aria-label="${part.name}, schematic">${ART[key]}</svg>`;
+  const label = part.vertical ? String(part.name).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";") : part.name;
+  const svg = `<svg viewBox="0 0 120 80" role="img" aria-label="${label}, schematic">${ART[key]}</svg>`;
   const photo = part.img || (typeof IMAGES !== "undefined" && IMAGES[part.id]) || null;
 
   if (photo) {

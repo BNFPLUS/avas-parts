@@ -16,6 +16,8 @@ const page = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
 const errors = [];
 page.on("pageerror", e => errors.push("pageerror: " + e.message));
 page.on("console", m => { if (m.type() === "error") errors.push("console: " + m.text()); });
+const equipReqs = [];
+page.on("request", r => { if (r.url().includes("data-equip.js")) equipReqs.push(r.url()); });
 
 await page.goto(url);
 await page.waitForTimeout(900);
@@ -24,6 +26,10 @@ console.log("\nLoad");
 ok(errors.length === 0, "no JS errors" + (errors.length ? " → " + errors.join(" | ") : ""));
 const total = await page.locator(".card").count();
 ok(total > 100, `catalogue renders (${total} cards)`);
+ok(equipReqs.length === 0, "data-equip.js is not requested on the default bike page");
+ok(await page.locator('#vertChips [data-vertical="bikes"][aria-pressed="true"]').count() === 1, "category picker shows Bikes selected by default");
+ok(await page.locator("#vertChips [data-vertical]").count() === 7, "category picker lists 7 categories");
+ok(await page.locator(".eqcard").count() === 0 && !(await page.locator("#rNote").isVisible()), "no equipment cards or model note on the bike default");
 await page.screenshot({ path: path.join(shots, "01-home.png"), fullPage: false });
 
 console.log("\nBike picker");
@@ -202,6 +208,188 @@ console.log("\nPersistence");
 await page.reload();
 await page.waitForTimeout(700);
 ok((await page.locator("#cartN").textContent()).trim() === "4", "order survives a page reload");
+
+
+/* ================= Marine & equipment ================= */
+await page.setViewportSize({ width: 1400, height: 1000 });
+const cardIds = () => page.evaluate(() => [...document.querySelectorAll(".card [data-detail]")].map(e => e.dataset.detail));
+
+console.log("\nCategory picker — every non-bike category");
+const reqsBefore = equipReqs.length;   // the search step above may have loaded it in the previous page instance
+const VERTS = ["outboards", "marine_diesel", "jetski", "generators", "pumps", "machinery"];
+for (const v of VERTS) {
+  await page.click(`[data-vertical="${v}"]`);
+  await page.waitForSelector("#brandChips [data-brand]", { timeout: 10000 });
+  await page.waitForTimeout(150);
+  const brands = await page.locator("#brandChips [data-brand]").count();
+  await page.locator("#brandChips [data-brand]").first().click();
+  await page.waitForTimeout(200);
+  const models = await page.locator("#modelChips [data-model]").count();
+  await page.locator("#modelChips [data-model]").first().click();
+  await page.waitForTimeout(200);
+  const cards = await page.locator(".card").count();
+  const ask = await page.locator(".card:has(.price .asklab)").count();
+  const wrongV = await page.locator(`.card:not([data-vert="${v}"])`).count();
+  const rail = await page.locator("#catWrap .catbtn").count();
+  ok(brands > 0 && models > 0 && cards > 0, `${v}: make chips (${brands}), model chips (${models}), cards (${cards})`);
+  ok(ask === cards && wrongV === 0, `${v}: every card is ask-for-price and from this category`);
+  ok(rail >= 2, `${v}: category rail lists categories (${rail - 1})`);
+}
+ok(equipReqs.length - reqsBefore === 1, `data-equip.js loaded once, on demand (${equipReqs.length - reqsBefore} request)`);
+
+console.log("\nExact-model fitment");
+const pickModel = async (v, brand, model) => {
+  await page.click(`[data-vertical="${v}"]`);
+  await page.waitForTimeout(150);
+  await page.click(`#brandChips [data-brand="${brand}"]`);
+  await page.waitForTimeout(150);
+  await page.click(`#modelChips [data-model="${model}"]`);
+  await page.waitForTimeout(250);
+};
+const EXACT = [
+  ["outboards", "Yamaha", "yamaha-f250-f300-v6-4.2l-2010", "F250"],
+  ["marine_diesel", "Yanmar", "yanmar-6hym-wet", "6HYM"],
+  ["generators", "Cummins", "cummins-kta50g3-genset", "KTA50G3"],
+  ["machinery", "Komatsu", "komatsu-pc200-8", "PC200-8"],
+  ["pumps", "Honda", "honda-wb30xt-water-pump", "WB30XT3"],
+];
+for (const [v, brand, model, word] of EXACT) {
+  await pickModel(v, brand, model);
+  const ids = await cardIds();
+  const misfit = await page.evaluate(([ids, model]) => ids.filter(id => !PART_BY_ID[id].fits.includes(model)), [ids, model]);
+  const title = await page.locator("#rTitle").textContent();
+  ok(ids.length > 0 && misfit.length === 0, `${word}: ${ids.length} parts, all fit ${model}` + (misfit.length ? " → " + misfit.join(", ") : ""));
+  ok(title.includes(word), `${word}: heading names the machine (${title})`);
+}
+/* WB30XT3 is the last one picked: model note + serial notice */
+ok(await page.locator("#rNote").isVisible() && (await page.locator("#rNote").textContent()).includes("WB30XT3-DR"),
+   "model note shows the honda.mv model number and fiche note");
+ok(await page.locator(".eqcard .serialnote").count() > 0, "\"Check frame/serial number\" notice shown on serial-dependent parts");
+ok((await page.locator("#step2Label").textContent()).includes("pump or engine"), "step 2 label adapts to the category");
+
+console.log("\nUnverified numbers");
+await pickModel("marine_diesel", "Cummins", "cummins-marine-qsm");
+const unv = page.locator(".eqcard .unver");
+ok(await unv.count() > 0 && (await unv.first().textContent()).includes("Number to be confirmed"), `"Number to be confirmed — verify" badge on unverified numbers (${await unv.count()})`);
+
+console.log("\nPart numbers as printed");
+await pickModel("machinery", "JCB", "jcb-3cx-14-backhoe");
+const slashOem = await page.evaluate(() => [...document.querySelectorAll(".eqcard .plate .val")].map(e => e.textContent).find(t => t.includes("/")));
+ok(!!slashOem, `slash part number kept as printed (${slashOem})`);
+
+console.log("\nEquipment detail drawer");
+await pickModel("outboards", "Yamaha", "yamaha-f250-f300-v6-4.2l-2010");
+const eqId = (await cardIds())[0];
+const eqPart = await page.evaluate(id => { const p = PART_BY_ID[id]; return { oem: p.oem, name: p.name }; }, eqId);
+await page.click(`[data-detail="${eqId}"]`);
+await page.waitForTimeout(400);
+const eqBody = await page.locator("#detailBody").textContent();
+ok(eqBody.includes(eqPart.oem), `detail shows the number as printed (${eqPart.oem})`);
+ok(eqBody.includes("Fits these engines") && eqBody.includes("F250 / F300"), "detail lists the engines it fits by name");
+ok(eqBody.includes("Ask for price") && eqBody.includes("confirm the price on WhatsApp"), "detail: ask for price, confirmed on WhatsApp");
+ok(await page.locator("#detailBody a.srclink[href^='http']").count() > 0, "detail links the source catalogue");
+ok(!/undefined|NaN|\bnull\b|an unlisted/.test(eqBody), "detail shows no garbage (undefined / NaN / null / bike decoder)");
+await page.screenshot({ path: path.join(shots, "08-equipment-detail.png") });
+
+console.log("\nEquipment ordering");
+await page.click("#detail [data-close]");
+await page.waitForTimeout(300);
+await page.click("#cartOpen");
+await page.waitForTimeout(300);
+const subBefore = await page.locator("#tSub").textContent();
+const cartBefore = +(await page.locator("#cartN").textContent());
+await page.click('#cart [data-close]');
+await page.waitForTimeout(300);
+await page.click(`.card [data-add="${eqId}"]`);
+await page.waitForTimeout(300);
+ok(+(await page.locator("#cartN").textContent()) === cartBefore + 1, "equipment part added to the order");
+await page.click("#cartOpen");
+await page.waitForTimeout(400);
+const eqLine = page.locator("#cartBody .line", { hasText: eqPart.oem });
+ok(await eqLine.count() === 1 && (await eqLine.locator(".lp").textContent()).trim() === "price to confirm", "equipment line reads \"price to confirm\"");
+ok((await page.locator("#tSub").textContent()) === subBefore, "equipment line does not change the subtotal");
+await page.fill("#custName", "Ibrahim Shareef");
+await page.fill("#custPhone", "7798765");
+await page.waitForTimeout(200);
+await page.evaluate(() => { window.open = (u) => { window.__wa = u; return null; }; });
+await page.click("#goBtn");
+await page.waitForTimeout(300);
+const waEq = decodeURIComponent((await page.evaluate(() => window.__wa || "")).split("?text=")[1] || "");
+ok(waEq.includes(`${eqPart.oem} — price to confirm`), "WhatsApp text has the OEM number marked \"price to confirm\"");
+ok(waEq.includes("For: Yamaha F250 / F300 V6 4.2L (2010+)"), "WhatsApp text names the engine the part is for");
+await page.click('#cart [data-close]');
+await page.waitForTimeout(300);
+
+console.log("\nCounter skin on equipment");
+await page.click('[data-skin="staff"]');
+await page.waitForTimeout(300);
+const eqStaff = await page.locator(".eqcard .staffbox").first().textContent();
+ok(await page.locator(".eqcard .staffbox").first().isVisible() && eqStaff.includes("—") && !/NaN|undefined|null/.test(eqStaff), "counter skin shows — for cost, stock and bin");
+await page.click('[data-skin="public"]');
+await page.waitForTimeout(300);
+
+console.log("\nBack to bikes");
+await page.click('[data-vertical="bikes"]');
+await page.waitForTimeout(300);
+ok(await page.locator(".eqcard").count() === 0 && await page.locator(".card").count() === total, `bike catalogue restored (${total} cards)`);
+ok((await page.locator("#lede").textContent()).includes("Every scooter on these islands"), "bike copy restored");
+await page.click('[data-brand="Honda"]');
+await page.waitForTimeout(250);
+await page.click(`[data-model="${WAVE}"]`);
+await page.waitForTimeout(250);
+ok(await page.locator(".card").count() === waveN, `Wave 125i shows the same ${waveN} parts as before`);
+const bad2 = await page.evaluate((wave) => {
+  const ok = new Set(PARTS.filter(p => p.universal || p.fits.includes(wave)).map(p => p.id));
+  return [...document.querySelectorAll(".card [data-detail]")].map(e => e.dataset.detail).filter(id => !ok.has(id));
+}, WAVE);
+ok(bad2.length === 0, "no part shown that does not fit the Wave after switching back");
+ok((await page.locator("#rTitle").textContent()).includes("Wave 125i"), "heading names the bike again");
+await page.click("#clearBtn");
+await page.waitForTimeout(200);
+
+console.log("\nSearch from the default page");
+const page2 = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
+page2.on("pageerror", e => errors.push("pageerror(2): " + e.message));
+page2.on("console", m => { if (m.type() === "error") errors.push("console(2): " + m.text()); });
+const req2 = [];
+page2.on("request", r => { if (r.url().includes("data-equip.js")) req2.push(r.url()); });
+await page2.goto(url);
+await page2.waitForTimeout(600);
+ok(req2.length === 0, "fresh default page: no data-equip.js request");
+const searchFinds = async (q, test, label) => {
+  await page2.fill("#q", q);
+  await page2.waitForSelector(".eqcard", { timeout: 8000 }).catch(() => {});
+  await page2.waitForTimeout(250);
+  const ids = await page2.evaluate(() => [...document.querySelectorAll(".card [data-detail]")].map(e => e.dataset.detail));
+  const hits = await page2.evaluate(([ids, src]) => ids.filter(id => new Function("p", "return " + src)(PART_BY_ID[id])).length, [ids, test]);
+  ok(hits > 0, `search "${q}" finds ${label} (${hits} of ${ids.length})`);
+};
+await searchFinds("KTA19", `p.fits && p.fits.includes("cummins-kta19-genset")`, "KTA19 genset parts");
+ok(req2.length === 1, "typing a search lazy-loads data-equip.js");
+await searchFinds("6CE-W0078-02-00", `p.oem === "6CE-W0078-02-00"`, "the Yamaha F250 water pump kit by number");
+await searchFinds("6CEW00780200", `p.oem === "6CE-W0078-02-00"`, "the same part without dashes");
+await searchFinds("6P3-WS24A", `p.oem === "6P3-WS24A-02-00"`, "the V6 fuel filter by partial number");
+await searchFinds("400/17725", `p.oem === "400/17725"`, "a slash part number");
+await searchFinds("6HYM", `p.vertical && p.fits.includes("yanmar-6hym-wet")`, "Yanmar 6HYM parts");
+await searchFinds("PC200-8", `p.vertical && p.fits.includes("komatsu-pc200-8")`, "Komatsu PC200-8 parts");
+await searchFinds("F250 oil filter", `p.vertical === "outboards"`, "F250 oil filter");
+await searchFinds("WB30XT3", `p.vertical && p.fits.includes("honda-wb30xt-water-pump")`, "Honda WB30XT3 parts");
+ok(await page2.locator(".eqcard .eqtag").first().isVisible(), "equipment results are labelled with category and part type");
+await page2.fill("#q", "23100K36J01");
+await page2.waitForTimeout(350);
+ok(await page2.locator(".card").count() === 1, "bike part-number search still returns exactly one part with equipment loaded");
+await page2.screenshot({ path: path.join(shots, "09-equipment-search.png") });
+
+console.log("\nDeep link + mobile");
+await page2.goto(url + "?v=outboards&m=yamaha-f250-f300-v6-4.2l-2010");
+await page2.waitForSelector(".eqcard", { timeout: 8000 }).catch(() => {});
+await page2.waitForTimeout(250);
+ok((await page2.locator("#rTitle").textContent()).includes("F250") && await page2.locator(".eqcard").count() > 0, "?v=…&m=… deep link opens the model");
+await page2.setViewportSize({ width: 390, height: 844 });
+await page2.waitForTimeout(300);
+const overflow2 = await page2.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+ok(overflow2 <= 1, `no horizontal overflow at 390px on an equipment page (${overflow2}px)`);
+await page2.close();
 
 ok(errors.length === 0, "still no JS errors after the full run" + (errors.length ? " → " + errors.join(" | ") : ""));
 

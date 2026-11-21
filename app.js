@@ -7,14 +7,34 @@ const esc = (s) => String(s).replace(/[&<>"']/g, c =>
 
 const MODEL_BY_ID = Object.fromEntries(MODELS.map(m => [m.id, m]));
 const CAT_BY_ID   = Object.fromEntries(CATS.map(c => [c.id, c]));
+const PART_BY_ID  = Object.fromEntries(PARTS.map(p => [p.id, p]));
+
+/* ---------- Verticals: bikes live in data.js; everything else (outboards,
+   marine diesel, jet skis, generators, pumps, machinery) is in data-equip.js,
+   which is only fetched when someone asks for it. ---------- */
+const VERTICALS_UI = [
+  { id: "bikes",         name: "Bikes",                  unit: "bike",    pick: "model" },
+  { id: "outboards",     name: "Outboards",              unit: "engine",  pick: "engine" },
+  { id: "marine_diesel", name: "Marine diesel",          unit: "engine",  pick: "engine" },
+  { id: "jetski",        name: "Jet skis",               unit: "ski",     pick: "ski" },
+  { id: "generators",    name: "Generators",             unit: "set",     pick: "generator set" },
+  { id: "pumps",         name: "Pumps & power products", unit: "machine", pick: "pump or engine" },
+  { id: "machinery",     name: "Heavy machinery",        unit: "machine", pick: "machine" },
+];
+const VERT_BY_ID = Object.fromEntries(VERTICALS_UI.map(v => [v.id, v]));
+const EQ = { loaded: false, loading: null, failed: false, parts: [], models: [], cats: [] };
+const isEq = (p) => !!p.vertical;
 
 const state = {
+  vertical: "bikes",
   brand: null,
   model: null,
   cat: null,
   q: "",
   skin: localStorage.getItem("avas.skin") || "public",
   cart: JSON.parse(localStorage.getItem("avas.cart") || "{}"),
+  /* which machine an equipment line was added for, so the WhatsApp order says it */
+  ctx: JSON.parse(localStorage.getItem("avas.cartctx") || "{}"),
 };
 
 const money = (n) => n.toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -95,17 +115,62 @@ function haystack(p) {
 }
 PARTS.forEach(p => { p._h = haystack(p); });
 
-function results() {
-  const q = state.q.trim().toLowerCase();
-  const terms = q ? q.split(/\s+/) : [];
-  return PARTS.filter(p => {
+/* Equipment parts: number as printed and with dashes/slashes/spaces removed,
+   alternates, catalogue name, and every fitted machine's name, model number and
+   engine code — buyers search by "KTA19", "6HYM", "PC200-8", "WB30XT3". */
+const squash = (s) => String(s).replace(/[-\/.\s]/g, "");
+function eqModelText(m) {
+  return [m.brand, m.name, m.model_number, m.engine, m.kind, m.catalogue, m.src_title, m.size].filter(Boolean).join(" ");
+}
+function eqHaystack(p) {
+  const v = VERT_BY_ID[p.vertical];
+  return [
+    p.name, p.oem, squash(p.oem), (p.alts || []).join(" "), (p.alts || []).map(squash).join(" "),
+    p.catalogue_name || "",
+    p.fits.map(id => MODEL_BY_ID[id] ? eqModelText(MODEL_BY_ID[id]) : "").join(" "),
+    CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "", v ? v.name : "",
+    p.note || "",
+  ].join(" ").toLowerCase();
+}
+
+const qTerms = () => { const q = state.q.trim().toLowerCase(); return q ? q.split(/\s+/) : []; };
+const termsMatch = (p, terms) => terms.every(t =>
+  p._h.includes(t) || (isEq(p) && t.length > 2 && p._h.includes(squash(t))));
+
+/* A query with no make picked searches everything; once a make or model is
+   picked, results stay inside that selection. */
+function inScope(p, terms) {
+  const global = terms.length && !state.brand && !state.model;
+  if (!isEq(p)) {
+    if (state.vertical !== "bikes" && !global) return false;
     if (state.model && !p.universal && !p.fits.includes(state.model)) return false;
     if (state.brand && !state.model) {
       const ok = p.universal || p.fits.some(id => MODEL_BY_ID[id] && MODEL_BY_ID[id].brand === state.brand);
       if (!ok) return false;
     }
+    return true;
+  }
+  if (global) return true;
+  if (p.vertical !== state.vertical) return false;
+  if (state.model) return p.fits.includes(state.model);
+  if (state.brand) return p.fits.some(id => MODEL_BY_ID[id] && MODEL_BY_ID[id].brand === state.brand);
+  return true;
+}
+
+function pool() {
+  if (!EQ.loaded) return PARTS;
+  if (state.vertical === "bikes") return PARTS.concat(EQ.parts);
+  /* current vertical first, then the rest of the equipment, then bikes */
+  const here = EQ.parts.filter(p => p.vertical === state.vertical);
+  return here.concat(EQ.parts.filter(p => p.vertical !== state.vertical), PARTS);
+}
+
+function results() {
+  const terms = qTerms();
+  return pool().filter(p => {
+    if (!inScope(p, terms)) return false;
     if (state.cat && p.cat !== state.cat) return false;
-    if (terms.length && !terms.every(t => p._h.includes(t))) return false;
+    if (terms.length && !termsMatch(p, terms)) return false;
     return true;
   });
 }
@@ -117,8 +182,100 @@ function sameJob(part) {
   return PARTS.filter(p => p.id !== part.id && parsePN(p.oem).group === g);
 }
 
+/* ---------- Lazy load: data-equip.js ----------
+   A <script> tag, not fetch(): it has to work from file:// too. */
+function integrateEquip() {
+  const E = EQUIP;
+  E.verticals.forEach(v => { if (VERT_BY_ID[v.id]) Object.assign(VERT_BY_ID[v.id], { name: v.name, unit: v.unit }); });
+  E.models.forEach(m => { MODEL_BY_ID[m.id] = m; });
+  E.cats.forEach(c => { CAT_BY_ID[c.id] = c; });
+  E.parts.forEach(p => {
+    p.sources = (p.src || []).map(i => E.urls[i]).filter(Boolean);
+    p.source_url = p.sources[0] || null;
+  });
+  E.parts.forEach(p => { p._h = eqHaystack(p); PART_BY_ID[p.id] = p; });
+  EQ.parts = E.parts; EQ.models = E.models; EQ.cats = E.cats;
+  EQ.loaded = true; EQ.failed = false;
+}
+
+function loadEquip() {
+  if (EQ.loaded) return Promise.resolve();
+  if (typeof EQUIP !== "undefined") { integrateEquip(); return Promise.resolve(); } // single-file bundle
+  if (EQ.loading) return EQ.loading;
+  EQ.loading = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "data-equip.js";
+    s.async = true;
+    s.onload = () => { try { integrateEquip(); resolve(); } catch (e) { reject(e); } };
+    s.onerror = () => { s.remove(); reject(new Error("data-equip.js failed to load")); };
+    document.head.appendChild(s);
+  }).catch(err => {
+    EQ.loading = null; EQ.failed = true;
+    throw err;
+  });
+  return EQ.loading;
+}
+
+function ensureEquip() {
+  if (EQ.loaded) return;
+  const p = loadEquip();
+  if (EQ.loaded) return;                 // bundle: available synchronously
+  render();                              // shows the loading state
+  p.then(render, () => { render(); toast("Could not load the marine & equipment catalogue"); });
+}
+
+/* ---------- Render: vertical picker + hero copy ---------- */
+const BIKE_COPY = { lede: $("#lede").innerHTML, step2: $("#step2Label").innerHTML };
+
+function renderVerticals() {
+  $("#vertChips").innerHTML = VERTICALS_UI.map(v =>
+    `<button class="chip vchip" data-vertical="${v.id}" aria-pressed="${state.vertical === v.id}">${esc(v.name)}</button>`
+  ).join("");
+}
+
+function renderHero() {
+  const v = VERT_BY_ID[state.vertical];
+  if (state.vertical === "bikes") {
+    if ($("#lede").innerHTML !== BIKE_COPY.lede) $("#lede").innerHTML = BIKE_COPY.lede;
+    if ($("#step2Label").innerHTML !== BIKE_COPY.step2) $("#step2Label").innerHTML = BIKE_COPY.step2;
+    return;
+  }
+  $("#lede").textContent =
+    `One wrong digit means the wrong part on the next boat. Pick the make and the ${v.pick}, ` +
+    `and we will show you the exact number from the maker's catalogue, where it was sourced, ` +
+    `and what to check before you order. Every price is confirmed on WhatsApp.`;
+  $("#step2Label").textContent = `Step 2 — pick the ${v.pick}`;
+}
+
+function renderEqPickers() {
+  const wrap = $("#modelRow");
+  if (!EQ.loaded) {
+    $("#brandChips").innerHTML = EQ.failed
+      ? `<span class="loading">Could not load this catalogue. <button class="clearbtn" data-vertical="${state.vertical}">Try again</button></span>`
+      : `<span class="loading" role="status">Loading the ${esc(VERT_BY_ID[state.vertical].name.toLowerCase())} catalogue…</span>`;
+    wrap.hidden = true; $("#modelChips").innerHTML = "";
+    return;
+  }
+  const models = EQ.models.filter(m => m.vertical === state.vertical);
+  const brands = [...new Set(models.map(m => m.brand))].sort();
+  $("#brandChips").innerHTML = brands.map(b =>
+    `<button class="chip" data-brand="${esc(b)}" aria-pressed="${state.brand === b}">${esc(b)}</button>`
+  ).join("");
+
+  const list = state.brand ? models.filter(m => m.brand === state.brand) : [];
+  if (!list.length) { wrap.hidden = true; $("#modelChips").innerHTML = ""; return; }
+  wrap.hidden = false;
+  const count = {};
+  EQ.parts.forEach(p => { if (p.vertical === state.vertical) p.fits.forEach(id => { count[id] = (count[id] || 0) + 1; }); });
+  $("#modelChips").innerHTML = list
+    .sort((a, b) => a.name.localeCompare(b.name, "en", { numeric: true }))
+    .map(m => `<button class="chip" data-model="${esc(m.id)}" aria-pressed="${state.model === m.id}">${esc(m.name)}<span class="cc">${count[m.id] || 0} parts</span></button>`)
+    .join("");
+}
+
 /* ---------- Render: brand + model pickers ---------- */
 function renderPickers() {
+  if (state.vertical !== "bikes") return renderEqPickers();
   $("#brandChips").innerHTML = BRANDS.filter(b => MODELS.some(m => m.brand === b)).map(b =>
     `<button class="chip" data-brand="${esc(b)}" aria-pressed="${state.brand === b}">${esc(b)}</button>`
   ).join("");
@@ -135,22 +292,15 @@ function renderPickers() {
 
 /* ---------- Render: category rail ---------- */
 function renderRail() {
-  const base = PARTS.filter(p => {
-    if (state.model && !p.universal && !p.fits.includes(state.model)) return false;
-    if (state.brand && !state.model) {
-      if (!(p.universal || p.fits.some(id => MODEL_BY_ID[id] && MODEL_BY_ID[id].brand === state.brand))) return false;
-    }
-    const q = state.q.trim().toLowerCase();
-    if (q && !q.split(/\s+/).every(t => p._h.includes(t))) return false;
-    return true;
-  });
+  const terms = qTerms();
+  const base = pool().filter(p => inScope(p, terms) && (!terms.length || termsMatch(p, terms)));
   const counts = {};
   base.forEach(p => { counts[p.cat] = (counts[p.cat] || 0) + 1; });
 
   $("#catWrap").innerHTML =
     `<button class="catbtn" data-cat="" aria-pressed="${!state.cat}">
        <span>All parts</span><span class="k">${base.length}</span></button>` +
-    CATS.filter(c => counts[c.id]).map(c =>
+    CATS.concat(EQ.cats).filter(c => counts[c.id]).map(c =>
       `<button class="catbtn" data-cat="${c.id}" aria-pressed="${state.cat === c.id}">
          <span>${esc(c.name)}</span><span class="k">${counts[c.id]}</span></button>`
     ).join("");
@@ -164,7 +314,58 @@ function stockLine(p) {
   return `<span class="stockline"><span class="dotg">●</span> In stock</span>`;
 }
 
+/* Notes that say the fit depends on a serial, frame, hull or engine code. */
+const SERIAL_HINT = /serial|frame no|engine code|variant|\bhull\b|type range|verify engine/i;
+const needsSerial = (p) => SERIAL_HINT.test(p.note || "");
+const unverified = (p) => p.tier === "genuine-unverified";
+const eqModelName = (m) => `${m.brand} ${m.name}`;
+
+function eqPlateHTML(oem) {
+  return `<span class="plate plain eq"><span class="seg g"><span class="val">${esc(oem)}</span><span class="lab">part no</span></span></span>`;
+}
+
+function eqFlagsHTML(p) {
+  return (unverified(p) ? `<span class="unver">Number to be confirmed — verify</span>` : "") +
+    (needsSerial(p) ? `<span class="serialnote">Check frame/serial number</span>` : "");
+}
+
+function eqCardHTML(p) {
+  const v = VERT_BY_ID[p.vertical];
+  /* the selected machine first, so it never hides behind "+N more" */
+  const fits = state.model && p.fits.includes(state.model)
+    ? [state.model, ...p.fits.filter(id => id !== state.model)] : p.fits;
+  const fitNames = fits.slice(0, 4).map(id => {
+    const m = MODEL_BY_ID[id];
+    return m ? `<span class="fitchip${state.model === id ? " on" : ""}">${esc(eqModelName(m))}</span>` : "";
+  }).join("") + (p.fits.length > 4 ? `<span class="fitchip">+${p.fits.length - 4} more</span>` : "");
+
+  return `<article class="card eqcard" data-vert="${esc(p.vertical)}">
+    ${artHTML(p)}
+    <div class="eqtag">${esc(v ? v.name : "")} · ${esc(CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "")}</div>
+    <div class="cardtop">
+      <h3 class="cardname">${esc(p.name)}</h3>
+      <span class="tier genuine">genuine</span>
+    </div>
+    ${eqPlateHTML(p.oem)}
+    ${eqFlagsHTML(p)}
+    <div class="ribbon">${fitNames}</div>
+    <div class="staffbox">
+      <div><span class="l">Cost</span><span class="v">—</span></div>
+      <div><span class="l">Margin</span><span class="v marg">—</span></div>
+      <div><span class="l">Stock</span><span class="v">—</span></div>
+      <div><span class="l">Re-order</span><span class="v">—</span></div>
+      <div><span class="l">Bin</span><span class="v">—</span></div>
+    </div>
+    <button class="moreb" data-detail="${esc(p.id)}">Fitment, source &amp; notes →</button>
+    <div class="cardfoot">
+      <div>${priceHTML(p)}</div>
+      <button class="addbtn" data-add="${esc(p.id)}">Add</button>
+    </div>
+  </article>`;
+}
+
 function cardHTML(p) {
+  if (isEq(p)) return eqCardHTML(p);
   const fitNames = p.universal
     ? `<span class="fitchip uni">Fits any bike</span>`
     : p.fits.slice(0, 5).map(id => {
@@ -206,18 +407,56 @@ function cardHTML(p) {
   </article>`;
 }
 
+function sourceLinks(urls) {
+  return (urls || []).filter(u => /^https?:\/\//.test(u)).map(u => {
+    let label = u;
+    try { const x = new URL(u); label = x.hostname.replace(/^www\./, "") + (x.pathname.length > 1 ? x.pathname.replace(/\/$/, "").slice(0, 38) + (x.pathname.length > 39 ? "…" : "") : ""); } catch {}
+    return `<a class="srclink" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
+  }).join("");
+}
+
+function renderModelNote() {
+  const box = $("#rNote");
+  const m = state.vertical !== "bikes" && state.model ? MODEL_BY_ID[state.model] : null;
+  if (!m || state.q.trim()) { box.hidden = true; box.innerHTML = ""; return; }
+  const bits = [];
+  if (m.model_number) bits.push(`<span><b>Model</b> ${esc(m.model_number)}</span>`);
+  if (m.engine) bits.push(`<span><b>Engine</b> ${esc(m.engine)}</span>`);
+  if (m.size) bits.push(`<span><b>Size</b> ${esc(m.size)}</span>`);
+  if (m.catalogue) bits.push(`<span><b>Catalogue</b> ${esc(m.catalogue)}</span>`);
+  const note = m.note ? `<div class="mnote-note">${SERIAL_HINT.test(m.note) || /unverified|nearest/i.test(m.note) ? `<span class="serialnote">Check frame/serial number</span> ` : ""}${esc(m.note)}</div>` : "";
+  /* Power products link their honda.mv page. A marine model's catalogue_url is
+     just the first page scraped (often one part's product page), so it is not
+     shown as "the" catalogue; each part's drawer links its own sources. */
+  const src = m.model_number && m.catalogue_url ? `<div class="mnote-src"><b>Product page</b> ${sourceLinks([m.catalogue_url])}</div>` : "";
+  box.innerHTML = `${bits.length ? `<div class="mnote-bits">${bits.join("")}</div>` : ""}${note}${src}`;
+  box.hidden = !box.innerHTML;
+}
+
 function renderResults() {
+  if (state.vertical !== "bikes" && !EQ.loaded) {
+    $("#rTitle").textContent = VERT_BY_ID[state.vertical].name;
+    $("#rCount").textContent = "";
+    $("#clearBtn").hidden = true;
+    $("#rNote").hidden = true;
+    $("#catWrap").innerHTML = "";
+    $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1"><h3>${EQ.failed ? "Could not load this catalogue" : "Loading the catalogue…"}</h3>
+      <p>${EQ.failed ? "Check your connection and pick the category again." : "Part numbers for every engine and machine we cover."}</p></div>`;
+    return;
+  }
   const r = results();
   const m = state.model ? MODEL_BY_ID[state.model] : null;
   let title = "All parts";
+  if (state.vertical !== "bikes") title = `${VERT_BY_ID[state.vertical].name} · all parts`;
   if (m) title = `${m.brand} ${m.name}`;
-  else if (state.brand) title = state.brand;
-  if (state.cat) title += ` · ${CAT_BY_ID[state.cat].name}`;
+  else if (state.brand) title = state.vertical === "bikes" ? state.brand : `${state.brand} ${VERT_BY_ID[state.vertical].name.toLowerCase()}`;
+  if (state.cat && CAT_BY_ID[state.cat]) title += ` · ${CAT_BY_ID[state.cat].name}`;
   if (state.q.trim()) title = `“${state.q.trim()}”`;
 
   $("#rTitle").textContent = title;
   $("#rCount").textContent = `${r.length} ${r.length === 1 ? "part" : "parts"}`;
   $("#clearBtn").hidden = !(state.brand || state.model || state.cat || state.q.trim());
+  renderModelNote();
 
   if (!r.length) {
     $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1">
@@ -230,10 +469,51 @@ function renderResults() {
   $("#grid").innerHTML = r.map(cardHTML).join("");
 }
 
+/* ---------- Detail drawer: equipment part ---------- */
+function openEqDetail(p) {
+  const v = VERT_BY_ID[p.vertical];
+  const fitModels = p.fits.map(id => MODEL_BY_ID[id]).filter(Boolean);
+  const fitBlock = `<div class="fitfull">${fitModels.map(m =>
+    `<span class="m"><b>${esc(eqModelName(m))}</b>${m.model_number ? " · " + esc(m.model_number) : ""}</span>`).join("")}</div>` +
+    fitModels.filter(m => m.note).map(m =>
+      `<p class="hint"><b>${esc(m.name)}:</b> ${esc(m.note)}</p>`).join("");
+
+  const altBlock = (p.alts && p.alts.length)
+    ? `<div class="altlist">${p.alts.map(a => `<div class="altrow"><span>${esc(a)}</span><span class="tag">cross-reference</span></div>`).join("")}</div>`
+    : `<p style="margin:0;font-size:13px;color:var(--ink-3)">No alternate numbers recorded.</p>`;
+
+  const links = sourceLinks(p.sources && p.sources.length ? p.sources : [p.source_url]);
+
+  $("#detailBody").innerHTML = `
+    <div class="dsec">
+      <h4>Part number</h4>
+      ${eqPlateHTML(p.oem)}
+      <p class="hint" style="margin-top:6px">${unverified(p)
+        ? `<span class="unver">Number to be confirmed — verify</span> The source lists this number with a doubt. We confirm it before we order.`
+        : "Printed exactly as the maker's catalogue shows it."}</p>
+      ${needsSerial(p) ? `<p class="hint"><span class="serialnote">Check frame/serial number</span> The fit depends on the serial, frame or engine code. Send it with your order.</p>` : ""}
+      ${p.catalogue_name ? `<p class="hint">Catalogue name: ${esc(p.catalogue_name)}</p>` : ""}
+    </div>
+    <div class="dsec"><h4>Fits these ${esc(v ? v.unit : "machine")}s</h4>${fitBlock}</div>
+    <div class="dsec"><h4>Also sold as</h4>${altBlock}</div>
+    ${p.note ? `<div class="dsec"><h4>Catalogue note</h4><div class="notebox">${esc(p.note)}</div></div>` : ""}
+    <div class="dsec"><h4>Source</h4>${links ? `<div class="srclist">${links}</div>` : `<p class="hint">No source link recorded.</p>`}</div>
+    <div class="dsec">
+      <h4>Price</h4>
+      ${priceHTML(p)}
+      <p class="hint">${["We'll confirm the price on WhatsApp", esc(v ? v.name : ""), esc(CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "")].filter(Boolean).join(" · ")}</p>
+    </div>
+    <button class="gobtn" data-add="${esc(p.id)}">Add to order</button>`;
+
+  $("#detailTitle").textContent = p.name;
+  openDrawer("#detail");
+}
+
 /* ---------- Detail drawer: the full interchange view ---------- */
 function openDetail(id) {
-  const p = PARTS.find(x => x.id === id);
+  const p = PART_BY_ID[id];
   if (!p) return;
+  if (isEq(p)) return openEqDetail(p);
   const pn = parsePN(p.oem);
   const others = sameJob(p);
 
@@ -295,21 +575,35 @@ function openDetail(id) {
 /* ---------- Cart ---------- */
 const cartCount = () => Object.values(state.cart).reduce((a, b) => a + b, 0);
 const cartLines = () => Object.entries(state.cart)
-  .map(([id, q]) => ({ p: PARTS.find(x => x.id === id), q }))
+  .map(([id, q]) => ({ p: PART_BY_ID[id], q }))
   .filter(x => x.p);
+
+/* "Honda WB30XT3 water pump (WB30XT3-DR)" — the machine an equipment line is for. */
+function machineLabel(p) {
+  const pick = state.ctx[p.id] && MODEL_BY_ID[state.ctx[p.id]] ? [state.ctx[p.id]] : p.fits;
+  const names = pick.slice(0, 2).map(id => {
+    const m = MODEL_BY_ID[id];
+    return m ? eqModelName(m) + (m.model_number ? ` (${m.model_number})` : "") : "";
+  }).filter(Boolean);
+  return names.join(", ") + (pick.length > 2 ? ` +${pick.length - 2} more` : "");
+}
 
 function saveCart() {
   localStorage.setItem("avas.cart", JSON.stringify(state.cart));
+  for (const id of Object.keys(state.ctx)) if (!state.cart[id]) delete state.ctx[id];
+  localStorage.setItem("avas.cartctx", JSON.stringify(state.ctx));
   const n = cartCount();
   $("#cartN").textContent = n;
   $("#cartN").dataset.empty = n ? "0" : "1";
 }
 
 function addToCart(id, silent) {
+  const part = PART_BY_ID[id];
+  if (part && isEq(part) && state.model && part.fits.includes(state.model)) state.ctx[id] = state.model;
   state.cart[id] = (state.cart[id] || 0) + 1;
   saveCart();
   if (!silent) {
-    const p = PARTS.find(x => x.id === id);
+    const p = PART_BY_ID[id];
     toast(`${p.name} added`);
   }
   renderCart();
@@ -344,6 +638,7 @@ function renderCart() {
       <div class="info">
         <div class="nm">${esc(p.name)}</div>
         <div class="pn">${esc(p.oem)}</div>
+        ${isEq(p) ? `<div class="pn">For ${esc(machineLabel(p))}</div>` : ""}
         <div class="qty">
           <button data-q="${p.id}|${q - 1}" aria-label="Fewer">−</button>
           <span>${q}</span>
@@ -375,7 +670,9 @@ function orderText() {
     `*avas.parts order ${ref}*`, "",
     ...lines.map(({ p, q }) => hasPrice(p)
       ? `${q} × ${p.name}\n   ${p.oem} — MVR ${money(p.price * q)}`
-      : `${q} × ${p.name}\n   ${p.oem} — price to confirm`),
+      : isEq(p)
+        ? `${q} × ${p.name}\n   ${p.oem} — price to confirm\n   For: ${machineLabel(p)}`
+        : `${q} × ${p.name}\n   ${p.oem} — price to confirm`),
     "",
     pricedLines.length ? `Subtotal: MVR ${money(sub)}` : "Subtotal: —",
     askQty ? `Price to confirm: ${askQty} item${askQty === 1 ? "" : "s"}` : "",
@@ -432,13 +729,61 @@ function renderZones() {
 }
 
 /* ---------- Wire up ---------- */
-function render() { renderPickers(); renderRail(); renderResults(); }
+function render() {
+  renderVerticals(); renderHero(); renderPickers();
+  if (state.vertical !== "bikes" && !EQ.loaded) { renderResults(); syncURL(); return; }
+  renderRail(); renderResults(); syncURL();
+}
+
+/* ---------- Deep links: ?v=outboards&m=<model-id>&q=… ---------- */
+const BOOT_PARAMS = new URLSearchParams(location.search);
+let urlTouched = ["v", "m", "b", "q"].some(k => BOOT_PARAMS.has(k));
+function syncURL() {
+  if (!urlTouched && state.vertical === "bikes") return;   // the bike default never touches the URL
+  urlTouched = true;
+  const ps = new URLSearchParams();
+  if (state.vertical !== "bikes") ps.set("v", state.vertical);
+  if (state.model) ps.set("m", state.model);
+  else if (state.brand) ps.set("b", state.brand);
+  if (state.q.trim() && BOOT_PARAMS.has("q")) ps.set("q", state.q.trim());
+  const qs = ps.toString();
+  try { history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash); } catch {}
+}
+
+function applyDeepLink() {
+  const ps = BOOT_PARAMS;
+  const v = ps.get("v"), m = ps.get("m"), b = ps.get("b"), q = ps.get("q");
+  if (q) { state.q = q; $("#q").value = q; }
+  const apply = () => {
+    const model = m && MODEL_BY_ID[m];
+    if (model) {
+      state.vertical = model.vertical || "bikes";
+      state.brand = model.brand; state.model = m;
+    } else if (b) state.brand = b;
+    render();
+  };
+  if (v && VERT_BY_ID[v]) state.vertical = v;
+  const needEq = state.vertical !== "bikes" || (m && !MODEL_BY_ID[m]) || (q && q.trim().length >= 2);
+  if (needEq) { ensureEquip(); loadEquip().then(apply, () => {}); }
+  else if (m || b || q) apply();
+}
+
+function chooseVertical(v) {
+  if (!VERT_BY_ID[v]) return;
+  if (v === state.vertical && (EQ.loaded || v === "bikes")) return;
+  state.vertical = v;
+  state.brand = state.model = state.cat = null;
+  if (v !== "bikes") ensureEquip();
+  render();
+}
 
 document.addEventListener("click", (e) => {
-  const t = e.target.closest("[data-brand],[data-model],[data-cat],[data-add],[data-detail],[data-q],[data-clear],[data-skin],[data-close]");
+  const t = e.target.closest("[data-vertical],[data-brand],[data-model],[data-cat],[data-add],[data-detail],[data-q],[data-clear],[data-skin],[data-close]");
   if (!t) return;
 
-  if (t.dataset.brand !== undefined) {
+  if (t.dataset.vertical !== undefined) {
+    chooseVertical(t.dataset.vertical);
+  } else if (t.dataset.brand !== undefined) {
     state.brand = state.brand === t.dataset.brand ? null : t.dataset.brand;
     state.model = null; render();
   } else if (t.dataset.model !== undefined) {
@@ -461,7 +806,16 @@ document.addEventListener("click", (e) => {
   }
 });
 
-$("#q").addEventListener("input", (e) => { state.q = e.target.value; renderRail(); renderResults(); });
+/* Typing a query pulls in the equipment catalogue (debounced) so a part number
+   like 6CE-WS24A-00 or an engine code like KTA19 is found from any page. */
+let eqSearchT;
+$("#q").addEventListener("input", (e) => {
+  state.q = e.target.value; renderRail(); renderResults();
+  if (!EQ.loaded && state.q.trim().length >= 2) {
+    clearTimeout(eqSearchT);
+    eqSearchT = setTimeout(() => loadEquip().then(() => { renderRail(); renderResults(); }, () => {}), 250);
+  }
+});
 $("#cartOpen").addEventListener("click", () => { renderCart(); openDrawer("#cart"); });
 $("#scrim").addEventListener("click", closeDrawers);
 $("#zone").addEventListener("change", renderCart);
@@ -480,3 +834,6 @@ renderZones();
 render();
 saveCart();
 renderCart();
+applyDeepLink();
+/* An order saved with equipment lines needs the equipment catalogue to show them. */
+if (Object.keys(state.cart).some(id => !PART_BY_ID[id])) loadEquip().then(renderCart, () => {});
