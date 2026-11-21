@@ -119,5 +119,62 @@ console.log(`  ${needed.length - missingIds.length}/${needed.length} element ids
 ["data.js","app.js","styles.css"].forEach(f =>
   ok(html.includes(f), `index.html does not load ${f}`));
 
+sec("Equipment catalogue (data-equip.js)");
+const ectx = { console };
+vm.createContext(ectx);
+vm.runInContext(fs.readFileSync("data-equip.js", "utf8") + "\n;globalThis.__E = EQUIP;", ectx);
+const E = ectx.__E;
+console.log(`  verticals ${E.verticals.length} · categories ${E.cats.length} · models ${E.models.length} · parts ${E.parts.length}`);
+const eAskBad = E.parts.filter(p => p.price !== null || p.askPrice !== true).map(p => p.id);
+ok(!eAskBad.length, "equipment parts not price:null + askPrice:true: " + eAskBad.slice(0, 20).join(", "));
+const emids = new Set(E.models.map(m => m.id));
+const eBadFit = [];
+E.parts.forEach(p => { if (!p.fits || !p.fits.length) eBadFit.push(p.id + "->(none)");
+  (p.fits || []).forEach(f => { if (!emids.has(f)) eBadFit.push(`${p.id}->${f}`); }); });
+ok(!eBadFit.length, "equipment fits that are not equipment model ids: " + eBadFit.slice(0, 20).join(", "));
+const ecids = new Set(E.cats.map(c => c.id));
+const eBadCat = E.parts.filter(p => !ecids.has(p.cat)).map(p => p.id);
+ok(!eBadCat.length, "equipment parts with unknown category: " + eBadCat.join(", "));
+const allPartIds = PARTS.map(p => p.id).concat(E.parts.map(p => p.id));
+const pidDup = allPartIds.filter((id, i, a) => a.indexOf(id) !== i);
+ok(!pidDup.length, "duplicate part ids across bikes + equipment: " + pidDup.slice(0, 20).join(", "));
+const allModelIds = MODELS.map(m => m.id).concat(E.models.map(m => m.id));
+const midDup = allModelIds.filter((id, i, a) => a.indexOf(id) !== i);
+ok(!midDup.length, "duplicate model ids across bikes + equipment: " + midDup.join(", "));
+const vids = new Set(E.verticals.map(v => v.id));
+ok(vids.has("bikes") && E.verticals.length === 7, "expected 7 verticals including bikes");
+ok(E.models.every(m => vids.has(m.vertical) && m.vertical !== "bikes"), "equipment model with a bad vertical");
+ok(E.parts.every(p => vids.has(p.vertical) && p.vertical !== "bikes"), "equipment part with a bad vertical");
+ok(E.parts.every(p => p.fits.every(f => E.models.find(m => m.id === f).vertical === p.vertical)),
+   "equipment part fits a model from another vertical");
+for (const v of E.verticals.filter(v => v.id !== "bikes")) {
+  const nm = E.models.filter(m => m.vertical === v.id).length;
+  const np = E.parts.filter(p => p.vertical === v.id).length;
+  console.log(`  ${v.name.padEnd(24)} ${String(nm).padStart(3)} models ${String(np).padStart(5)} parts`);
+  ok(nm >= 1 && np >= 1, `vertical ${v.id} needs at least one model and part`);
+}
+ok(E.verticals.find(v => v.id === "pumps").name === "Pumps & power products", "pumps vertical is labelled Pumps & power products");
+const eNoOem = E.parts.filter(p => typeof p.oem !== "string" || !p.oem.trim()).map(p => p.id);
+ok(!eNoOem.length, "equipment parts with an empty OEM: " + eNoOem.join(", "));
+const eNoName = E.parts.filter(p => !p.name).map(p => p.id);
+ok(!eNoName.length, "equipment parts with no name: " + eNoName.join(", "));
+for (const [label, re] of [["WB20XT", /\bWB20XT/], ["WB30XT", /\bWB30XT/], ["WT30X", /\bWT30X/]]) {
+  const hits = E.models.filter(m => re.test(m.name)).map(m => m.id);
+  ok(hits.length === 1, `Honda ${label} pump should exist exactly once, found: ${hits.join(", ") || "none"}`);
+}
+ok(!emids.has("honda-wt30x-trash-pump"), "old marine WT30X model should be replaced by WT30XK4");
+ok(emids.has("honda-wx10-water-pump"), "Honda WX10 (not in honda.mv) should be kept");
+const oemSeen = {}, oemDup = [];
+E.parts.forEach(p => { const k = p.vertical + "|" + p.oem; if (oemSeen[k]) oemDup.push(k); oemSeen[k] = 1; });
+ok(!oemDup.length, "duplicate OEM within a vertical: " + oemDup.slice(0, 20).join(", "));
+const eBadSrc = E.parts.filter(p => !(p.src || []).length || p.src.some(i => !/^https?:\/\//.test(E.urls[i] || ""))).map(p => p.id);
+ok(!eBadSrc.length, "equipment parts without a resolvable source url: " + eBadSrc.slice(0, 20).join(", "));
+ok(E.parts.some(p => /\//.test(p.oem)), "slash part numbers (e.g. JCB 320/B4420) kept as printed");
+const unv = E.parts.filter(p => p.tier === "genuine-unverified").length;
+ok(unv > 0 && E.parts.every(p => p.tier === "genuine" || p.tier === "genuine-unverified"), "tiers are genuine / genuine-unverified");
+console.log(`  ${unv} numbers marked "to be confirmed"; ${E.urls.length} distinct source urls`);
+ok(app.includes('"data-equip.js"') && !html.includes('src="data-equip.js"'), "data-equip.js is lazy-loaded by app.js, not by index.html");
+ok(html.includes('id="vertChips"'), "index.html has the category picker");
+
 console.log("\n" + (fail ? `${fail} check(s) FAILED` : "All checks passed"));
 process.exit(fail ? 1 : 0);
