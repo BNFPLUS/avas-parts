@@ -119,7 +119,7 @@ function sameJob(part) {
 
 /* ---------- Render: brand + model pickers ---------- */
 function renderPickers() {
-  $("#brandChips").innerHTML = BRANDS.map(b =>
+  $("#brandChips").innerHTML = BRANDS.filter(b => MODELS.some(m => m.brand === b)).map(b =>
     `<button class="chip" data-brand="${esc(b)}" aria-pressed="${state.brand === b}">${esc(b)}</button>`
   ).join("");
 
