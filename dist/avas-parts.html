@@ -3,8 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>avas.parts — motorcycle parts, delivered to every island</title>
-<meta name="description" content="Motorcycle and scooter spare parts for the Maldives. Search by bike or part number, check what interchanges, order to any island.">
+<title>avas.parts — bike, marine and machinery parts, delivered to every island</title>
+<meta name="description" content="Spare parts for motorcycles, scooters, outboards, marine diesels, jet skis, generators, pumps and heavy machinery. Delivered to every island in the Maldives.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="avas.parts — bike, marine and machinery parts, delivered to every island">
+<meta property="og:description" content="Spare parts for motorcycles, scooters, outboards, marine diesels, jet skis, generators, pumps and heavy machinery. Delivered to every island in the Maldives.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="avas.parts — bike, marine and machinery parts, delivered to every island">
+<meta name="twitter:description" content="Spare parts for motorcycles, scooters, outboards, marine diesels, jet skis, generators, pumps and heavy machinery. Delivered to every island in the Maldives.">
 <style>
 /* avas.parts — parts-catalogue interface
    Light skin  = customer browse ("catalogue paper")
@@ -386,7 +392,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .mnote[hidden] { display: none; }
 .mnote-bits { display: flex; flex-wrap: wrap; gap: 4px 16px; }
-.mnote-bits b {
+.mnote-src b, .mnote-bits b {
   font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em;
   text-transform: uppercase; color: var(--ink-3); font-weight: 500; margin-right: 4px;
 }
@@ -635,7 +641,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
   <div class="searchwrap">
     <input id="q" class="search" type="search" autocomplete="off"
-           placeholder="Part number, bike model, or what it does…  (press / )"
+           placeholder="Part number, model, or what it does…  (press / )"
            aria-label="Search parts">
   </div>
 
@@ -703,7 +709,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   <div class="footin">
     <div>
       <h5>avas.parts</h5>
-      <p>Motorcycle and scooter parts for the Maldives. Order online, we ship to every inhabited island.</p>
+      <p>Parts for bikes, scooters, boats, engines and machinery across the Maldives. Order online, we ship to every inhabited island.</p>
       <p><a href="mailto:order@avas.parts">order@avas.parts</a></p>
       <p>Sat–Thu 09:00–18:00 · Fri 14:00–18:00</p>
     </div>
@@ -754,9 +760,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
       <input id="custIsland" type="text" placeholder="Island, house or shop name">
     </div>
     <div class="field">
-      <label for="custNote">Bike and frame number</label>
+      <label for="custNote">Model and frame or serial number</label>
       <textarea id="custNote" placeholder="e.g. Vario 125 2021, frame MH1JM…"></textarea>
-      <div class="hint">Give us the frame number and we will confirm the fit before we pack.</div>
+      <div class="hint">Give us the frame or serial number and we will confirm the fit before we pack.</div>
     </div>
 
     <div class="totals">
@@ -20053,7 +20059,10 @@ function eqFlagsHTML(p) {
 
 function eqCardHTML(p) {
   const v = VERT_BY_ID[p.vertical];
-  const fitNames = p.fits.slice(0, 4).map(id => {
+  /* the selected machine first, so it never hides behind "+N more" */
+  const fits = state.model && p.fits.includes(state.model)
+    ? [state.model, ...p.fits.filter(id => id !== state.model)] : p.fits;
+  const fitNames = fits.slice(0, 4).map(id => {
     const m = MODEL_BY_ID[id];
     return m ? `<span class="fitchip${state.model === id ? " on" : ""}">${esc(eqModelName(m))}</span>` : "";
   }).join("") + (p.fits.length > 4 ? `<span class="fitchip">+${p.fits.length - 4} more</span>` : "");
@@ -20144,7 +20153,10 @@ function renderModelNote() {
   if (m.size) bits.push(`<span><b>Size</b> ${esc(m.size)}</span>`);
   if (m.catalogue) bits.push(`<span><b>Catalogue</b> ${esc(m.catalogue)}</span>`);
   const note = m.note ? `<div class="mnote-note">${SERIAL_HINT.test(m.note) || /unverified|nearest/i.test(m.note) ? `<span class="serialnote">Check frame/serial number</span> ` : ""}${esc(m.note)}</div>` : "";
-  const src = m.catalogue_url ? `<div class="mnote-src">${sourceLinks([m.catalogue_url])}</div>` : "";
+  /* Power products link their honda.mv page. A marine model's catalogue_url is
+     just the first page scraped (often one part's product page), so it is not
+     shown as "the" catalogue; each part's drawer links its own sources. */
+  const src = m.model_number && m.catalogue_url ? `<div class="mnote-src"><b>Product page</b> ${sourceLinks([m.catalogue_url])}</div>` : "";
   box.innerHTML = `${bits.length ? `<div class="mnote-bits">${bits.join("")}</div>` : ""}${note}${src}`;
   box.hidden = !box.innerHTML;
 }
@@ -20177,7 +20189,7 @@ function renderResults() {
   if (!r.length) {
     $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1">
       <h3>Nothing matches that yet</h3>
-      <p>Try the part number without dashes, the bike model, or what the part does — “belt”, “brake pad”, “battery”.</p>
+      <p>Try the part number without dashes, the model, or what the part does — “belt”, “brake pad”, “battery”.</p>
       <button class="clearbtn" data-clear="1">Reset the search</button>
     </div>`;
     return;
@@ -20342,7 +20354,7 @@ function renderCart() {
   if (!lines.length) {
     body.innerHTML = `<div class="empty">
       <h3>No parts yet</h3>
-      <p>Pick your bike, then add the parts you need. We deliver to every inhabited island.</p>
+      <p>Pick your bike or engine, then add the parts you need. We deliver to every inhabited island.</p>
     </div>`;
     $("#cartFoot").hidden = true;
     return;

@@ -461,7 +461,7 @@ function renderResults() {
   if (!r.length) {
     $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1">
       <h3>Nothing matches that yet</h3>
-      <p>Try the part number without dashes, the bike model, or what the part does — “belt”, “brake pad”, “battery”.</p>
+      <p>Try the part number without dashes, the model, or what the part does — “belt”, “brake pad”, “battery”.</p>
       <button class="clearbtn" data-clear="1">Reset the search</button>
     </div>`;
     return;
@@ -626,7 +626,7 @@ function renderCart() {
   if (!lines.length) {
     body.innerHTML = `<div class="empty">
       <h3>No parts yet</h3>
-      <p>Pick your bike, then add the parts you need. We deliver to every inhabited island.</p>
+      <p>Pick your bike or engine, then add the parts you need. We deliver to every inhabited island.</p>
     </div>`;
     $("#cartFoot").hidden = true;
     return;

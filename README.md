@@ -1,6 +1,7 @@
 # avas.parts
 
-Motorcycle spare parts catalogue and ordering site for the Maldives. Public browse for
+Spare parts catalogue and ordering site for the Maldives, covering motorcycles, scooters,
+outboards, marine diesels, jet skis, generators, pumps and heavy machinery. Public browse for
 customers, a counter mode for staff, and a part-number decoder that shows what
 interchanges with what.
 
