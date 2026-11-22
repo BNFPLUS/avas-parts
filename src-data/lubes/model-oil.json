@@ -1,0 +1,177 @@
+{
+ "honda-wave125i-th-2023-k1m": {
+  "source": "Thai Honda WAVE125 MY2026 (K3F261)",
+  "url": "https://2rom-prd-data.hondamotopub.com/om/THM/WAVE125/2026/K3F261.pdf",
+  "items": [
+   {
+    "item": "Engine oil",
+    "value": "SAE 10W-30 JASO MA; 0.85 L at oil change"
+   },
+   {
+    "item": "Brake fluid",
+    "value": "DOT 3 or DOT 4"
+   }
+  ],
+  "entry": "lub-moto-10w30-ma"
+ },
+ "honda-wave125i-th-2024-k3f": {
+  "source": "Thai Honda WAVE125 MY2026 (K3F261)",
+  "url": "https://2rom-prd-data.hondamotopub.com/om/THM/WAVE125/2026/K3F261.pdf",
+  "items": [
+   {
+    "item": "Engine oil",
+    "value": "SAE 10W-30 JASO MA; 0.85 L at oil change"
+   },
+   {
+    "item": "Brake fluid",
+    "value": "DOT 3 or DOT 4"
+   }
+  ],
+  "entry": "lub-moto-10w30-ma"
+ },
+ "honda-airblade125-ad-2023": {
+  "source": "Honda Vietnam Air Blade 125/160 MY2023-25 (K3A231/K2Z251, combined 125+160 manual), ACA125CBF columns",
+  "url": "https://2rom-prd-data.hondamotopub.com/om/HVN/Air%20Blade%20125/2023/AB_2025.pdf",
+  "items": [
+   {
+    "item": "Engine oil",
+    "value": "SAE 10W-30 JASO MB; 0.80 L at change, 0.90 L at rebuild"
+   },
+   {
+    "item": "Final drive oil",
+    "value": "0.13 L at change, 0.14 L at rebuild"
+   },
+   {
+    "item": "Coolant",
+    "value": "Honda Pre-Mix; system 0.37 L (ACA125CBF)"
+   },
+   {
+    "item": "Brake fluid",
+    "value": "DOT 3 or DOT 4"
+   }
+  ],
+  "entry": "lub-scooter-10w30-mb"
+ },
+ "honda-airblade160-2022-2025": {
+  "source": "Honda Vietnam Air Blade 125/160 MY2023-25 (K2Z231), ACA160CAF columns",
+  "url": "https://2rom-prd-data.hondamotopub.com/om/HVN/Air%20Blade%20125/2023/AB_2025.pdf",
+  "items": [
+   {
+    "item": "Engine oil",
+    "value": "SAE 10W-30 JASO MB; 0.80 L at change, 0.90 L at rebuild"
+   },
+   {
+    "item": "Final drive oil",
+    "value": "0.13 L at change"
+   },
+   {
+    "item": "Coolant",
+    "value": "system 0.48 L (ACA160CAF)"
+   },
+   {
+    "item": "Brake fluid",
+    "value": "DOT 3 or DOT 4"
+   }
+  ],
+  "entry": "lub-scooter-10w30-mb"
+ },
+ "honda-wave110i-th-2021": {
+  "source": "Thai Honda WAVE110i MY2024 (K2J241); 2021 text manual is image-only",
+  "url": "https://2rom-prd-data.hondamotopub.com/om/THM/WAVE110i/2024/K2J241.pdf",
+  "items": [
+   {
+    "item": "Engine oil",
+    "value": "SAE 10W-30, API SJ+"
+   },
+   {
+    "item": "Brake fluid",
+    "value": "DOT 3 or DOT 4"
+   }
+  ],
+  "entry": "lub-moto-10w30-ma"
+ },
+ "honda-wave-alpha110-2017-2022": {
+  "source": "Honda Vietnam Wave Alpha MY2021 (K89211)",
+  "url": "https://2rom-prd-data.hondamotopub.com/om/HVN/Wave%20Alpha/2021/Wave%20Alpha_4FK89A200_0.pdf",
+  "items": [
+   {
+    "item": "Engine oil",
+    "value": "SAE 10W-30; 0.8 L at change, 1.0 L at rebuild"
+   }
+  ],
+  "entry": "lub-moto-10w30-ma"
+ },
+ "honda-scoopy110-th-2021-k2f": {
+  "source": "Thai Honda SCOOPY MY2025 (K2F251)",
+  "url": "https://2rom-prd-data.hondamotopub.com/om/THM/SCOOPY/2025/K2F251.pdf",
+  "items": [
+   {
+    "item": "Engine oil",
+    "value": "SAE 10W-30"
+   },
+   {
+    "item": "Brake fluid",
+    "value": "DOT 3 or DOT 4"
+   }
+  ],
+  "entry": "lub-scooter-10w30-mb"
+ },
+ "honda-lead125-th-2022-k2t": {
+  "source": "Thai Honda LEAD125 MY2025 (K2T251)",
+  "url": "https://2rom-prd-data.hondamotopub.com/om/THM/LEAD125/2025/K2T251.pdf",
+  "items": [
+   {
+    "item": "Engine oil",
+    "value": "SAE 10W-30"
+   },
+   {
+    "item": "Brake fluid",
+    "value": "DOT 3 or DOT 4"
+   }
+  ],
+  "entry": "lub-scooter-10w30-mb"
+ },
+ "honda-adv160-th-2023": {
+  "source": "Thai Honda ADV160 MY2026 (K0W261)",
+  "url": "https://2rom-prd-data.hondamotopub.com/om/THM/ADV160/2026/K0W261.pdf",
+  "items": [
+   {
+    "item": "Engine oil",
+    "value": "SAE 10W-30; 0.9 L at rebuild"
+   },
+   {
+    "item": "Final drive oil",
+    "value": "0.12 L at change, 0.13 L at rebuild"
+   },
+   {
+    "item": "Brake fluid",
+    "value": "DOT 3 or DOT 4"
+   }
+  ],
+  "entry": "lub-scooter-10w30-mb"
+ },
+ "nmax155": {
+  "source": "Yamaha NMAX155 (GPD155-A) owner manual, Japan market 2022",
+  "url": "https://www2.yamaha-motor.co.jp/Manual/pdf/mc/2022BBD6.pdf",
+  "items": [
+   {
+    "item": "Engine oil",
+    "value": "Yamalube scooter oil (Blue ver. For Scooter); 0.90 L at oil change"
+   },
+   {
+    "item": "Final drive oil",
+    "value": "Yamalube gear oil; 0.10 L"
+   },
+   {
+    "item": "Brake fluid",
+    "value": "DOT 4"
+   },
+   {
+    "item": "Coolant",
+    "value": "radiator and circuit 0.46 L, reserve tank 0.13 L"
+   }
+  ],
+  "note": "Japan-market manual; confirm against the manual for your bike.",
+  "entry": "lub-scooter-10w40-mb"
+ }
+}

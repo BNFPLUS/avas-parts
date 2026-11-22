@@ -1,0 +1,958 @@
+[
+ {
+  "id": "lub-scooter-10w30-mb",
+  "type": "engine-scooter",
+  "title": "Scooter engine oil 10W-30, JASO MB",
+  "grade": "10W-30",
+  "spec": "JASO MB; API SL or higher",
+  "packs": [
+   "0.8 L",
+   "1 L"
+  ],
+  "apps": [
+   "Honda automatic scooters (Air Blade, Click, Scoopy, PCX, Lead, ADV, Zoomer-X)"
+  ],
+  "fits": [
+   "honda-airblade125-ad-2023",
+   "honda-airblade125-vn-2013-2015",
+   "honda-airblade160-2022-2025",
+   "honda-airblade160-2025-cafs",
+   "honda-scoopy110-th-2012-2016",
+   "honda-scoopy110-th-2017-2020",
+   "honda-scoopy110-th-2021-k2f",
+   "honda-scoopy110-th-2024-cbtr",
+   "honda-pcx150-th-2014-2017",
+   "honda-pcx160-th-2021-2023",
+   "honda-pcx160-th-2024",
+   "honda-zoomerx-th-2012-2015",
+   "honda-zoomerx-2016-2017",
+   "honda-lead125-th-2022-k2t",
+   "honda-adv160-th-2023",
+   "honda-adv160-2025-as",
+   "honda-click-autocare",
+   "honda-moove-autocare"
+  ],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "Honda owner manuals for these scooters call for SAE 10W-30 JASO MB. MB is for dry-clutch scooters only: do not use in a Wave or other wet-clutch bike.",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-scooter-10w40-mb",
+  "type": "engine-scooter",
+  "title": "Scooter engine oil 10W-40, JASO MB",
+  "grade": "10W-40",
+  "spec": "JASO MB; API SG or higher",
+  "packs": [
+   "0.8 L",
+   "1 L"
+  ],
+  "apps": [
+   "Yamaha NMAX, Aerox, Mio/Fino and other 10W-40 scooters"
+  ],
+  "fits": [
+   "nmax155",
+   "aerox155",
+   "mio125",
+   "yamaha-aerox-alpha155-std-id"
+  ],
+  "fitsVerticals": [],
+  "brands": [
+   "Arzol PACE 4-AT 10W-40"
+  ],
+  "note": "Yamaha NMAX manual: SAE 10W-40, API SG or higher, JASO MA or MB.",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-moto-10w30-ma",
+  "type": "engine-moto",
+  "title": "Motorcycle engine oil 10W-30, JASO MA",
+  "grade": "10W-30",
+  "spec": "JASO MA (or MA2); API SJ or higher",
+  "packs": [
+   "0.8 L",
+   "1 L"
+  ],
+  "apps": [
+   "Honda Wave 110 / 125, Dream and other wet-clutch underbones"
+  ],
+  "fits": [
+   "honda-wave125i-th-2012-2017-kyz",
+   "honda-wave125i-th-2018-2022-k73",
+   "honda-wave125i-th-2023-k1m",
+   "honda-wave125i-th-2024-k3f",
+   "honda-wave110i-th-2009-2013",
+   "honda-wave110i-th-2014-2020",
+   "honda-wave110i-th-2021",
+   "honda-wave-alpha110-2017-2022",
+   "honda-wave100-autocare",
+   "honda-dream-autocare"
+  ],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "Thai Honda Wave 125 manual: SAE 10W-30 JASO MA, 0.85 L at oil change.",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-moto-10w40-ma",
+  "type": "engine-moto",
+  "title": "Motorcycle engine oil 10W-40, JASO MA/MA2",
+  "grade": "10W-40",
+  "spec": "JASO MA or MA2; API SL or higher",
+  "packs": [
+   "0.8 L",
+   "1 L",
+   "4 L"
+  ],
+  "apps": [
+   "Manual-clutch and sport bikes (Exciter, LC135, Winner R)"
+  ],
+  "fits": [
+   "honda-winnerr150-vn-2024",
+   "exciter150",
+   "lc135",
+   "yamaha-exciter155-vva-b5v"
+  ],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "Check the owner manual for grade; Winner R uses 10W-30 MA in Honda Vietnam guidance.",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-moto-20w50",
+  "type": "engine-moto",
+  "title": "Motorcycle engine oil 20W-50, 4T",
+  "grade": "20W-50",
+  "spec": "API SL; JASO MA",
+  "packs": [
+   "0.8 L",
+   "1 L"
+  ],
+  "apps": [
+   "Older air-cooled 4-stroke bikes where the manual allows 20W-50"
+  ],
+  "fits": [],
+  "fitsVerticals": [],
+  "brands": [
+   "Arzol ECO 4T 20W-50",
+   "Shell Advance 4T AX3 20W-50"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-2t",
+  "type": "engine-2t",
+  "title": "2-stroke oil, API TC",
+  "grade": "2T",
+  "spec": "API TC / JASO FC or FD",
+  "packs": [
+   "1 L"
+  ],
+  "apps": [
+   "2-stroke bikes, chainsaws, brush cutters, premix garden tools"
+  ],
+  "fits": [],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "Not an outboard oil unless the label also says NMMA TC-W3.",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-2t-tcw3",
+  "type": "engine-outboard-2t",
+  "title": "Outboard 2-stroke oil, NMMA TC-W3",
+  "grade": "2T",
+  "spec": "NMMA TC-W3",
+  "packs": [
+   "1 L",
+   "4 L",
+   "20 L"
+  ],
+  "apps": [
+   "2-stroke outboards: Yamaha Enduro E15-E75, 15FMH, Suzuki DT40, Tohatsu M40/M50"
+  ],
+  "fits": [
+   "yamaha-15fmh-2stroke",
+   "yamaha-15hp-2stroke",
+   "yamaha-e15dmh-enduro-2stroke",
+   "yamaha-e25b-30h-2stroke",
+   "yamaha-e40g-e40j-enduro-2stroke",
+   "yamaha-e40x-enduro-2stroke",
+   "yamaha-e60h-enduro-2stroke-2019",
+   "yamaha-e75-85aet-2stroke-2004",
+   "suzuki-dt40w-2stroke",
+   "tohatsu-m40d2-m50d2-2stroke"
+  ],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "No Maldives retailer we checked publishes a TC-W3-labelled oil with a price. Gap worth filling.",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-ob4-10w30-fcw",
+  "type": "engine-outboard-4t",
+  "title": "Outboard 4-stroke oil 10W-30 / 10W-40, NMMA FC-W",
+  "grade": "10W-30 / 10W-40",
+  "spec": "NMMA FC-W",
+  "packs": [
+   "1 L",
+   "4 L",
+   "5 L",
+   "20 L"
+  ],
+  "apps": [
+   "Yamaha F40-F300, Suzuki DF40-DF300, Parsun F9.9-F115"
+  ],
+  "fits": [
+   "yamaha-f115-2014",
+   "yamaha-f150-f175-2.7-2.8l",
+   "yamaha-f200-f225-v6-3.3l",
+   "yamaha-f250-f300-v6-4.2l-2010",
+   "yamaha-f250-v6-3.3l",
+   "yamaha-f40a-2008",
+   "yamaha-f50-2006",
+   "suzuki-df100a-df140a",
+   "suzuki-df200-df250-v6-3.6l",
+   "suzuki-df250a-df300a-v6-4.0l",
+   "suzuki-df40a-df60a",
+   "suzuki-df70a-df90a",
+   "parsun-f15-f9-9",
+   "parsun-f40-efi",
+   "parsun-f60-efi",
+   "parsun-f115-efi"
+  ],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "Genuine Yamalube and Suzuki oils are listed on each engine page (e.g. LUB-10W30-FC-04, 990C0-01E30-QUA).",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-ob4-25w40-fcw",
+  "type": "engine-outboard-4t",
+  "title": "Outboard 4-stroke oil 25W-40, NMMA FC-W",
+  "grade": "25W-40",
+  "spec": "NMMA FC-W",
+  "packs": [
+   "1 L",
+   "5 L"
+  ],
+  "apps": [
+   "Mercury FourStroke and Verado"
+  ],
+  "fits": [
+   "mercury-fourstroke-v8-4.6l-250-300",
+   "mercury-verado-l6-200-350"
+  ],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "Genuine Mercury oils are on each engine page.",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-pwc-10w40",
+  "type": "engine-pwc",
+  "title": "Jet-ski 4-stroke oil 10W-40 / 5W-40",
+  "grade": "10W-40 / 5W-40",
+  "spec": "PWC 4-stroke",
+  "packs": [
+   "1 L",
+   "4 L"
+  ],
+  "apps": [
+   "Yamaha WaveRunner (10W-40 Yamalube WaveRunner oil), Sea-Doo (XPS 5W-40)"
+  ],
+  "fits": [
+   "yamaha-waverunner-fx-1.8l-ho-svho-2009",
+   "yamaha-waverunner-jetblaster-2022",
+   "yamaha-waverunner-vx-1.8l-ho-2016",
+   "yamaha-waverunner-vx-1050-tr1-2015",
+   "seadoo-gti-130-170-1630ace-2020",
+   "seadoo-gtx-rxpx-300-1630ace-sc-2016",
+   "seadoo-spark-900ace-2014"
+  ],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "Genuine Yamalube and Sea-Doo XPS oils are listed on each jet-ski page.",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-diesel-15w40-ci4",
+  "type": "engine-diesel",
+  "title": "Diesel engine oil 15W-40, API CI-4",
+  "grade": "15W-40",
+  "spec": "API CI-4 (ACEA E7)",
+  "packs": [
+   "1 L",
+   "5 L",
+   "20 L",
+   "208 L"
+  ],
+  "apps": [
+   "Generator sets, marine diesels, older trucks and excavators"
+  ],
+  "fits": [],
+  "fitsVerticals": [
+   "generators",
+   "marine_diesel",
+   "machinery"
+  ],
+  "brands": [
+   "Mobil Delvac Modern 15W-40 Super Defense",
+   "Arzol MILAGE 15W-40 CI-4",
+   "Briton 15W-40",
+   "Shell Rimula R"
+  ],
+  "note": "Always match the grade in the engine maker manual.",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-diesel-15w40-ck4",
+  "type": "engine-diesel",
+  "title": "Diesel engine oil 15W-40, API CK-4",
+  "grade": "15W-40",
+  "spec": "API CK-4 (ACEA E9)",
+  "packs": [
+   "1 L",
+   "5 L",
+   "18 L",
+   "208 L"
+  ],
+  "apps": [
+   "Newer diesels with exhaust after-treatment, and any engine that calls for CI-4 (CK-4 is backward compatible)"
+  ],
+  "fits": [],
+  "fitsVerticals": [
+   "generators",
+   "marine_diesel",
+   "machinery"
+  ],
+  "brands": [],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-diesel-sae40",
+  "type": "engine-diesel",
+  "title": "Monograde diesel oil SAE 40 / SAE 30",
+  "grade": "SAE 40 / SAE 30",
+  "spec": "API CF or as engine maker requires",
+  "packs": [
+   "5 L",
+   "20 L",
+   "208 L"
+  ],
+  "apps": [
+   "Older marine diesels and stationary engines that call for monograde oil"
+  ],
+  "fits": [],
+  "fitsVerticals": [
+   "marine_diesel",
+   "generators"
+  ],
+  "brands": [
+   "Briton SAE-40",
+   "Briton Diesel Oil SAE-50 CF"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-car-5w30",
+  "type": "engine-car",
+  "title": "Car engine oil 5W-30",
+  "grade": "5W-30",
+  "spec": "API SN",
+  "packs": [
+   "4 L"
+  ],
+  "apps": [
+   "Petrol cars and pickups"
+  ],
+  "fits": [],
+  "fitsVerticals": [],
+  "brands": [
+   "Mobil Super 2000 5W-30",
+   "Arzol SYNPRO 5W-30"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-car-15w40",
+  "type": "engine-car",
+  "title": "Car engine oil 15W-40 / 10W-30 / 20W-50",
+  "grade": "15W-40 / 10W-30 / 20W-50",
+  "spec": "API SN / SL",
+  "packs": [
+   "1 L",
+   "4 L"
+  ],
+  "apps": [
+   "Older petrol cars and pickups"
+  ],
+  "fits": [],
+  "fitsVerticals": [],
+  "brands": [
+   "Mobil Super 1000 15W-40",
+   "Mobil Super Everyday Protection 10W-30",
+   "Arzol SYNPRO 15W-40",
+   "Shell Helix HX5 20W-50"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-scooter-gear",
+  "type": "gear",
+  "title": "Scooter final-drive gear oil",
+  "grade": "80W-90 or 10W-30 per manual",
+  "spec": "API GL-4/GL-5 or as manual",
+  "packs": [
+   "120 ml",
+   "150 ml"
+  ],
+  "apps": [
+   "Final-drive gear case on Honda and Yamaha scooters (0.09-0.14 L per change)"
+  ],
+  "fits": [
+   "honda-airblade125-ad-2023",
+   "honda-airblade125-vn-2013-2015",
+   "honda-airblade160-2022-2025",
+   "honda-airblade160-2025-cafs",
+   "honda-scoopy110-th-2012-2016",
+   "honda-scoopy110-th-2017-2020",
+   "honda-scoopy110-th-2021-k2f",
+   "honda-scoopy110-th-2024-cbtr",
+   "honda-pcx150-th-2014-2017",
+   "honda-pcx160-th-2021-2023",
+   "honda-pcx160-th-2024",
+   "honda-zoomerx-th-2012-2015",
+   "honda-zoomerx-2016-2017",
+   "honda-lead125-th-2022-k2t",
+   "honda-adv160-th-2023",
+   "honda-adv160-2025-as",
+   "honda-click-autocare",
+   "honda-moove-autocare",
+   "nmax155",
+   "aerox155",
+   "mio125",
+   "yamaha-aerox-alpha155-std-id"
+  ],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "Honda Air Blade 125: 0.13 L at change; Yamaha NMAX: 0.10 L.",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-gear-80w90",
+  "type": "gear",
+  "title": "Gear oil 80W-90 / SAE 90, API GL-5",
+  "grade": "80W-90 / SAE 90",
+  "spec": "API GL-5",
+  "packs": [
+   "1 L",
+   "4 L",
+   "5 L",
+   "20 L"
+  ],
+  "apps": [
+   "Gearboxes, axles, winches; outboard gearcases only where the maker allows"
+  ],
+  "fits": [],
+  "fitsVerticals": [
+   "machinery"
+  ],
+  "brands": [
+   "Shell Spirax S2 G 90",
+   "Briton 80W-90",
+   "Briton SAE-90",
+   "Briton 85W-90"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-outboard-gear",
+  "type": "gear",
+  "title": "Outboard gearcase (lower unit) oil",
+  "grade": "SAE 90 hypoid",
+  "spec": "Outboard gear lube",
+  "packs": [
+   "350 ml",
+   "1 L"
+  ],
+  "apps": [
+   "Outboard lower units"
+  ],
+  "fits": [
+   "yamaha-f115-2014",
+   "yamaha-f150-f175-2.7-2.8l",
+   "yamaha-f200-f225-v6-3.3l",
+   "yamaha-f250-f300-v6-4.2l-2010",
+   "yamaha-f250-v6-3.3l",
+   "yamaha-f40a-2008",
+   "yamaha-f50-2006",
+   "suzuki-df100a-df140a",
+   "suzuki-df200-df250-v6-3.6l",
+   "suzuki-df250a-df300a-v6-4.0l",
+   "suzuki-df40a-df60a",
+   "suzuki-df70a-df90a",
+   "parsun-f15-f9-9",
+   "parsun-f40-efi",
+   "parsun-f60-efi",
+   "parsun-f115-efi",
+   "yamaha-15fmh-2stroke",
+   "yamaha-15hp-2stroke",
+   "yamaha-e15dmh-enduro-2stroke",
+   "yamaha-e25b-30h-2stroke",
+   "yamaha-e40g-e40j-enduro-2stroke",
+   "yamaha-e40x-enduro-2stroke",
+   "yamaha-e60h-enduro-2stroke-2019",
+   "yamaha-e75-85aet-2stroke-2004",
+   "suzuki-dt40w-2stroke",
+   "tohatsu-m40d2-m50d2-2stroke",
+   "mercury-fourstroke-v8-4.6l-250-300",
+   "mercury-verado-l6-200-350"
+  ],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "Genuine Yamalube, Suzuki and Mercury gear oils are listed on each engine page.",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-atf-dexiii",
+  "type": "atf",
+  "title": "ATF Dexron III",
+  "grade": "ATF",
+  "spec": "Dexron III / Mercon",
+  "packs": [
+   "1 L",
+   "4 L",
+   "5 L",
+   "20 L"
+  ],
+  "apps": [
+   "Automatic gearboxes, power steering, some marine gearboxes"
+  ],
+  "fits": [],
+  "fitsVerticals": [],
+  "brands": [
+   "Mobil Multipurpose ATF",
+   "Arzol ATF D III",
+   "Briton Fluid Dex III"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-hyd-68",
+  "type": "hydraulic",
+  "title": "Hydraulic oil ISO VG 68 (AW / HM)",
+  "grade": "ISO VG 68",
+  "spec": "ISO 11158 HM / AW",
+  "packs": [
+   "5 L",
+   "18-20 L",
+   "200-210 L"
+  ],
+  "apps": [
+   "Excavators, backhoes, cranes, workshop hydraulics in hot climates"
+  ],
+  "fits": [],
+  "fitsVerticals": [
+   "machinery"
+  ],
+  "brands": [
+   "Briton HD68",
+   "Briton Hydraulic AW-68"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-hyd-46",
+  "type": "hydraulic",
+  "title": "Hydraulic oil ISO VG 46 / 32",
+  "grade": "ISO VG 46 / 32",
+  "spec": "ISO 11158 HM / AW",
+  "packs": [
+   "18-20 L",
+   "200-210 L"
+  ],
+  "apps": [
+   "Machinery that calls for VG 46 or 32 (check the operator manual)"
+  ],
+  "fits": [],
+  "fitsVerticals": [
+   "machinery"
+  ],
+  "brands": [],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-grease-ep2",
+  "type": "grease",
+  "title": "Lithium EP grease, NLGI 2",
+  "grade": "NLGI 2",
+  "spec": "Lithium / lithium complex EP",
+  "packs": [
+   "400 g cartridge",
+   "1 kg",
+   "5 kg",
+   "15-18 kg"
+  ],
+  "apps": [
+   "Wheel bearings, chassis points, machinery pins and bushes"
+  ],
+  "fits": [],
+  "fitsVerticals": [
+   "machinery",
+   "outboards",
+   "bikes"
+  ],
+  "brands": [
+   "SKF LGEP 2",
+   "SKF LGMT 2",
+   "Arabian SPL SP EP 2",
+   "Briton HT Lithium"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-grease-marine",
+  "type": "grease",
+  "title": "Water-resistant marine grease",
+  "grade": "NLGI 2",
+  "spec": "Calcium sulphonate / complex, water resistant",
+  "packs": [
+   "400 g",
+   "1 kg",
+   "15 kg"
+  ],
+  "apps": [
+   "Outboard and jet-ski grease points, steering, trailers, winches"
+  ],
+  "fits": [],
+  "fitsVerticals": [
+   "outboards",
+   "jetski"
+  ],
+  "brands": [
+   "Mobil XHP 222",
+   "Briton Calcium grease",
+   "SKF LGWA 2"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-grease-ht",
+  "type": "grease",
+  "title": "High-temperature bearing grease",
+  "grade": "NLGI 2-3",
+  "spec": "High-temperature (polyurea / complex)",
+  "packs": [
+   "400 g",
+   "1 kg",
+   "5 kg",
+   "18 kg"
+  ],
+  "apps": [
+   "Electric motors, pumps, fans, hot bearings"
+  ],
+  "fits": [],
+  "fitsVerticals": [
+   "pumps",
+   "generators"
+  ],
+  "brands": [
+   "SKF LGHP 2",
+   "SKF LGMT 3"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-grease-food",
+  "type": "grease",
+  "title": "Food-grade grease (NSF H1)",
+  "grade": "NLGI 2",
+  "spec": "NSF H1 food grade",
+  "packs": [
+   "400 g",
+   "1 kg"
+  ],
+  "apps": [
+   "Resort kitchens, water plants, food machinery"
+  ],
+  "fits": [],
+  "fitsVerticals": [],
+  "brands": [
+   "SKF LGFP 2"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-coolant-moto",
+  "type": "coolant",
+  "title": "Scooter / motorcycle coolant, pre-mixed",
+  "grade": "Pre-mix",
+  "spec": "Honda Pre-Mix type (silicate-free)",
+  "packs": [
+   "1 L"
+  ],
+  "apps": [
+   "Liquid-cooled scooters and bikes (Air Blade, PCX, ADV, Click, NMAX, Aerox)"
+  ],
+  "fits": [
+   "honda-airblade125-ad-2023",
+   "honda-airblade160-2022-2025",
+   "honda-airblade160-2025-cafs",
+   "honda-pcx150-th-2014-2017",
+   "honda-pcx160-th-2021-2023",
+   "honda-pcx160-th-2024",
+   "honda-adv160-th-2023",
+   "honda-adv160-2025-as",
+   "honda-lead125-th-2022-k2t",
+   "nmax155",
+   "aerox155",
+   "yamaha-aerox-alpha155-std-id",
+   "yamaha-exciter155-vva-b5v",
+   "exciter150",
+   "honda-winnerr150-vn-2024"
+  ],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "Air Blade 125 system holds 0.37 L; Air Blade 160 0.48 L (Honda manuals).",
+  "price": 145,
+  "avasPart": "p058"
+ },
+ {
+  "id": "lub-coolant-hd",
+  "type": "coolant",
+  "title": "Engine coolant (ready-to-use or concentrate)",
+  "grade": "RTU / concentrate",
+  "spec": "Ethylene glycol, OAT/hybrid",
+  "packs": [
+   "4 L",
+   "5 L",
+   "20 L",
+   "208 L"
+  ],
+  "apps": [
+   "Generators, marine diesels, cars, machinery"
+  ],
+  "fits": [],
+  "fitsVerticals": [
+   "generators",
+   "marine_diesel",
+   "machinery"
+  ],
+  "brands": [
+   "Arzol KOOL ON 150"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-brake-dot4",
+  "type": "brake",
+  "title": "Brake fluid DOT 4",
+  "grade": "DOT 4",
+  "spec": "FMVSS 116 DOT 4",
+  "packs": [
+   "250 ml",
+   "500 ml"
+  ],
+  "apps": [
+   "Bike and car hydraulic brakes (Honda scooters accept DOT 3 or DOT 4)"
+  ],
+  "fits": [
+   "honda-airblade125-ad-2023",
+   "honda-airblade125-vn-2013-2015",
+   "honda-airblade160-2022-2025",
+   "honda-airblade160-2025-cafs",
+   "honda-scoopy110-th-2012-2016",
+   "honda-scoopy110-th-2017-2020",
+   "honda-scoopy110-th-2021-k2f",
+   "honda-scoopy110-th-2024-cbtr",
+   "honda-pcx150-th-2014-2017",
+   "honda-pcx160-th-2021-2023",
+   "honda-pcx160-th-2024",
+   "honda-zoomerx-th-2012-2015",
+   "honda-zoomerx-2016-2017",
+   "honda-lead125-th-2022-k2t",
+   "honda-adv160-th-2023",
+   "honda-adv160-2025-as",
+   "honda-click-autocare",
+   "honda-moove-autocare",
+   "honda-wave125i-th-2012-2017-kyz",
+   "honda-wave125i-th-2018-2022-k73",
+   "honda-wave125i-th-2023-k1m",
+   "honda-wave125i-th-2024-k3f",
+   "honda-wave110i-th-2009-2013",
+   "honda-wave110i-th-2014-2020",
+   "honda-wave110i-th-2021",
+   "honda-wave-alpha110-2017-2022",
+   "honda-wave100-autocare",
+   "honda-dream-autocare"
+  ],
+  "fitsVerticals": [],
+  "brands": [
+   "Briton DOT 4"
+  ],
+  "note": "Price shown is for the 500 ml bottle already in our catalogue.",
+  "price": 165,
+  "avasPart": "p030"
+ },
+ {
+  "id": "lub-brake-dot3",
+  "type": "brake",
+  "title": "Brake fluid DOT 3",
+  "grade": "DOT 3",
+  "spec": "FMVSS 116 DOT 3",
+  "packs": [
+   "250 ml",
+   "500 ml"
+  ],
+  "apps": [
+   "Older bikes and cars that call for DOT 3"
+  ],
+  "fits": [],
+  "fitsVerticals": [],
+  "brands": [
+   "Briton DOT 3"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-chain",
+  "type": "chain",
+  "title": "Chain lube spray",
+  "grade": "Spray",
+  "spec": "O/X-ring safe",
+  "packs": [
+   "400 ml"
+  ],
+  "apps": [
+   "Chain-drive bikes: Wave, Dream, Exciter, Winner"
+  ],
+  "fits": [
+   "honda-wave125i-th-2012-2017-kyz",
+   "honda-wave125i-th-2018-2022-k73",
+   "honda-wave125i-th-2023-k1m",
+   "honda-wave125i-th-2024-k3f",
+   "honda-wave110i-th-2009-2013",
+   "honda-wave110i-th-2014-2020",
+   "honda-wave110i-th-2021",
+   "honda-wave-alpha110-2017-2022",
+   "honda-wave100-autocare",
+   "honda-dream-autocare",
+   "honda-winnerr150-vn-2024",
+   "exciter150",
+   "lc135",
+   "yamaha-exciter155-vva-b5v"
+  ],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "",
+  "price": 165,
+  "avasPart": "p133"
+ },
+ {
+  "id": "lub-fork",
+  "type": "fork",
+  "title": "Fork oil",
+  "grade": "5W-15W per manual",
+  "spec": "Fork oil",
+  "packs": [
+   "175 ml",
+   "1 L"
+  ],
+  "apps": [
+   "Motorcycle front forks (grade per service manual)"
+  ],
+  "fits": [],
+  "fitsVerticals": [],
+  "brands": [],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-antiseize",
+  "type": "assembly",
+  "title": "Anti-seize and assembly lubricants",
+  "grade": "Paste",
+  "spec": "Copper / nickel anti-seize, ceramic brake lube",
+  "packs": [
+   "tube / can"
+  ],
+  "apps": [
+   "Spark plugs, exhaust studs, brake slide pins, marine fasteners"
+  ],
+  "fits": [],
+  "fitsVerticals": [],
+  "brands": [
+   "Permatex anti-seize",
+   "Permatex ceramic brake lube"
+  ],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ },
+ {
+  "id": "lub-compressor",
+  "type": "compressor",
+  "title": "Compressor oil ISO VG 46 / 68 / 100",
+  "grade": "ISO VG 46-100",
+  "spec": "Air compressor oil",
+  "packs": [
+   "1 L",
+   "20 L"
+  ],
+  "apps": [
+   "Workshop and dive-centre air compressors (check compressor maker spec)"
+  ],
+  "fits": [],
+  "fitsVerticals": [
+   "pumps"
+  ],
+  "brands": [],
+  "note": "",
+  "price": null,
+  "avasPart": null
+ }
+]
