@@ -2,6 +2,7 @@
 import { chromium } from "playwright";
 import { fileURLToPath } from "url";
 import path from "path";
+import fs from "fs";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const url = "file://" + path.join(dir, "index.html");
@@ -10,9 +11,42 @@ const shots = path.join(dir, "shots");
 let fail = 0;
 const ok = (c, m) => { console.log(`  ${c ? "ok  " : "FAIL"} ${m}`); if (!c) fail++; };
 
+/* The API and Turnstile are always mocked: nothing in this run may reach the real network for them. */
+const TURNSTILE_STUB = `window.__ts = { render: 0, reset: 0, remove: 0 };
+window.turnstile = {
+  render(el, o) { window.__ts.render++; window.__ts.o = o; el.innerHTML = '<div class="ts-stub">security check</div>'; setTimeout(() => o.callback("test-token")); return "w1"; },
+  /* like the real widget, a reset runs the challenge again and issues a fresh token */
+  reset() { window.__ts.reset++; setTimeout(() => window.__ts.o.callback("test-token")); },
+  remove() { window.__ts.remove++; },
+};`;
+async function guard(pg, opts = {}) {
+  const net = { turnstile: 0, api: [], unexpected: [], replies: [] };
+  /* Playwright tries the most recently added route first, so this catch-all goes in first. */
+  await pg.route("https://api.avas.parts/**", r => { net.unexpected.push(r.request().url()); return r.abort(); });
+  await pg.route("**/challenges.cloudflare.com/**", r => {
+    net.turnstile++;
+    return r.fulfill({ status: 200, contentType: "text/javascript", body: TURNSTILE_STUB });
+  });
+  await pg.route("**/api/orders", r => {
+    if (r.request().method() === "OPTIONS")
+      return r.fulfill({ status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "content-type, idempotency-key", "access-control-allow-methods": "POST" } });
+    net.api.push({ url: r.request().url(), headers: r.request().headers(), body: r.request().postDataJSON() });
+    const reply = net.replies.shift();
+    if (!reply) { net.unexpected.push(r.request().url()); return r.abort(); }
+    return r.fulfill({ status: reply.status, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify(reply.body) });
+  });
+  if (opts.checkoutOff) {
+    /* data.js ships with onlineCheckout: true on this branch; serve it with the flag off. */
+    const src = fs.readFileSync(path.join(dir, "data.js"), "utf8").replace('"onlineCheckout": true', '"onlineCheckout": false');
+    await pg.route("**/data.js", r => r.fulfill({ status: 200, contentType: "text/javascript", body: src }));
+  }
+  return net;
+}
+
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
 
+const net1 = await guard(page, { checkoutOff: true });
 const errors = [];
 page.on("pageerror", e => errors.push("pageerror: " + e.message));
 page.on("console", m => { if (m.type() === "error") errors.push("console: " + m.text()); });
@@ -112,6 +146,9 @@ await page.waitForTimeout(300);
 await page.click("#cartOpen");
 await page.waitForTimeout(400);
 ok(await page.locator("#cart.on").isVisible(), "order drawer opens");
+ok(await page.evaluate(() => SHOP.onlineCheckout) === false, "flag forced off for the WhatsApp run");
+ok(await page.locator("#goBtn").isVisible() && !(await page.locator("#coOpen").isVisible()),
+   "flag off: WhatsApp send button shown, no Checkout button");
 ok(await page.locator("#goBtn").isDisabled(), "send is blocked until name and phone are given");
 ok(await page.locator("#cartBody .lp.ask").count() === 1 &&
    (await page.locator("#cartBody .lp.ask").textContent()).trim() === "price to confirm",
@@ -452,6 +489,179 @@ await page2.waitForTimeout(300);
 const overflow2 = await page2.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 ok(overflow2 <= 1, `no horizontal overflow at 390px on an equipment page (${overflow2}px)`);
 await page2.close();
+
+
+/* ================= Online checkout ================= */
+const num2 = s => +String(s).replace(/[^0-9]/g, "");
+const isApiNoise = t => /Failed to load resource|net::ERR_FAILED/.test(t);
+async function checkoutPage(query = "", opts = {}) {
+  const pg = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  const net = await guard(pg, opts);
+  pg.on("pageerror", e => errors.push("pageerror(co): " + e.message));
+  pg.on("console", m => { if (m.type() === "error" && !isApiNoise(m.text())) errors.push("console(co): " + m.text()); });
+  await pg.goto(url + query);
+  await pg.waitForTimeout(600);
+  await pg.evaluate(() => { localStorage.removeItem("avas.cart"); localStorage.removeItem("avas.cartctx"); });
+  await pg.reload();
+  await pg.waitForTimeout(600);
+  return { pg, net };
+}
+async function fillCheckout(pg, phone) {
+  await pg.fill("#coName", "Aishath <Shifa>");
+  await pg.fill("#coPhone", phone);
+  await pg.fill("#coEmail", "shifa@example.mv");
+  await pg.selectOption("#coAtoll", "Addu City");
+  await pg.fill("#coIsland", "Hithadhoo");
+  await pg.fill("#coAddress", "Blue Villa, Magu");
+  await pg.fill("#coNotes", "Wave 125i 2019");
+}
+
+console.log("\nOnline checkout (flag on)");
+{
+  const { pg, net } = await checkoutPage();
+  ok(net.turnstile === 0, "Turnstile script not loaded before checkout opens");
+  const pricedAdd = await pg.locator(".card:has(.price .amt) [data-add]").first().getAttribute("data-add");
+  const askAdd = await pg.locator(".card:has(.price .asklab) [data-add]").first().getAttribute("data-add");
+  const pricedP = await pg.evaluate(id => PART_BY_ID[id], pricedAdd);
+  await pg.click(`.card [data-add="${pricedAdd}"]`);
+  await pg.click(`.card [data-add="${pricedAdd}"]`);
+  await pg.click(`.card [data-add="${askAdd}"]`);
+  await pg.waitForTimeout(200);
+  await pg.click("#cartOpen");
+  await pg.waitForTimeout(400);
+  ok(await pg.locator("#coOpen").isVisible() && !(await pg.locator("#goBtn").isVisible()), "cart shows Checkout instead of the WhatsApp button");
+  const cartEst = await pg.locator("#coCartTotals").textContent();
+  ok(!/Delivery/.test(cartEst) && /quoted later/.test(cartEst), "cart estimate charges no delivery fee (shipping quoted later)");
+  await pg.click("#coOpen");
+  await pg.waitForTimeout(400);
+  ok(await pg.locator("#checkout.on").isVisible() && await pg.locator("#coForm").isVisible(), "checkout form opens from the cart");
+  const formText = await pg.locator("#coForm").textContent();
+  for (const t of ["Shipping is quoted manually after we check your order", "Cash on delivery is not available",
+                   "Bank details will be shared with your quote", "Items marked Ask for price make this a quote request"])
+    ok(formText.includes(t), `form says "${t}"`);
+  const est = await pg.locator("#coTotals").textContent();
+  const sub = pricedP.price * 2, gst = Math.round(sub * 0.08);
+  ok(est.includes(`MVR ${sub.toLocaleString("en-US")}`) && est.includes(gst.toLocaleString("en-US")) && est.includes(`MVR ${(sub + gst).toLocaleString("en-US")} + quote`),
+     `estimate = subtotal ${sub} + GST ${gst} on priced lines only`);
+  ok(/confirmed by our server and your quote/.test(est), "estimate says final totals are confirmed later");
+  await pg.waitForTimeout(200);
+  ok(net.turnstile === 1, "Turnstile script injected once when the form opens");
+  ok(await pg.evaluate(() => window.__ts.render) === 1 && await pg.locator("#coTurnstile .ts-stub").count() === 1, "Turnstile widget rendered into the form");
+  ok((await pg.locator("#coSubmit").textContent()).includes("quote"), "submit reads as a quote request when ask-for-price lines are present");
+  await pg.screenshot({ path: path.join(shots, "10-checkout.png"), fullPage: false });
+
+  console.log("\nCheckout validation");
+  await fillCheckout(pg, "12345");
+  await pg.click("#coSubmit");
+  await pg.waitForTimeout(250);
+  ok(net.api.length === 0, "bad phone blocks submit (no request sent)");
+  ok(/7-digit/.test(await pg.locator('.ferr[data-err="phone"]').textContent()) && await pg.locator("#coPhone[aria-invalid=true]").count() === 1, "phone error shown inline");
+  await pg.fill("#coName", "");
+  await pg.click("#coSubmit");
+  await pg.waitForTimeout(150);
+  ok(net.api.length === 0 && (await pg.locator('.ferr[data-err="name"]').textContent()).length > 0, "missing name blocks submit");
+  await pg.fill("#coName", "Aishath <Shifa>");
+  await pg.fill("#coPhone", "+960 771-2345");
+
+  console.log("\nCheckout error response");
+  net.replies.push({ status: 422, body: { error: "invalid_customer", message: "We could not verify <that> phone number.", fields: { phone: "Phone number not recognised" } } });
+  await pg.click("#coSubmit");
+  await pg.waitForTimeout(500);
+  ok(net.api.length === 1, "valid form posts to the API" + (net.api.length ? "" : " → " + await pg.locator("#coError").textContent() + " / " + await pg.locator(".ferr").allTextContents()));
+  ok((await pg.locator("#coError").textContent()) === "We could not verify <that> phone number." && await pg.locator("#coError").isVisible(), "server error message shown inline (as text, escaped)");
+  ok((await pg.locator('.ferr[data-err="phone"]').textContent()) === "Phone number not recognised", "server field error shown next to the field");
+  ok(await pg.locator("#coForm").isVisible() && !(await pg.locator("#coSubmit").isDisabled()), "form kept and submit re-enabled after an error");
+  ok(await pg.evaluate(() => window.__ts.reset) === 1, "Turnstile reset after an error");
+  ok((await pg.locator("#cartN").textContent()).trim() === "3", "cart untouched after an error");
+  await pg.screenshot({ path: path.join(shots, "11-checkout-error.png"), fullPage: false });
+
+  console.log("\nCheckout success");
+  await pg.waitForTimeout(100);   // the stub re-issues a token after reset
+  net.replies.push({ status: 201, body: { orderNo: "AV-2611-0001", trackUrl: "https://api.avas.parts/track/tok123", status: "quote_requested",
+    totals: { currency: "MVR", subtotal: sub, gst, shipping: null, total: sub + gst, hasAskLines: true } } });
+  await pg.click("#coSubmit");
+  await pg.waitForTimeout(500);
+  ok(net.api.length === 2, "retry posts again");
+  const [first, req] = net.api;
+  ok(req.url === "https://api.avas.parts/api/orders", `posts to SHOP.ordersApi /api/orders (${req.url})`);
+  ok(req.headers["content-type"] === "application/json", "Content-Type: application/json");
+  ok(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(req.headers["idempotency-key"] || ""), `Idempotency-Key is a UUID (${req.headers["idempotency-key"]})`);
+  ok(first.headers["idempotency-key"] === req.headers["idempotency-key"], "retry of the same submission reuses the Idempotency-Key");
+  ok(req.body.turnstileToken === "test-token", "turnstileToken sent in the body");
+  const want = [{ id: pricedAdd, qty: 2 }, { id: askAdd, qty: 1 }];
+  ok(JSON.stringify(req.body.lines.map(({ id, qty }) => ({ id, qty }))) === JSON.stringify(want), `lines carry ids and quantities (${JSON.stringify(req.body.lines)})`);
+  ok(req.body.lines.every(l => !("forMachine" in l)), "forMachine omitted when no machine is known");
+  const c = req.body.customer;
+  ok(c.name === "Aishath <Shifa>" && c.phone === "+9607712345" && c.email === "shifa@example.mv" && c.atoll === "Addu City" &&
+     c.island === "Hithadhoo" && c.address === "Blue Villa, Magu" && c.notes === "Wave 125i 2019", `customer fields sent (${JSON.stringify(c)})`);
+  ok(await pg.locator("#coDone").isVisible() && (await pg.locator("#coDone .cono").textContent()) === "AV-2611-0001", "confirmation shows the order number");
+  ok(/price the items marked Ask for price/.test(await pg.locator("#coDone").textContent()), "confirmation explains the quote request");
+  const link = pg.locator("#coDone a.cotrack");
+  ok(await link.getAttribute("href") === "https://api.avas.parts/track/tok123" && await link.getAttribute("target") === "_blank" &&
+     /noopener/.test(await link.getAttribute("rel")) && (await link.textContent()).includes("Track your order"), "Track your order link opens trackUrl in a new tab");
+  ok((await pg.locator("#cartN").textContent()).trim() === "0" && await pg.evaluate(() => localStorage.getItem("avas.cart")) === "{}", "cart cleared after the order");
+  await pg.screenshot({ path: path.join(shots, "12-checkout-done.png"), fullPage: false });
+  ok(net.unexpected.length === 0, "no unmocked API calls" + (net.unexpected.length ? " → " + net.unexpected.join(", ") : ""));
+  const overflow3 = await pg.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  ok(overflow3 <= 1, `checkout has no horizontal overflow at 390px (${overflow3}px)`);
+  await pg.close();
+}
+
+console.log("\nCheckout: pending payment, machine context, ?checkout=online and ?api=");
+{
+  const { pg, net } = await checkoutPage("?checkout=online&api=http://127.0.0.1:8787/", { checkoutOff: true });
+  ok(await pg.evaluate(() => SHOP.onlineCheckout) === false, "flag off in data, on via ?checkout=online");
+  await pg.click('[data-brand="Honda"]');
+  await pg.waitForTimeout(200);
+  await pg.click(`[data-model="${WAVE}"]`);
+  await pg.waitForTimeout(250);
+  ok(new URL(pg.url()).searchParams.get("checkout") === "online", "?checkout=online survives the URL rewrite when a model is picked");
+  const id = await pg.locator(".card:has(.price .amt) [data-add]").first().getAttribute("data-add");
+  await pg.click(`.card [data-add="${id}"]`);
+  await pg.click("#cartOpen");
+  await pg.waitForTimeout(400);
+  ok(await pg.locator("#coOpen").isVisible(), "Checkout button shown via ?checkout=online");
+  await pg.click("#coOpen");
+  await pg.waitForTimeout(400);
+  ok(await pg.locator("#coAskNote").isHidden() && (await pg.locator("#coSubmit").textContent()).trim() === "Place order", "no quote-request note without ask-for-price lines");
+  await fillCheckout(pg, "7712345");
+  net.replies.push({ status: 200, body: { orderNo: "AV-2611-0002", trackUrl: "javascript:alert(1)", status: "pending_payment",
+    totals: { currency: "MVR", subtotal: 100, gst: 8, shipping: null, total: 108, hasAskLines: false } } });
+  await pg.click("#coSubmit");
+  await pg.waitForTimeout(500);
+  const req = net.api[0];
+  ok(req && req.url === "http://127.0.0.1:8787/api/orders", `?api= overrides the API base (${req && req.url})`);
+  ok(req && req.body.lines[0].forMachine && req.body.lines[0].forMachine.includes("Wave 125i"), `forMachine names the picked bike (${req && req.body.lines[0].forMachine})`);
+  ok(req && req.body.customer.phone === "7712345", "7-digit phone accepted without +960");
+  ok(/awaiting payment/.test(await pg.locator("#coDone").textContent()), "confirmation explains awaiting payment");
+  ok(await pg.locator("#coDone a.cotrack").count() === 0, "non-http trackUrl is not linked");
+  await pg.close();
+}
+{
+  const { pg, net } = await checkoutPage("?checkout=online&api=javascript:alert(1)", { checkoutOff: true });
+  await pg.click(".card:has(.price .amt) [data-add] >> nth=0");
+  await pg.click("#cartOpen");
+  await pg.waitForTimeout(300);
+  await pg.click("#coOpen");
+  await pg.waitForTimeout(400);
+  await fillCheckout(pg, "7712345");
+  net.replies.push({ status: 500, body: "oops" });
+  await pg.click("#coSubmit");
+  await pg.waitForTimeout(500);
+  ok(net.api[0] && net.api[0].url === "https://api.avas.parts/api/orders", "non-http ?api= is ignored");
+  ok(/error 500/.test(await pg.locator("#coError").textContent()), "a server error without a message still shows a readable error");
+  await pg.close();
+}
+{
+  const { pg, net } = await checkoutPage("", { checkoutOff: true });
+  await pg.click(".card:has(.price .amt) [data-add] >> nth=0");
+  await pg.click("#cartOpen");
+  await pg.waitForTimeout(300);
+  ok(await pg.locator("#goBtn").isVisible() && !(await pg.locator("#coOpen").isVisible()) && await pg.locator("#checkout.on").count() === 0, "flag off: WhatsApp button still there, no checkout");
+  ok(net.turnstile === 0 && net.api.length === 0, "flag off: no Turnstile or API requests");
+  await pg.close();
+}
+ok(net1.turnstile === 0 && net1.api.length === 0, "WhatsApp run made no Turnstile or API requests");
 
 ok(errors.length === 0, "still no JS errors after the full run" + (errors.length ? " → " + errors.join(" | ") : ""));
 
