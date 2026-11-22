@@ -22,6 +22,7 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
+const { cleanNote } = require("./dealer-notes");
 
 const root = path.join(__dirname, "..");
 const ctx = {};
@@ -35,7 +36,9 @@ vm.runInContext(
   ctx);
 const { VERTICALS, MARINE_CATS, POWER_MODELS, POWER_PARTS, DEALER_MARINE_MODELS, DEALER_MARINE_PARTS } = ctx.__X;
 /* Dealer marine rows (Parsun) share the marine schema, so they go through the
-   same path as the scraped marine catalogue. */
+   same path as the scraped marine catalogue. Their notes lose reference prices
+   and dated stock remarks first (tools/dealer-notes.js). */
+for (const p of DEALER_MARINE_PARTS) p.note = cleanNote(p.note);
 const MARINE_MODELS = [...ctx.__X.MARINE_MODELS, ...DEALER_MARINE_MODELS];
 const MARINE_PARTS = [...ctx.__X.MARINE_PARTS, ...DEALER_MARINE_PARTS];
 

@@ -109,6 +109,7 @@ vm.createContext(dctx);
 vm.runInContext(fs.readFileSync("src-data/data-dealers-next.js", "utf8") +
   "\n;globalThis.__DL = {DEALER_MODELS, DEALER_PARTS, DEALER_MARINE_MODELS, DEALER_MARINE_PARTS};", dctx);
 const DL = dctx.__DL;
+const { cleanNote } = require("./tools/dealer-notes");
 for (const b of ["CFMoto", "Keeway"]) {
   ok(BRANDS.includes(b), `${b} is in BRANDS`);
   const n = MODELS.filter(m => m.brand === b).length;
@@ -130,7 +131,7 @@ const badNew = newParts.filter(p => !isAsk(p) || !(p.sources || []).length || !p
 ok(newParts.length > 0 && !badNew.length, "new dealer parts must be askPrice with sources: " + badNew.join(", "));
 const flagDrift = newParts.filter(p => {
   const d = DL.DEALER_PARTS.find(x => x.id === p.id);
-  return p.v !== d.v || p.confirmed !== d.confirmed || p.note !== d.note || JSON.stringify(p.sources) !== JSON.stringify(d.sources);
+  return p.v !== d.v || p.confirmed !== d.confirmed || p.note !== cleanNote(d.note) || JSON.stringify(p.sources) !== JSON.stringify(d.sources);
 }).map(p => p.id);
 ok(!flagDrift.length, "new dealer parts changed v/confirmed/note/sources: " + flagDrift.join(", "));
 console.log(`  ${newParts.length} dealer parts added, ${merged.size} merged onto existing numbers`);
@@ -243,6 +244,18 @@ ok(parsunParts.every(p => p.price === null && p.askPrice === true && p.src.lengt
 ok(parsunParts.every(p => p.fits.every(f => pids.has(f))), "Parsun parts fit only Parsun engines");
 console.log(`  Parsun: ${parsun.length} models, ${parsunParts.length} parts`);
 ok(html.includes('id="vertChips"'), "index.html has the category picker");
+
+sec("No reference prices in customer notes");
+// Dealer research (overseas ref prices, competitor stock on a date) must not reach the site.
+const REF_PRICE = /ref price|\b(AUD|USD|HUF|IDR|RON|CAD)\b\s*\d|\d[\d.,]*\s*(AUD|USD|HUF|IDR|RON|CAD)\b|Sold Out on/i;
+const refBike = PARTS.filter(p => REF_PRICE.test(p.note || "")).map(p => p.id);
+const refEq = E.parts.filter(p => REF_PRICE.test(p.note || "")).map(p => p.id);
+ok(!refBike.length, "data.js part notes with a reference price / stock remark: " + refBike.slice(0, 20).join(", "));
+ok(!refEq.length, "data-equip.js part notes with a reference price / stock remark: " + refEq.slice(0, 20).join(", "));
+const dealerModelIds = new Set([...DL.DEALER_MODELS, ...DL.DEALER_MARINE_MODELS].map(m => m.id));
+const mvrModels = [...MODELS, ...E.models].filter(m => dealerModelIds.has(m.id) && /\bMVR\b|\bRf\b/.test(m.note || "")).map(m => m.id);
+ok(!mvrModels.length, "dealer model notes with an MVR price: " + mvrModels.join(", "));
+console.log(`  ${PARTS.length + E.parts.length} part notes checked`);
 
 console.log("\n" + (fail ? `${fail} check(s) FAILED` : "All checks passed"));
 process.exit(fail ? 1 : 0);

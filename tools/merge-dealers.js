@@ -14,10 +14,14 @@
      note) instead of creating a second part with the same number.
    - The dealer file's v / confirmed flags mean "v:1 + confirmed:verify = seen
      on a retailer page only". app.js treats confirmed:"verify" as unconfirmed.
+   - Reference prices and dated stock remarks in dealer notes are research,
+     not customer text: tools/dealer-notes.js strips them from every note this
+     tool writes, including rows merged on an earlier run.
    - Parsun (marine) is not handled here: tools/build-equip.js reads it. */
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
+const { cleanNote, cleanModelNote } = require("./dealer-notes");
 
 const root = path.join(__dirname, "..");
 const DATA = path.join(root, "data.js");
@@ -31,6 +35,7 @@ vm.runInContext(fs.readFileSync(path.join(root, "src-data/data-dealers-next.js")
   "\n;globalThis.__X = {DEALER_NEW_BRANDS, DEALER_MODELS, DEALER_PARTS};", ctx);
 const D = ctx.__D;
 const { DEALER_NEW_BRANDS, DEALER_MODELS, DEALER_PARTS } = ctx.__X;
+for (const d of DEALER_PARTS) d.note = cleanNote(d.note);
 
 const uniq = (a) => [...new Set(a.filter(Boolean))];
 const addNote = (p, n) => {
@@ -60,6 +65,9 @@ for (const m of DEALER_MODELS) {
   if (clash) throw new Error(`model name clash: ${m.id} vs ${clash.id}`);
   D.MODELS.push({ ...m, name });
   log.push(`model added: ${m.id}`);
+}
+for (const m of D.MODELS) {
+  if (DEALER_MODELS.some(x => x.id === m.id)) m.note = cleanModelNote(m.note);
 }
 
 /* ---------- Parts ---------- */
@@ -135,6 +143,12 @@ addAlt("n0211", "40530-KPH-902", "40530-KPH-901",
   "Honda lists -901 (DID420DX-104RB) and -902 (DID420AD-104RB) as Wave 125 drive chain variants; hondamoto.parts lists 880/900/901/902 as equivalent references.",
   ["https://www.bike-parts-honda.com/thumbs/pdf_url/img/parts_list/0125_AFS125M3_M5_MSP6_MSP7_MSP8_AFS125MSA_MSB_PH/2500_2500/0113.pdf",
    "https://www.hondamoto.parts/en/spare-parts/132226-chaine-of-commande-daido-did420dx-104rb-40530-kph-901.html"]);
+
+/* ---------- Dealer notes: no reference prices or stock remarks ---------- */
+const dealerIds = new Set(DEALER_PARTS.map(d => d.id));
+for (const p of D.PARTS) {
+  if (dealerIds.has(p.id) || (p.merged_from || []).some(id => dealerIds.has(id))) p.note = cleanNote(p.note);
+}
 
 /* ---------- Integrity before writing ---------- */
 const oems = D.PARTS.map(p => p.oem);
