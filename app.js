@@ -638,7 +638,7 @@ function renderCart() {
   if (!lines.length) {
     body.innerHTML = `<div class="empty">
       <h3>No parts yet</h3>
-      <p>Pick your bike or engine, then add the parts you need. We deliver to every inhabited island.</p>
+      <p>Pick your bike or engine, then add the parts you need. ${online ? "Free delivery to Malé, Hulhumalé and boats (harbour drop-off)." : "We deliver to every inhabited island."}</p>
     </div>`;
     $("#cartFoot").hidden = true;
     return;
@@ -727,11 +727,13 @@ function ordersApiBase() {
 
 const TURNSTILE_SITEKEY = "0x4AAAAAAGNINAID53bzGUrq";
 const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-const ATOLLS = [
-  "Malé City", "Haa Alifu", "Haa Dhaalu", "Shaviyani", "Noonu", "Raa", "Baa", "Lhaviyani",
-  "Kaafu", "Alifu Alifu", "Alifu Dhaalu", "Vaavu", "Meemu", "Faafu", "Dhaalu", "Thaa",
-  "Laamu", "Gaafu Alifu", "Gaafu Dhaalu", "Fuvahmulah", "Addu City",
+/* Online orders deliver only here, free of charge. value = the canonical name the Worker stores. */
+const DESTINATIONS = [
+  { value: "Malé", label: "Malé", address: "Address", placeholder: "House or shop name, road" },
+  { value: "Hulhumalé", label: "Hulhumalé", address: "Address", placeholder: "House or shop name, road" },
+  { value: "Boats", label: "Boats (harbour drop-off)", address: "Vessel and harbour", placeholder: "Vessel name and harbour" },
 ];
+const destinationOf = (v) => DESTINATIONS.find(d => d.value === v);
 const co = { key: null, sig: null, token: null, widget: null, tsLoading: null, busy: false };
 
 function uuid() {
@@ -742,7 +744,7 @@ function uuid() {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }
 
-/* Priced lines only; shipping is quoted later, so it is never added here. */
+/* Priced lines only; delivery is free to every destination we offer. */
 function estimateHTML() {
   const lines = cartLines();
   const sub = lines.filter(({ p }) => hasPrice(p)).reduce((a, { p, q }) => a + p.price * q, 0);
@@ -752,7 +754,7 @@ function estimateHTML() {
     <div><span>Subtotal</span><span>${sub ? "MVR " + money(sub) : "—"}</span></div>
     ${askQty ? `<div class="pending"><span>Ask for price</span><span>${askQty} item${askQty === 1 ? "" : "s"}</span></div>` : ""}
     <div><span>GST 8%</span><span>${money(gst)}</span></div>
-    <div class="pending"><span>Shipping</span><span>quoted later</span></div>
+    <div><span>Shipping</span><span>Free</span></div>
     <div class="grand"><span>Estimate</span><span>MVR ${money(sub + gst)}${askQty ? " + quote" : ""}</span></div>
     <p class="hint">Estimate only. Final totals are confirmed by our server and your quote.</p>`;
 }
@@ -831,7 +833,7 @@ function readCustomer() {
   const v = (id) => $("#" + id).value.trim();
   return {
     name: v("coName"), phone: v("coPhone").replace(/[\s-]/g, ""), email: v("coEmail"),
-    island: v("coIsland"), atoll: v("coAtoll"), address: v("coAddress"), notes: v("coNotes"),
+    destination: v("coDestination"), address: v("coAddress"), notes: v("coNotes"),
   };
 }
 
@@ -841,9 +843,8 @@ function validateCustomer(c) {
   if (!c.phone) e.phone = "Enter your phone number.";
   else if (!/^(\+?960)?\d{7}$/.test(c.phone)) e.phone = "Enter a 7-digit Maldives number, e.g. 7712345 or +960 7712345.";
   if (c.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email)) e.email = "Check the email address.";
-  if (!c.atoll) e.atoll = "Choose your atoll.";
-  if (!c.island) e.island = "Enter your island.";
-  if (!c.address) e.address = "Enter your address.";
+  if (!destinationOf(c.destination)) e.destination = "Choose Malé, Hulhumalé or Boats (harbour drop-off).";
+  if (!c.address) e.address = c.destination === "Boats" ? "Enter the vessel name and harbour." : "Enter your address.";
   return e;
 }
 
@@ -867,6 +868,8 @@ async function submitCheckout(ev) {
   if (!lines.length) { showCoError("Your order is empty."); return; }
   if (!co.token) { showCoError("Please wait for the security check to finish, then try again."); return; }
 
+  /* Older Workers read atoll/island; send the same canonical destination there too. */
+  customer.atoll = customer.island = customer.destination;
   /* One key per attempt: a retry of the same details reuses it, an edit gets a new one. */
   const sig = JSON.stringify({ customer, lines });
   if (sig !== co.sig) { co.sig = sig; co.key = uuid(); }
@@ -896,7 +899,10 @@ async function submitCheckout(ev) {
   else {
     if (data && data.fields && typeof data.fields === "object") {
       const f = {};
-      for (const [k, msg] of Object.entries(data.fields)) f[k.replace(/^customer\./, "")] = String(msg);
+      for (const [k, msg] of Object.entries(data.fields)) {
+        const key = k.replace(/^customer\./, "");
+        f[key === "atoll" || key === "island" ? "destination" : key] = String(msg);
+      }
       setFieldErrors(f);
     }
     showCoError((data && data.message) ? String(data.message) : `Something went wrong (error ${res.status}). Please try again.`);
@@ -909,17 +915,17 @@ function showConfirmation(d) {
   const track = /^https?:\/\//i.test(d.trackUrl || "") ? d.trackUrl : "";
   const t = d.totals || {};
   const total = typeof t.total === "number"
-    ? `<p class="hint">Total before shipping: ${esc(t.currency || "MVR")} ${money(t.total)}${t.hasAskLines ? " + items to price" : ""}</p>` : "";
+    ? `<p class="hint">Total with free delivery: ${esc(t.currency || "MVR")} ${money(t.total)}${t.hasAskLines ? " + items to price" : ""}</p>` : "";
   $("#coDone").innerHTML = `
     <div class="codone">
       <div class="colab">${quote ? "Quote request received" : "Order received"}</div>
       <div class="cono">${esc(d.orderNo)}</div>
       <p>${quote
-        ? "We'll price the items marked Ask for price, quote shipping, and send you a quote with our bank details."
-        : "Your order is awaiting payment. We'll check stock, quote shipping and send our bank details with your quote."}</p>
+        ? "We'll price the items marked Ask for price and send you a quote. Delivery is free."
+        : "Your order is awaiting payment by bank transfer. Delivery is free. Bank transfer details to follow."}</p>
       ${total}
       ${track ? `<a class="gobtn cotrack" href="${esc(track)}" target="_blank" rel="noopener">Track your order</a>` : ""}
-      <p class="hint">Keep your order number. Cash on delivery is not available.</p>
+      <p class="hint">Keep your order number. Pay by bank transfer only; cash on delivery is not available.</p>
     </div>`;
   $("#coForm").hidden = true;
   $("#coDone").hidden = false;
@@ -958,8 +964,9 @@ function applySkin() {
 function renderZones() {
   $("#zone").innerHTML = ZONES.map(z =>
     `<option value="${z.id}">${esc(z.name)} — MVR ${z.fee} · ${esc(z.eta)}</option>`).join("");
-  $("#zoneList").innerHTML = ZONES.map(z =>
-    `<li class="zline"><span>${esc(z.name)}</span><span>${esc(z.eta)}</span></li>`).join("");
+  $("#zoneList").innerHTML = onlineCheckoutOn()
+    ? DESTINATIONS.map(d => `<li class="zline"><span>${esc(d.label)}</span><span>Free</span></li>`).join("")
+    : ZONES.map(z => `<li class="zline"><span>${esc(z.name)}</span><span>${esc(z.eta)}</span></li>`).join("");
 }
 
 /* ---------- Wire up ---------- */
@@ -1059,7 +1066,15 @@ $("#goBtn").addEventListener("click", sendOrder);
 $("#coOpen").addEventListener("click", openCheckout);
 $("#coBack").addEventListener("click", () => { $("#checkout").classList.remove("on"); renderCart(); openDrawer("#cart"); });
 $("#coForm").addEventListener("submit", submitCheckout);
-$("#coAtoll").innerHTML = `<option value="">Choose atoll</option>` + ATOLLS.map(a => `<option>${esc(a)}</option>`).join("");
+$("#coDestination").innerHTML = `<option value="">Choose destination</option>` +
+  DESTINATIONS.map(d => `<option value="${esc(d.value)}">${esc(d.label)}</option>`).join("");
+function syncAddressField() {
+  const d = destinationOf($("#coDestination").value) || DESTINATIONS[0];
+  $("#coAddressLabel").textContent = d.address;
+  $("#coAddress").placeholder = d.placeholder;
+}
+$("#coDestination").addEventListener("change", syncAddressField);
+syncAddressField();
 $("#clearBtn").addEventListener("click", () => {
   state.brand = state.model = state.cat = null; state.q = ""; $("#q").value = ""; render();
 });

@@ -165,7 +165,7 @@
     <div id="coFoot" hidden>
       <div class="totals" id="coCartTotals"></div>
       <button class="gobtn" id="coOpen" type="button">Checkout</button>
-      <p class="hint" style="margin-top:8px">Shipping is quoted manually after we check your order.</p>
+      <p class="hint" style="margin-top:8px">Free delivery to Malé, Hulhumalé and boats (harbour drop-off).</p>
     </div>
   </div>
 </aside>
@@ -180,9 +180,9 @@
     <form id="coForm" novalidate>
       <ul class="conotes">
         <li id="coAskNote" class="conote-ask" hidden>Items marked Ask for price make this a quote request — we'll price them and send you a quote.</li>
-        <li>Shipping is quoted manually after we check your order.</li>
-        <li>Cash on delivery is not available.</li>
-        <li>Bank details will be shared with your quote.</li>
+        <li>Free delivery to Malé, Hulhumalé or Boats (harbour drop-off). We do not deliver elsewhere.</li>
+        <li>Pay by bank transfer only. Cash on delivery is not available.</li>
+        <li>Bank transfer details to follow.</li>
       </ul>
 
       <div class="field">
@@ -200,20 +200,13 @@
         <input id="coEmail" name="email" type="email" autocomplete="email">
         <div class="ferr" data-err="email"></div>
       </div>
-      <div class="corow">
-        <div class="field">
-          <label for="coAtoll">Atoll</label>
-          <select id="coAtoll" name="atoll" required></select>
-          <div class="ferr" data-err="atoll"></div>
-        </div>
-        <div class="field">
-          <label for="coIsland">Island</label>
-          <input id="coIsland" name="island" type="text" placeholder="e.g. Hithadhoo" required>
-          <div class="ferr" data-err="island"></div>
-        </div>
+      <div class="field">
+        <label for="coDestination">Delivery destination</label>
+        <select id="coDestination" name="destination" required></select>
+        <div class="ferr" data-err="destination"></div>
       </div>
       <div class="field">
-        <label for="coAddress">Address</label>
+        <label for="coAddress" id="coAddressLabel">Address</label>
         <input id="coAddress" name="address" type="text" autocomplete="street-address" placeholder="House or shop name, road" required>
         <div class="ferr" data-err="address"></div>
       </div>

@@ -177,6 +177,16 @@ const needed = ["q","grid","catWrap","brandChips","modelChips","modelRow","cartO
 const missingIds = needed.filter(id => !html.includes(`id="${id}"`));
 ok(!missingIds.length, "app.js references ids missing from index.html: " + missingIds.join(", "));
 console.log(`  ${needed.length - missingIds.length}/${needed.length} element ids present`);
+sec("Online checkout destinations");
+ok(html.includes('id="coDestination"') && html.includes('id="coAddressLabel"'), "checkout has the destination select and address label");
+ok(!/id="coAtoll"|id="coIsland"/.test(html) && !/\bATOLLS\b|coAtoll|coIsland/.test(app), "atoll dropdown / island field removed");
+const dm = app.match(/const DESTINATIONS = \[([\s\S]*?)\];/);
+const dvals = dm ? [...dm[1].matchAll(/value: "([^"]+)", label: "([^"]+)"/g)].map(m => m[1] + "=" + m[2]) : [];
+ok(JSON.stringify(dvals) === JSON.stringify(["Malé=Malé", "Hulhumalé=Hulhumalé", "Boats=Boats (harbour drop-off)"]), "destinations are exactly Malé, Hulhumalé, Boats: " + dvals.join(", "));
+ok(!/quoted manually|quoted later|quote shipping|Bank details will be shared/.test(html + app), "no shipping-quote or old bank wording in the checkout");
+ok(html.includes("Bank transfer details to follow") && html.includes("Cash on delivery is not available"), "checkout notes: bank transfer placeholder and no COD");
+console.log(`  ${dvals.length} destinations`);
+
 ["data.js","app.js","styles.css"].forEach(f =>
   ok(html.includes(f), `index.html does not load ${f}`));
 

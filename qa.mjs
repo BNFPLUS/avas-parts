@@ -506,13 +506,12 @@ async function checkoutPage(query = "", opts = {}) {
   await pg.waitForTimeout(600);
   return { pg, net };
 }
-async function fillCheckout(pg, phone) {
+async function fillCheckout(pg, phone, destination = "Hulhumalé", address = "Blue Villa, Magu") {
   await pg.fill("#coName", "Aishath <Shifa>");
   await pg.fill("#coPhone", phone);
   await pg.fill("#coEmail", "shifa@example.mv");
-  await pg.selectOption("#coAtoll", "Addu City");
-  await pg.fill("#coIsland", "Hithadhoo");
-  await pg.fill("#coAddress", "Blue Villa, Magu");
+  await pg.selectOption("#coDestination", destination);
+  await pg.fill("#coAddress", address);
   await pg.fill("#coNotes", "Wave 125i 2019");
 }
 
@@ -531,14 +530,26 @@ console.log("\nOnline checkout (flag on)");
   await pg.waitForTimeout(400);
   ok(await pg.locator("#coOpen").isVisible() && !(await pg.locator("#goBtn").isVisible()), "cart shows Checkout instead of the WhatsApp button");
   const cartEst = await pg.locator("#coCartTotals").textContent();
-  ok(!/Delivery/.test(cartEst) && /quoted later/.test(cartEst), "cart estimate charges no delivery fee (shipping quoted later)");
+  ok(!/Delivery/.test(cartEst) && /ShippingFree/.test(cartEst) && !/quoted/.test(cartEst), "cart estimate shows free shipping, no fee and no quote wording");
+  ok(/Free delivery to Malé, Hulhumalé and boats/.test(await pg.locator("#coFoot").textContent()), "cart footer says delivery is free to the three destinations");
   await pg.click("#coOpen");
   await pg.waitForTimeout(400);
   ok(await pg.locator("#checkout.on").isVisible() && await pg.locator("#coForm").isVisible(), "checkout form opens from the cart");
   const formText = await pg.locator("#coForm").textContent();
-  for (const t of ["Shipping is quoted manually after we check your order", "Cash on delivery is not available",
-                   "Bank details will be shared with your quote", "Items marked Ask for price make this a quote request"])
+  for (const t of ["Free delivery to Malé, Hulhumalé or Boats (harbour drop-off)", "Pay by bank transfer only", "Cash on delivery is not available",
+                   "Bank transfer details to follow", "Items marked Ask for price make this a quote request"])
     ok(formText.includes(t), `form says "${t}"`);
+  ok(!/quoted manually|quoted later|Bank details will be shared/.test(formText), "form has no shipping-quote or old bank wording");
+  const opts = await pg.locator("#coDestination option").evaluateAll(os => os.map(o => [o.value, o.textContent]));
+  ok(JSON.stringify(opts) === JSON.stringify([["", "Choose destination"], ["Malé", "Malé"], ["Hulhumalé", "Hulhumalé"], ["Boats", "Boats (harbour drop-off)"]]),
+     `destination select offers only Malé, Hulhumalé, Boats (${JSON.stringify(opts)})`);
+  ok(await pg.locator("#coAtoll, #coIsland").count() === 0, "no atoll dropdown or island field");
+  ok(await pg.locator("#coAddress").getAttribute("placeholder") === "House or shop name, road", "address placeholder for Malé/Hulhumalé");
+  await pg.selectOption("#coDestination", "Boats");
+  ok(await pg.locator("#coAddress").getAttribute("placeholder") === "Vessel name and harbour" && (await pg.locator("#coAddressLabel").textContent()) === "Vessel and harbour", "Boats switches the address field to vessel name and harbour");
+  await pg.selectOption("#coDestination", "Hulhumalé");
+  ok(await pg.locator("#coAddress").getAttribute("placeholder") === "House or shop name, road", "switching back restores the house/shop placeholder");
+  ok(JSON.stringify(await pg.locator("#zoneList li").allTextContents()) === JSON.stringify(["MaléFree", "HulhumaléFree", "Boats (harbour drop-off)Free"]), "footer delivery list shows only the three free destinations");
   const est = await pg.locator("#coTotals").textContent();
   const sub = pricedP.price * 2, gst = Math.round(sub * 0.08);
   ok(est.includes(`MVR ${sub.toLocaleString("en-US")}`) && est.includes(gst.toLocaleString("en-US")) && est.includes(`MVR ${(sub + gst).toLocaleString("en-US")} + quote`),
@@ -562,6 +573,11 @@ console.log("\nOnline checkout (flag on)");
   ok(net.api.length === 0 && (await pg.locator('.ferr[data-err="name"]').textContent()).length > 0, "missing name blocks submit");
   await pg.fill("#coName", "Aishath <Shifa>");
   await pg.fill("#coPhone", "+960 771-2345");
+  await pg.selectOption("#coDestination", "");
+  await pg.click("#coSubmit");
+  await pg.waitForTimeout(150);
+  ok(net.api.length === 0 && /Malé, Hulhumalé or Boats/.test(await pg.locator('.ferr[data-err="destination"]').textContent()), "missing destination blocks submit");
+  await pg.selectOption("#coDestination", "Hulhumalé");
 
   console.log("\nCheckout error response");
   net.replies.push({ status: 422, body: { error: "invalid_customer", message: "We could not verify <that> phone number.", fields: { phone: "Phone number not recognised" } } });
@@ -578,7 +594,7 @@ console.log("\nOnline checkout (flag on)");
   console.log("\nCheckout success");
   await pg.waitForTimeout(100);   // the stub re-issues a token after reset
   net.replies.push({ status: 201, body: { orderNo: "AV-2611-0001", trackUrl: "https://api.avas.parts/track/tok123", status: "quote_requested",
-    totals: { currency: "MVR", subtotal: sub, gst, shipping: null, total: sub + gst, hasAskLines: true } } });
+    totals: { currency: "MVR", subtotal: sub, gst, shipping: 0, shippingPending: false, total: null, hasAskLines: true } } });
   await pg.click("#coSubmit");
   await pg.waitForTimeout(500);
   ok(net.api.length === 2, "retry posts again");
@@ -592,10 +608,11 @@ console.log("\nOnline checkout (flag on)");
   ok(JSON.stringify(req.body.lines.map(({ id, qty }) => ({ id, qty }))) === JSON.stringify(want), `lines carry ids and quantities (${JSON.stringify(req.body.lines)})`);
   ok(req.body.lines.every(l => !("forMachine" in l)), "forMachine omitted when no machine is known");
   const c = req.body.customer;
-  ok(c.name === "Aishath <Shifa>" && c.phone === "+9607712345" && c.email === "shifa@example.mv" && c.atoll === "Addu City" &&
-     c.island === "Hithadhoo" && c.address === "Blue Villa, Magu" && c.notes === "Wave 125i 2019", `customer fields sent (${JSON.stringify(c)})`);
+  ok(c.name === "Aishath <Shifa>" && c.phone === "+9607712345" && c.email === "shifa@example.mv" && c.destination === "Hulhumalé" && c.atoll === "Hulhumalé" &&
+     c.island === "Hulhumalé" && c.address === "Blue Villa, Magu" && c.notes === "Wave 125i 2019", `customer fields sent (${JSON.stringify(c)})`);
   ok(await pg.locator("#coDone").isVisible() && (await pg.locator("#coDone .cono").textContent()) === "AV-2611-0001", "confirmation shows the order number");
-  ok(/price the items marked Ask for price/.test(await pg.locator("#coDone").textContent()), "confirmation explains the quote request");
+  const doneQ = await pg.locator("#coDone").textContent();
+  ok(/price the items marked Ask for price/.test(doneQ) && /Delivery is free/.test(doneQ) && !/shipping/i.test(doneQ), "confirmation explains the quote request, free delivery, no shipping quote");
   const link = pg.locator("#coDone a.cotrack");
   ok(await link.getAttribute("href") === "https://api.avas.parts/track/tok123" && await link.getAttribute("target") === "_blank" &&
      /noopener/.test(await link.getAttribute("rel")) && (await link.textContent()).includes("Track your order"), "Track your order link opens trackUrl in a new tab");
@@ -624,16 +641,19 @@ console.log("\nCheckout: pending payment, machine context, ?checkout=online and 
   await pg.click("#coOpen");
   await pg.waitForTimeout(400);
   ok(await pg.locator("#coAskNote").isHidden() && (await pg.locator("#coSubmit").textContent()).trim() === "Place order", "no quote-request note without ask-for-price lines");
-  await fillCheckout(pg, "7712345");
+  await fillCheckout(pg, "7712345", "Boats", "MV Sea Star, North Harbour");
   net.replies.push({ status: 200, body: { orderNo: "AV-2611-0002", trackUrl: "javascript:alert(1)", status: "pending_payment",
-    totals: { currency: "MVR", subtotal: 100, gst: 8, shipping: null, total: 108, hasAskLines: false } } });
+    totals: { currency: "MVR", subtotal: 100, gst: 8, shipping: 0, shippingPending: false, total: 108, hasAskLines: false } } });
   await pg.click("#coSubmit");
   await pg.waitForTimeout(500);
   const req = net.api[0];
   ok(req && req.url === "http://127.0.0.1:8787/api/orders", `?api= overrides the API base (${req && req.url})`);
   ok(req && req.body.lines[0].forMachine && req.body.lines[0].forMachine.includes("Wave 125i"), `forMachine names the picked bike (${req && req.body.lines[0].forMachine})`);
   ok(req && req.body.customer.phone === "7712345", "7-digit phone accepted without +960");
-  ok(/awaiting payment/.test(await pg.locator("#coDone").textContent()), "confirmation explains awaiting payment");
+  ok(req && req.body.customer.destination === "Boats" && req.body.customer.atoll === "Boats" && req.body.customer.island === "Boats" && req.body.customer.address === "MV Sea Star, North Harbour", `Boats sent as the canonical destination (${req && JSON.stringify(req.body.customer)})`);
+  const doneP = await pg.locator("#coDone").textContent();
+  ok(/awaiting payment by bank transfer/.test(doneP) && /Bank transfer details to follow/.test(doneP) && /cash on delivery is not available/i.test(doneP) && /Total with free delivery: MVR 108/.test(doneP) && !/quote shipping|before shipping/.test(doneP),
+     "confirmation explains awaiting bank transfer, free delivery, no COD");
   ok(await pg.locator("#coDone a.cotrack").count() === 0, "non-http trackUrl is not linked");
   await pg.close();
 }
