@@ -21425,5 +21425,7 @@ const SHOP = {
  "whatsapp": "9600000",
  "email": "order@avas.parts",
  "hours": "Sat–Thu 09:00–18:00 · Fri 14:00–18:00",
- "gstRate": 0.08
+ "gstRate": 0.08,
+ "onlineCheckout": true,
+ "ordersApi": "https://api.avas.parts"
 };
