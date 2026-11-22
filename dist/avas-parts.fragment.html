@@ -540,6 +540,42 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .gobtn:hover { filter: brightness(1.08); }
 .gobtn:disabled { background: var(--rule); color: var(--ink-3); cursor: not-allowed; }
 
+/* online checkout */
+.backbtn {
+  border: 0; background: transparent; padding: 0 6px 0 0;
+  font-family: var(--f-mono); font-size: 11px; color: var(--sea);
+}
+.backbtn:hover { color: var(--hot); }
+.conotes {
+  list-style: none; margin: 0 0 16px; padding: 10px 12px;
+  border: 1px dashed var(--rule); border-radius: var(--r);
+  font-size: 13px; color: var(--ink-2);
+}
+.conotes li { padding: 2px 0 2px 14px; position: relative; }
+.conotes li::before { content: "·"; position: absolute; left: 2px; color: var(--ink-3); }
+.conotes .conote-ask { color: var(--amber); font-weight: 500; }
+.field .opt { text-transform: none; letter-spacing: 0; color: var(--ink-3); opacity: .8; }
+.corow { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.ferr { font-size: 12px; color: var(--hot); margin-top: 3px; }
+.ferr:empty { display: none; }
+.field [aria-invalid="true"] { border-color: var(--hot); }
+.totals .hint { font-family: var(--f-body); margin: 6px 0 0; }
+.cots { min-height: 65px; margin: 4px 0 10px; }
+.coerr {
+  margin-bottom: 10px; padding: 9px 11px; font-size: 13px;
+  color: var(--hot); background: var(--panel-2);
+  border: 1px solid var(--hot); border-radius: var(--r);
+}
+.codone { text-align: center; padding: 18px 4px; }
+.codone .colab { font-family: var(--f-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ok); }
+.codone .cono {
+  font-family: var(--f-mono); font-size: 26px; font-weight: 600;
+  letter-spacing: .04em; margin: 6px 0 12px; color: var(--ink);
+}
+.codone p { color: var(--ink-2); font-size: 14px; }
+.cotrack { display: block; text-decoration: none; margin: 16px 0 8px; }
+@media (max-width: 380px) { .corow { grid-template-columns: 1fr; } }
+
 /* detail drawer bits */
 .dsec { margin-bottom: 18px; }
 .dsec h4 {
@@ -728,6 +764,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   </div>
   <div class="dbody" id="cartBody"></div>
   <div class="dfoot" id="cartFoot" hidden>
+    <div id="waFoot">
     <div class="field">
       <label for="zone">Deliver to</label>
       <select id="zone"></select>
@@ -760,6 +797,76 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
     <button class="gobtn" id="goBtn" disabled>Send order on WhatsApp</button>
     <p class="hint" style="margin-top:8px">We confirm stock and the final total before you pay.</p>
+    </div>
+
+    <div id="coFoot" hidden>
+      <div class="totals" id="coCartTotals"></div>
+      <button class="gobtn" id="coOpen" type="button">Checkout</button>
+      <p class="hint" style="margin-top:8px">Shipping is quoted manually after we check your order.</p>
+    </div>
+  </div>
+</aside>
+
+<aside class="drawer" id="checkout" aria-label="Checkout">
+  <div class="dhead">
+    <button class="backbtn" id="coBack" type="button">← Order</button>
+    <h3 id="coTitle">Checkout</h3>
+    <button class="xbtn" data-close aria-label="Close">×</button>
+  </div>
+  <div class="dbody">
+    <form id="coForm" novalidate>
+      <ul class="conotes">
+        <li id="coAskNote" class="conote-ask" hidden>Items marked Ask for price make this a quote request — we'll price them and send you a quote.</li>
+        <li>Shipping is quoted manually after we check your order.</li>
+        <li>Cash on delivery is not available.</li>
+        <li>Bank details will be shared with your quote.</li>
+      </ul>
+
+      <div class="field">
+        <label for="coName">Name</label>
+        <input id="coName" name="name" type="text" autocomplete="name" required>
+        <div class="ferr" data-err="name"></div>
+      </div>
+      <div class="field">
+        <label for="coPhone">Phone</label>
+        <input id="coPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="7xxxxxx" required>
+        <div class="ferr" data-err="phone"></div>
+      </div>
+      <div class="field">
+        <label for="coEmail">Email <span class="opt">optional</span></label>
+        <input id="coEmail" name="email" type="email" autocomplete="email">
+        <div class="ferr" data-err="email"></div>
+      </div>
+      <div class="corow">
+        <div class="field">
+          <label for="coAtoll">Atoll</label>
+          <select id="coAtoll" name="atoll" required></select>
+          <div class="ferr" data-err="atoll"></div>
+        </div>
+        <div class="field">
+          <label for="coIsland">Island</label>
+          <input id="coIsland" name="island" type="text" placeholder="e.g. Hithadhoo" required>
+          <div class="ferr" data-err="island"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="coAddress">Address</label>
+        <input id="coAddress" name="address" type="text" autocomplete="street-address" placeholder="House or shop name, road" required>
+        <div class="ferr" data-err="address"></div>
+      </div>
+      <div class="field">
+        <label for="coNotes">Notes <span class="opt">optional</span></label>
+        <textarea id="coNotes" name="notes" placeholder="Model and frame or serial number, delivery instructions…"></textarea>
+        <div class="ferr" data-err="notes"></div>
+      </div>
+
+      <div class="totals" id="coTotals"></div>
+
+      <div class="cots" id="coTurnstile"></div>
+      <div class="coerr" id="coError" role="alert" hidden></div>
+      <button class="gobtn" id="coSubmit" type="submit">Place order</button>
+    </form>
+    <div id="coDone" hidden></div>
   </div>
 </aside>
 
@@ -22201,7 +22308,9 @@ const SHOP = {
  "whatsapp": "9600000",
  "email": "order@avas.parts",
  "hours": "Sat–Thu 09:00–18:00 · Fri 14:00–18:00",
- "gstRate": 0.08
+ "gstRate": 0.08,
+ "onlineCheckout": true,
+ "ordersApi": "https://api.avas.parts"
 };
 
 /* avas.parts marine + equipment catalogue. GENERATED by tools/build-equip.js from src-data/ — do not edit.
@@ -23074,7 +23183,7 @@ function saveCart() {
 
 function addToCart(id, silent) {
   const part = PART_BY_ID[id];
-  if (part && isEq(part) && state.model && part.fits.includes(state.model)) state.ctx[id] = state.model;
+  if (part && state.model && (part.universal || part.fits.includes(state.model))) state.ctx[id] = state.model;
   state.cart[id] = (state.cart[id] || 0) + 1;
   saveCart();
   if (!silent) {
@@ -23097,6 +23206,9 @@ function zoneFee() {
 function renderCart() {
   const lines = cartLines();
   const body = $("#cartBody");
+  const online = onlineCheckoutOn();
+  $("#waFoot").hidden = online;
+  $("#coFoot").hidden = !online;
 
   if (!lines.length) {
     body.innerHTML = `<div class="empty">
@@ -23133,6 +23245,7 @@ function renderCart() {
     ? "MVR " + money(total) + " + prices to confirm"
     : "MVR " + money(total);
   $("#goBtn").disabled = !$("#custName").value.trim() || !$("#custPhone").value.trim();
+  if (online) { $("#coCartTotals").innerHTML = estimateHTML(); renderCheckout(); }
 }
 
 function orderText() {
@@ -23171,6 +23284,227 @@ function sendOrder() {
   window.open(url, "_blank", "noopener");
   navigator.clipboard?.writeText(txt).catch(() => {});
   toast("Order opened in WhatsApp — also copied");
+}
+
+/* ---------- Online checkout (behind a flag; WhatsApp ordering otherwise) ---------- */
+function onlineCheckoutOn() {
+  return SHOP.onlineCheckout === true || BOOT_PARAMS.get("checkout") === "online";
+}
+
+/* ?api=<url> points the form at a local Worker while testing; only http(s) is accepted. */
+function ordersApiBase() {
+  const raw = BOOT_PARAMS.get("api");
+  if (raw && /^https?:\/\//i.test(raw)) {
+    try { return new URL(raw).href.replace(/\/+$/, ""); } catch {}
+  }
+  return String(SHOP.ordersApi || "").replace(/\/+$/, "");
+}
+
+const TURNSTILE_SITEKEY = "0x4AAAAAAGNINAID53bzGUrq";
+const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+const ATOLLS = [
+  "Malé City", "Haa Alifu", "Haa Dhaalu", "Shaviyani", "Noonu", "Raa", "Baa", "Lhaviyani",
+  "Kaafu", "Alifu Alifu", "Alifu Dhaalu", "Vaavu", "Meemu", "Faafu", "Dhaalu", "Thaa",
+  "Laamu", "Gaafu Alifu", "Gaafu Dhaalu", "Fuvahmulah", "Addu City",
+];
+const co = { key: null, sig: null, token: null, widget: null, tsLoading: null, busy: false };
+
+function uuid() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+  const h = [...b].map(x => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
+
+/* Priced lines only; shipping is quoted later, so it is never added here. */
+function estimateHTML() {
+  const lines = cartLines();
+  const sub = lines.filter(({ p }) => hasPrice(p)).reduce((a, { p, q }) => a + p.price * q, 0);
+  const askQty = lines.filter(({ p }) => !hasPrice(p)).reduce((a, { q }) => a + q, 0);
+  const gst = Math.round(sub * SHOP.gstRate);
+  return `
+    <div><span>Subtotal</span><span>${sub ? "MVR " + money(sub) : "—"}</span></div>
+    ${askQty ? `<div class="pending"><span>Ask for price</span><span>${askQty} item${askQty === 1 ? "" : "s"}</span></div>` : ""}
+    <div><span>GST 8%</span><span>${money(gst)}</span></div>
+    <div class="pending"><span>Shipping</span><span>quoted later</span></div>
+    <div class="grand"><span>Estimate</span><span>MVR ${money(sub + gst)}${askQty ? " + quote" : ""}</span></div>
+    <p class="hint">Estimate only. Final totals are confirmed by our server and your quote.</p>`;
+}
+
+/* The machine a line was added for, when we know it. */
+function forMachine(id) {
+  const m = MODEL_BY_ID[state.ctx[id]];
+  return m ? eqModelName(m) + (m.model_number ? ` (${m.model_number})` : "") : undefined;
+}
+
+function loadTurnstile() {
+  if (window.turnstile) return Promise.resolve(window.turnstile);
+  if (!co.tsLoading) {
+    co.tsLoading = new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = TURNSTILE_SRC; s.async = true; s.defer = true;
+      s.onload = () => window.turnstile ? resolve(window.turnstile) : reject(new Error("turnstile missing"));
+      s.onerror = () => { co.tsLoading = null; s.remove(); reject(new Error("turnstile failed")); };
+      document.head.appendChild(s);
+    });
+  }
+  return co.tsLoading;
+}
+
+function mountTurnstile() {
+  if (co.widget != null) return;
+  loadTurnstile().then(ts => {
+    if (co.widget != null) return;
+    co.widget = ts.render($("#coTurnstile"), {
+      sitekey: TURNSTILE_SITEKEY,
+      callback: (t) => { co.token = t; },
+      "expired-callback": () => { co.token = null; },
+      "error-callback": () => { co.token = null; },
+    });
+  }, () => showCoError("The security check could not load. Check your connection and reopen checkout."));
+}
+
+function resetTurnstile() {
+  co.token = null;
+  if (window.turnstile && co.widget != null) window.turnstile.reset(co.widget);
+}
+
+function openCheckout() {
+  if (!cartLines().length) return;
+  $("#coForm").hidden = false;
+  $("#coDone").hidden = true;
+  $("#coTitle").textContent = "Checkout";
+  renderCheckout();
+  $("#cart").classList.remove("on");
+  openDrawer("#checkout");
+  mountTurnstile();
+}
+
+function renderCheckout() {
+  const ask = cartLines().some(({ p }) => !hasPrice(p));
+  $("#coAskNote").hidden = !ask;
+  $("#coTotals").innerHTML = estimateHTML();
+  if (!co.busy) $("#coSubmit").textContent = ask ? "Send quote request" : "Place order";
+}
+
+function showCoError(msg) {
+  $("#coError").textContent = msg;
+  $("#coError").hidden = !msg;
+}
+
+function setFieldErrors(errs) {
+  $$("#coForm .ferr").forEach(el => {
+    const msg = errs[el.dataset.err] || "";
+    el.textContent = msg;
+    const input = el.parentElement.querySelector("input,select,textarea");
+    if (input) input.setAttribute("aria-invalid", msg ? "true" : "false");
+  });
+}
+
+function readCustomer() {
+  const v = (id) => $("#" + id).value.trim();
+  return {
+    name: v("coName"), phone: v("coPhone").replace(/[\s-]/g, ""), email: v("coEmail"),
+    island: v("coIsland"), atoll: v("coAtoll"), address: v("coAddress"), notes: v("coNotes"),
+  };
+}
+
+function validateCustomer(c) {
+  const e = {};
+  if (!c.name) e.name = "Enter your name.";
+  if (!c.phone) e.phone = "Enter your phone number.";
+  else if (!/^(\+?960)?\d{7}$/.test(c.phone)) e.phone = "Enter a 7-digit Maldives number, e.g. 7712345 or +960 7712345.";
+  if (c.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email)) e.email = "Check the email address.";
+  if (!c.atoll) e.atoll = "Choose your atoll.";
+  if (!c.island) e.island = "Enter your island.";
+  if (!c.address) e.address = "Enter your address.";
+  return e;
+}
+
+async function submitCheckout(ev) {
+  ev.preventDefault();
+  if (co.busy) return;
+  showCoError("");
+  const customer = readCustomer();
+  const errs = validateCustomer(customer);
+  setFieldErrors(errs);
+  if (Object.keys(errs).length) {
+    $("#coForm [aria-invalid='true']").focus();
+    return;
+  }
+  const lines = Object.entries(state.cart).map(([id, qty]) => {
+    const l = { id, qty };
+    const fm = forMachine(id);
+    if (fm) l.forMachine = fm;
+    return l;
+  });
+  if (!lines.length) { showCoError("Your order is empty."); return; }
+  if (!co.token) { showCoError("Please wait for the security check to finish, then try again."); return; }
+
+  /* One key per attempt: a retry of the same details reuses it, an edit gets a new one. */
+  const sig = JSON.stringify({ customer, lines });
+  if (sig !== co.sig) { co.sig = sig; co.key = uuid(); }
+
+  co.busy = true;
+  const btn = $("#coSubmit"), label = btn.textContent;
+  btn.disabled = true; btn.textContent = "Sending…";
+  let res, data = null;
+  try {
+    res = await fetch(ordersApiBase() + "/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Idempotency-Key": co.key },
+      body: JSON.stringify({ customer, lines, turnstileToken: co.token }),
+    });
+    data = await res.json().catch(() => null);
+  } catch {
+    res = null;
+  }
+  co.busy = false;
+  btn.disabled = false; btn.textContent = label;
+
+  if (res && (res.status === 200 || res.status === 201) && data && data.orderNo) {
+    showConfirmation(data);
+    return;
+  }
+  if (!res) showCoError("We could not reach the order server. Check your connection and try again.");
+  else {
+    if (data && data.fields && typeof data.fields === "object") {
+      const f = {};
+      for (const [k, msg] of Object.entries(data.fields)) f[k.replace(/^customer\./, "")] = String(msg);
+      setFieldErrors(f);
+    }
+    showCoError((data && data.message) ? String(data.message) : `Something went wrong (error ${res.status}). Please try again.`);
+  }
+  resetTurnstile();
+}
+
+function showConfirmation(d) {
+  const quote = d.status === "quote_requested";
+  const track = /^https?:\/\//i.test(d.trackUrl || "") ? d.trackUrl : "";
+  const t = d.totals || {};
+  const total = typeof t.total === "number"
+    ? `<p class="hint">Total before shipping: ${esc(t.currency || "MVR")} ${money(t.total)}${t.hasAskLines ? " + items to price" : ""}</p>` : "";
+  $("#coDone").innerHTML = `
+    <div class="codone">
+      <div class="colab">${quote ? "Quote request received" : "Order received"}</div>
+      <div class="cono">${esc(d.orderNo)}</div>
+      <p>${quote
+        ? "We'll price the items marked Ask for price, quote shipping, and send you a quote with our bank details."
+        : "Your order is awaiting payment. We'll check stock, quote shipping and send our bank details with your quote."}</p>
+      ${total}
+      ${track ? `<a class="gobtn cotrack" href="${esc(track)}" target="_blank" rel="noopener">Track your order</a>` : ""}
+      <p class="hint">Keep your order number. Cash on delivery is not available.</p>
+    </div>`;
+  $("#coForm").hidden = true;
+  $("#coDone").hidden = false;
+  $("#coTitle").textContent = quote ? "Quote requested" : "Thank you";
+  $("#coNotes").value = "";
+  setFieldErrors({});
+  co.key = co.sig = null;
+  if (window.turnstile && co.widget != null) window.turnstile.remove(co.widget);
+  co.widget = null; co.token = null;
+  state.cart = {}; saveCart(); renderCart();
 }
 
 /* ---------- Drawers, toast, skin ---------- */
@@ -23221,6 +23555,7 @@ function syncURL() {
   if (state.model) ps.set("m", state.model);
   else if (state.brand) ps.set("b", state.brand);
   if (state.q.trim() && BOOT_PARAMS.has("q")) ps.set("q", state.q.trim());
+  for (const k of ["checkout", "api"]) if (BOOT_PARAMS.has(k)) ps.set(k, BOOT_PARAMS.get(k));
   const qs = ps.toString();
   try { history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash); } catch {}
 }
@@ -23296,6 +23631,10 @@ $("#scrim").addEventListener("click", closeDrawers);
 $("#zone").addEventListener("change", renderCart);
 ["custName", "custPhone"].forEach(id => $("#" + id).addEventListener("input", renderCart));
 $("#goBtn").addEventListener("click", sendOrder);
+$("#coOpen").addEventListener("click", openCheckout);
+$("#coBack").addEventListener("click", () => { $("#checkout").classList.remove("on"); renderCart(); openDrawer("#cart"); });
+$("#coForm").addEventListener("submit", submitCheckout);
+$("#coAtoll").innerHTML = `<option value="">Choose atoll</option>` + ATOLLS.map(a => `<option>${esc(a)}</option>`).join("");
 $("#clearBtn").addEventListener("click", () => {
   state.brand = state.model = state.cat = null; state.q = ""; $("#q").value = ""; render();
 });
