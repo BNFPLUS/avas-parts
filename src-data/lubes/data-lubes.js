@@ -1,4 +1,4 @@
-/* Oils & lubricants catalogue (preview). Generated from /workspace/avas-catalogue/lubricants (catalogue.py). Prices: only lines already priced in data.js carry a price; everything else is ask-for-price. No competitor prices and no BNF stock codes are in this file. */
+/* Oils & lubricants catalogue (preview). Generated from /workspace/avas-catalogue/lubricants (catalogue.py). Prices: only lines already priced in data.js carry a price; everything else is ask-for-price. No supplier prices or stock codes are in this file. */
 var LUBES = {
  "updated": "2026-11-22",
  "types": [
@@ -269,7 +269,7 @@ var LUBES = {
    ],
    "fitsVerticals": [],
    "brands": [],
-   "note": "No Maldives retailer we checked publishes a TC-W3-labelled oil with a price. Gap worth filling.",
+   "note": "Use only oil labelled NMMA TC-W3 in 2-stroke outboards. Ask us on WhatsApp for current stock.",
    "price": null,
    "avasPart": null
   },

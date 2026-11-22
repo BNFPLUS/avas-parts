@@ -294,7 +294,7 @@ ok(/0\.80 L/.test(L.modelOil["honda-airblade125-ad-2023"].items[0].value), "Air 
 const COMPETITORS = ["Leo", "Seagear", "Motul shop", "Arzol shop", "Sonee", "Auto Care", "Petrol Ofisi", "Sinopec", "Prestone"];
 const named = COMPETITORS.filter(n => new RegExp(`\\b${n}\\b`, "i").test(lubesSrc));
 ok(!named.length, "competitor names in data-lubes.js: " + named.join(", "));
-const stockCodes = ["BRIT0", "SGR10", "MO00", "AR00"].filter(c => lubesSrc.includes(c));
+const stockCodes = ["BRIT0", "SGR10", "MO00", "AR00", "BNF", "Gap worth"].filter(c => lubesSrc.includes(c));
 ok(!stockCodes.length, "competitor stock codes in data-lubes.js: " + stockCodes.join(", "));
 ok(app.includes('"data-lubes.js"') && !html.includes('src="data-lubes.js"'), "data-lubes.js is lazy-loaded by app.js, not by index.html");
 console.log(`  ${L.entries.length} entries · ${L.types.length} types · ${priced.length} priced · ${Object.keys(L.modelOil).length} models with owner-manual fluids`);
