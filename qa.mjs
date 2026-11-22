@@ -28,7 +28,7 @@ const total = await page.locator(".card").count();
 ok(total > 100, `catalogue renders (${total} cards)`);
 ok(equipReqs.length === 0, "data-equip.js is not requested on the default bike page");
 ok(await page.locator('#vertChips [data-vertical="bikes"][aria-pressed="true"]').count() === 1, "category picker shows Bikes selected by default");
-ok(await page.locator("#vertChips [data-vertical]").count() === 7, "category picker lists 7 categories");
+ok(await page.locator("#vertChips [data-vertical]").count() === 8, "category picker lists 8 categories");
 ok(await page.locator(".eqcard").count() === 0 && !(await page.locator("#rNote").isVisible()), "no equipment cards or model note on the bike default");
 await page.screenshot({ path: path.join(shots, "01-home.png"), fullPage: false });
 
@@ -452,6 +452,173 @@ await page2.waitForTimeout(300);
 const overflow2 = await page2.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 ok(overflow2 <= 1, `no horizontal overflow at 390px on an equipment page (${overflow2}px)`);
 await page2.close();
+
+/* ================= Oils & lubricants ================= */
+console.log("\nOils & lubricants");
+const page3 = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
+page3.on("pageerror", e => errors.push("pageerror(3): " + e.message));
+page3.on("console", m => { if (m.type() === "error") errors.push("console(3): " + m.text()); });
+const req3 = { lubes: 0, equip: 0 };
+page3.on("request", r => {
+  if (r.url().includes("data-lubes.js")) req3.lubes++;
+  if (r.url().includes("data-equip.js")) req3.equip++;
+});
+const lubeIds = () => page3.evaluate(() => [...document.querySelectorAll(".lubecard")].map(e => e.dataset.lube));
+await page3.goto(url);
+await page3.waitForTimeout(700);
+ok(req3.lubes === 0 && req3.equip === 0, "fresh bike home: no request for data-lubes.js or data-equip.js");
+ok((await page3.locator('#vertChips [data-vertical="lubes"]').textContent()).trim() === "Oils & lubricants", "\"Oils & lubricants\" chip shown");
+
+await page3.click('[data-vertical="lubes"]');
+await page3.waitForSelector(".lubecard", { timeout: 8000 });
+const lubeN = await page3.locator(".lubecard").count();
+ok(lubeN >= 30, `oils view renders every product (${lubeN} cards)`);
+ok(req3.lubes === 1 && req3.equip === 0, `data-lubes.js loaded once on demand, data-equip.js not needed (${req3.lubes}/${req3.equip})`);
+ok(page3.url().includes("v=lubes"), "URL records ?v=lubes");
+ok((await page3.locator("#rNote").textContent()).includes("Prices confirmed on WhatsApp. Check your owner's manual for grade and capacity."), "price / owner's manual line shown");
+ok(!(await page3.locator("#brandRow").isVisible()) && await page3.locator("#lfVeh").isVisible(), "make picker replaced by oil filters");
+await page3.screenshot({ path: path.join(shots, "lubes-desktop.png") });
+
+await page3.click('[data-lf="type"][data-val="engine-scooter"]');
+await page3.waitForTimeout(200);
+const scooterIds = (await lubeIds()).sort();
+ok(JSON.stringify(scooterIds) === JSON.stringify(["lub-scooter-10w30-mb", "lub-scooter-10w40-mb"]), `Type = Scooter engine oil shows the 10W-30 and 10W-40 JASO MB oils (${scooterIds.join(", ")})`);
+await page3.click('[data-lf="type"][data-val=""]');
+await page3.waitForTimeout(200);
+
+const AB = "honda-airblade125-ad-2023";
+await page3.selectOption("#lfVeh", AB);
+await page3.waitForTimeout(200);
+const abIds = await lubeIds();
+ok(abIds.includes("lub-scooter-10w30-mb") && !abIds.includes("lub-moto-10w30-ma"), `Vehicle = Air Blade 125 includes the scooter 10W-30 MB, not the JASO MA oil (${abIds.length} products)`);
+const abMisfit = await page3.evaluate((id) => [...document.querySelectorAll(".lubecard")].map(e => e.dataset.lube).filter(x => !lubeFits(LB.byId[x], id)), AB);
+ok(abMisfit.length === 0, "every product shown fits the Air Blade 125" + (abMisfit.length ? " → " + abMisfit.join(", ") : ""));
+ok((await page3.locator("#rNote").textContent()).includes("0.80 L"), "vehicle filter shows its owner-manual fluids");
+await page3.click("#clearBtn");
+await page3.waitForTimeout(200);
+ok(await page3.locator(".lubecard").count() === lubeN, "Reset clears the oil filters");
+
+await page3.click('[data-lf="for"][data-val="ob2"]');
+await page3.waitForTimeout(200);
+const ob2 = await lubeIds();
+ok(ob2.includes("lub-2t-tcw3") && ob2.includes("lub-outboard-gear") && !ob2.includes("lub-scooter-10w30-mb"), `For = Outboard 2-stroke lists TC-W3 and gearcase oil (${ob2.length})`);
+await page3.click('[data-lf="for"][data-val=""]');
+await page3.waitForTimeout(200);
+
+await page3.fill("#q", "TC-W3");
+await page3.waitForTimeout(350);
+const tcw = await lubeIds();
+ok(tcw.includes("lub-2t-tcw3") && tcw.length < 5, `search in the oils view finds TC-W3 oil (${tcw.join(", ")})`);
+await page3.fill("#q", "Mobil Delvac");
+await page3.waitForTimeout(350);
+ok(JSON.stringify(await lubeIds()) === JSON.stringify(["lub-diesel-15w40-ci4"]), "search matches brands we can source");
+ok(req3.equip === 0, "searching oils does not load the equipment catalogue");
+await page3.fill("#q", "");
+await page3.waitForTimeout(300);
+
+const brake = page3.locator('.lubecard[data-lube="lub-brake-dot4"]');
+const brakePrice = `${(await brake.locator(".price .cur").textContent()).trim()} ${(await brake.locator(".price .amt").textContent()).trim()}`;
+ok(brakePrice === "MVR 165", `brake fluid DOT 4 shows MVR 165 (${brakePrice})`);
+ok(await page3.locator(".lubecard .price .amt").count() === 3, "only the three existing catalogue items carry a price");
+await brake.locator('[data-pack="250 ml"]').click();
+await page3.waitForTimeout(150);
+ok((await brake.locator(".price").textContent()).trim() === "Ask for price", "brake fluid 250 ml (not in the catalogue) is ask for price");
+await brake.locator('[data-pack="500 ml"]').click();
+await page3.waitForTimeout(150);
+await brake.locator(".addbtn").click();
+await page3.waitForTimeout(200);
+ok(await page3.evaluate(() => state.cart.p030 === 1), "adding brake fluid 500 ml adds the existing p030 part");
+
+const tcwCard = page3.locator('.lubecard[data-lube="lub-2t-tcw3"]');
+await tcwCard.locator('[data-pack="4 L"]').click();
+await page3.waitForTimeout(150);
+await tcwCard.locator(".addbtn").click();
+await page3.waitForTimeout(200);
+await page3.click("#cartOpen");
+await page3.waitForTimeout(400);
+const tcwLine = page3.locator("#cartBody .line", { hasText: "TC-W3" });
+ok(await tcwLine.count() === 1 && (await tcwLine.locator(".nm").textContent()).includes("4 L"), "cart line names the chosen pack size (4 L)");
+ok((await tcwLine.locator(".lp").textContent()).trim() === "price to confirm", "ask-for-price oil reads \"price to confirm\"");
+ok(await page3.locator("#tAskRow").isVisible() && (await page3.locator("#tAskRow").textContent()).includes("Price to confirm"), "\"Price to confirm\" row shown in the cart");
+ok(+(await page3.locator("#tSub").textContent()).replace(/[^0-9]/g, "") === 165, "subtotal counts only the priced brake fluid");
+await page3.fill("#custName", "Aishath Shiuna");
+await page3.fill("#custPhone", "7754321");
+await page3.waitForTimeout(150);
+await page3.evaluate(() => { window.open = (u) => { window.__wa = u; return null; }; });
+await page3.click("#goBtn");
+await page3.waitForTimeout(250);
+const waL = decodeURIComponent((await page3.evaluate(() => window.__wa || "")).split("?text=")[1] || "");
+ok(waL.includes("Outboard 2-stroke oil, NMMA TC-W3 — 4 L") && waL.includes("— price to confirm"), "WhatsApp text has the oil, its pack size and \"price to confirm\"");
+ok(waL.includes("Brake fluid DOT 4, 500 ml") && waL.includes("MVR 165"), "WhatsApp text prices the brake fluid");
+await page3.click('#cart [data-close]');
+await page3.waitForTimeout(300);
+
+await page3.click('[data-lubedetail="lub-scooter-10w30-mb"]');
+await page3.waitForTimeout(300);
+const lDet = await page3.locator("#detailBody").textContent();
+ok(lDet.includes("Air Blade 125 (2023+, Asia-direct)") && lDet.includes("JASO MB") && lDet.includes("Ask for price"), "detail drawer lists grade, the models it fits and the price");
+await page3.click("#detail [data-close]");
+await page3.waitForTimeout(300);
+await page3.click('[data-lubedetail="lub-ob4-10w30-fcw"]');
+await page3.waitForFunction(() => document.querySelector("#detailBody").textContent.includes("F250"), null, { timeout: 8000 }).catch(() => {});
+ok((await page3.locator("#detailBody").textContent()).includes("Yamaha F250 / F300"), "outboard oil detail names the engines it fits (equipment names loaded on demand)");
+await page3.click("#detail [data-close]");
+await page3.waitForTimeout(300);
+
+console.log("\nOils deep link + model pages");
+await page3.goto(url + "?v=lubes&t=engine-scooter");
+await page3.waitForSelector(".lubecard", { timeout: 8000 });
+await page3.waitForTimeout(200);
+ok(await page3.locator('#vertChips [data-vertical="lubes"][aria-pressed="true"]').count() === 1 && await page3.locator(".lubecard").count() === 2, "?v=lubes&t=… deep link opens the filtered oils view");
+await page3.goto(url + "?v=lubes");
+await page3.waitForSelector(".lubecard", { timeout: 8000 });
+ok(await page3.locator(".lubecard").count() === lubeN, "?v=lubes deep link opens the oils view");
+
+await page3.goto(url);
+await page3.waitForTimeout(500);
+await page3.click('#brandChips [data-brand="Honda"]');
+await page3.waitForTimeout(200);
+await page3.click(`#modelChips [data-model="${AB}"]`);
+await page3.waitForSelector("#rNote .fluids", { timeout: 8000 }).catch(() => {});
+const fl = page3.locator("#rNote .fluids");
+ok(await fl.count() === 1 && (await fl.textContent()).includes("Fluids (owner manual)") && (await fl.textContent()).includes("0.80 L"), "Air Blade 125 (2023+) shows the owner-manual fluids box with 0.80 L");
+ok(((await fl.locator("a.srclink").getAttribute("href")) || "").includes("hondamotopub.com"), "fluids box links the owner manual");
+await page3.evaluate(() => {
+  const el = document.querySelector(".rhead");
+  window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - (document.querySelector(".bar").offsetHeight + 80));
+});
+await page3.waitForTimeout(150);
+await page3.screenshot({ path: path.join(shots, "lubes-airblade-fluids.png") });
+const shop = fl.locator("a.fl-shop");
+ok(((await shop.getAttribute("href")) || "").includes("v=lubes") && ((await shop.getAttribute("href")) || "").includes("e=lub-scooter-10w30-mb"), "\"Shop this oil\" links to the filtered oils view");
+await shop.click();
+await page3.waitForSelector(".lubecard", { timeout: 8000 });
+await page3.waitForTimeout(200);
+ok(JSON.stringify(await lubeIds()) === JSON.stringify(["lub-scooter-10w30-mb"]) && page3.url().includes("e=lub-scooter-10w30-mb"), "\"Shop this oil\" opens the oils view on the scooter 10W-30 JASO MB");
+
+await page3.goto(url + "?m=honda-wave125i-th-2018-2022-k73");
+await page3.waitForTimeout(800);
+ok(await page3.locator("#rNote .fluids").count() === 0, "a model without owner-manual data shows no fluids box");
+
+await page3.goto(url + "?v=outboards&m=yamaha-f250-f300-v6-4.2l-2010");
+await page3.waitForSelector('#rNote [data-lubejump="veh"]', { timeout: 8000 }).catch(() => {});
+const mo = page3.locator('#rNote [data-lubejump="veh"]');
+ok(await mo.count() === 1, "outboard model page shows a \"Matching oils\" link");
+await mo.click();
+await page3.waitForSelector(".lubecard", { timeout: 8000 });
+await page3.waitForTimeout(200);
+const f250 = await lubeIds();
+ok(f250.includes("lub-ob4-10w30-fcw") && f250.includes("lub-outboard-gear") && !f250.includes("lub-scooter-10w30-mb"), `Matching oils for the F250 lists the FC-W and gearcase oils (${f250.length})`);
+
+console.log("\nOils on mobile");
+await page3.setViewportSize({ width: 390, height: 844 });
+await page3.goto(url + "?v=lubes");
+await page3.waitForSelector(".lubecard", { timeout: 8000 });
+await page3.waitForTimeout(300);
+const overflow3 = await page3.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+ok(overflow3 <= 1, `no horizontal overflow at 390px in the oils view (${overflow3}px)`);
+await page3.screenshot({ path: path.join(shots, "lubes-mobile.png") });
+await page3.close();
 
 ok(errors.length === 0, "still no JS errors after the full run" + (errors.length ? " → " + errors.join(" | ") : ""));
 

@@ -389,6 +389,31 @@ button { font: inherit; color: inherit; cursor: pointer; }
   text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere;
 }
 
+/* oils & lubricants */
+.lfilters {
+  display: grid; gap: 0 12px; margin-bottom: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+}
+.lfilters > * { min-width: 0; }
+.lfilters select { max-width: 100%; }
+.chip.pk { padding: 3px 8px; font-size: 12.5px; }
+.lspec { font-family: var(--f-mono); font-size: 12px; color: var(--ink-2); overflow-wrap: anywhere; }
+.lspec b { color: var(--ink); font-weight: 600; }
+.lapps, .lbrands, .lnote { margin: 0; font-size: 13px; color: var(--ink-2); }
+.lbrands b { font-weight: 600; color: var(--ink); }
+.lnote { font-size: 12.5px; color: var(--ink-3); border-left: 2px solid var(--rule); padding-left: 8px; }
+.fluids { display: flex; flex-direction: column; gap: 6px; }
+.fl-head {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--sea); font-weight: 600;
+}
+.fl-rows { display: flex; flex-direction: column; gap: 3px; }
+.fl-row { display: grid; grid-template-columns: 120px 1fr; gap: 10px; color: var(--ink); }
+.fl-k { color: var(--ink-3); }
+.fl-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.fl-shop { text-decoration: none; display: inline-block; }
+.mnote .fluids + .fluids, .mnote-note + .fluids { border-top: 1px solid var(--rule-2); padding-top: 7px; }
+
 /* fitment ribbon */
 .ribbon { display: flex; flex-wrap: wrap; gap: 4px; }
 .fitchip {
@@ -605,6 +630,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
   /* one swipeable row of categories instead of three wrapped rows */
   .vchips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
   .vchips .chip { flex-shrink: 0; }
+  .lchips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+  .lchips .chip { flex-shrink: 0; }
+  .fl-row { grid-template-columns: 1fr; gap: 0; }
   .bar { flex-wrap: wrap; gap: 9px; }
   .searchwrap { order: 3; flex-basis: 100%; max-width: none; }
   .barspacer { display: none; }

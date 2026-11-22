@@ -10,8 +10,8 @@ vm.runInContext(
 );
 const { MODELS, PARTS, CATS, ZONES, FAMILY, GROUP, BRANDS, SHOP } = ctx.__X;
 
-let fail = 0;
-const ok  = (c, m) => { if (!c) { fail++; console.log("  FAIL " + m); } };
+let fail = 0, checks = 0;
+const ok  = (c, m) => { checks++; if (!c) { fail++; console.log("  FAIL " + m); } };
 const sec = (n) => console.log("\n" + n);
 
 sec("Dataset shape");
@@ -257,5 +257,48 @@ const mvrModels = [...MODELS, ...E.models].filter(m => dealerModelIds.has(m.id) 
 ok(!mvrModels.length, "dealer model notes with an MVR price: " + mvrModels.join(", "));
 console.log(`  ${PARTS.length + E.parts.length} part notes checked`);
 
+sec("Oils & lubricants (data-lubes.js)");
+const lubesSrc = fs.readFileSync("data-lubes.js", "utf8");
+ok(lubesSrc === fs.readFileSync("src-data/lubes/data-lubes.js", "utf8"), "data-lubes.js matches src-data/lubes/data-lubes.js (run node tools/build-lubes.js)");
+const lctx = {};
+vm.createContext(lctx);
+vm.runInContext(lubesSrc + "\n;globalThis.__L = LUBES;", lctx);
+const L = lctx.__L;
+ok(L && Array.isArray(L.entries) && Array.isArray(L.types), "LUBES loads with types and entries");
+ok(L.entries.length === 33, `33 lubricant entries (${L.entries.length})`);
+const lTypes = new Set(L.types.map(t => t.id));
+const lMiss = L.entries.filter(e => !e.id || !e.type || !e.title || !Array.isArray(e.packs) || !e.packs.length).map(e => e.id);
+ok(!lMiss.length, "entries missing id/type/title/packs: " + lMiss.join(", "));
+const lBadType = L.entries.filter(e => !lTypes.has(e.type)).map(e => e.id);
+ok(!lBadType.length, "entries with a type not in LUBES.types: " + lBadType.join(", "));
+const lIds = L.entries.map(e => e.id);
+ok(lIds.every((id, i) => lIds.indexOf(id) === i), "lubricant ids are unique");
+const allMids = new Set(MODELS.map(m => m.id).concat(E.models.map(m => m.id)));
+const lBadFit = L.entries.flatMap(e => e.fits.filter(f => !allMids.has(f)).map(f => `${e.id}->${f}`));
+ok(!lBadFit.length, "lubricant fits that are not bike or equipment model ids: " + lBadFit.join(", "));
+const lBadVert = L.entries.flatMap(e => (e.fitsVerticals || []).filter(v => !vids.has(v)).map(v => `${e.id}->${v}`));
+ok(!lBadVert.length, "lubricant fitsVerticals that are not verticals: " + lBadVert.join(", "));
+const partById = Object.fromEntries(PARTS.map(p => [p.id, p]));
+const priced = L.entries.filter(e => e.price != null);
+ok(priced.every(e => typeof e.price === "number" && e.avasPart), "no lubricant price without an existing data.js part (avasPart)");
+ok(L.entries.filter(e => e.avasPart).every(e => partById[e.avasPart] && partById[e.avasPart].price === e.price),
+   "every avasPart entry's price equals the data.js part price");
+ok(JSON.stringify(priced.map(e => `${e.avasPart}:${e.price}`).sort()) === JSON.stringify(["p030:165", "p058:145", "p133:165"]),
+   "only brake fluid (p030 165), coolant (p058 145) and chain lube (p133 165) carry a price");
+const badOil = Object.keys(L.modelOil).filter(id => !mids.has(id));
+ok(!badOil.length, "modelOil keys that are not data.js model ids: " + badOil.join(", "));
+const lIdSet = new Set(lIds);
+ok(Object.values(L.modelOil).every(o => o.url && /^https:\/\//.test(o.url) && o.items.length && (o.entry == null || lIdSet.has(o.entry))),
+   "every modelOil has a manual url, items and a valid entry link");
+ok(/0\.80 L/.test(L.modelOil["honda-airblade125-ad-2023"].items[0].value), "Air Blade 125 (2023+) engine oil 0.80 L at change");
+const COMPETITORS = ["Leo", "Seagear", "Motul shop", "Arzol shop", "Sonee", "Auto Care", "Petrol Ofisi", "Sinopec", "Prestone"];
+const named = COMPETITORS.filter(n => new RegExp(`\\b${n}\\b`, "i").test(lubesSrc));
+ok(!named.length, "competitor names in data-lubes.js: " + named.join(", "));
+const stockCodes = ["BRIT0", "SGR10", "MO00", "AR00"].filter(c => lubesSrc.includes(c));
+ok(!stockCodes.length, "competitor stock codes in data-lubes.js: " + stockCodes.join(", "));
+ok(app.includes('"data-lubes.js"') && !html.includes('src="data-lubes.js"'), "data-lubes.js is lazy-loaded by app.js, not by index.html");
+console.log(`  ${L.entries.length} entries · ${L.types.length} types · ${priced.length} priced · ${Object.keys(L.modelOil).length} models with owner-manual fluids`);
+
+console.log(`\n${checks} checks`);
 console.log("\n" + (fail ? `${fail} check(s) FAILED` : "All checks passed"));
 process.exit(fail ? 1 : 0);

@@ -16,6 +16,9 @@ const app  = read("app.js");
    app.js sees the EQUIP global and skips the request. */
 let equip = "";
 try { equip = read("data-equip.js"); } catch { console.warn("data-equip.js missing — run node tools/build-equip.js; bundling bikes only"); }
+/* Same for the oils & lubricants catalogue (LUBES global). */
+let lubes = "";
+try { lubes = read("data-lubes.js"); } catch { console.warn("data-lubes.js missing — run node tools/build-lubes.js; bundling without oils"); }
 /* Optional — only exists once import-images.js has been run. */
 let images = "";
 try { images = read("images.js"); } catch { images = "const IMAGES = {};"; }
@@ -44,7 +47,7 @@ html = html
   .replace(/<link href="https:\/\/fonts\.googleapis\.com[^>]*>\s*/g, "")
   .replace(/<link rel="stylesheet" href="styles\.css">/, () => `<style>\n${css}\n</style>`)
   .replace(/<script src="data\.js"><\/script>\s*<script src="images\.js"><\/script>\s*<script src="art\.js"><\/script>\s*<script src="app\.js"><\/script>/,
-           () => `<script>\n${data}\n${equip}\n${images}\n${art}\n${app}\n</script>`);
+           () => `<script>\n${data}\n${equip}\n${lubes}\n${images}\n${art}\n${app}\n</script>`);
 
 /* Sanity: nothing external may remain */
 const external = [...html.matchAll(/(?:src|href)="(https?:\/\/[^"]+)"/g)].map(m => m[1]);

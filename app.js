@@ -20,6 +20,8 @@ const VERTICALS_UI = [
   { id: "generators",    name: "Generators",             unit: "set",     pick: "generator set" },
   { id: "pumps",         name: "Pumps & power products", unit: "machine", pick: "pump or engine" },
   { id: "machinery",     name: "Heavy machinery",        unit: "machine", pick: "machine" },
+  /* not a machine catalogue: products filtered by type, grade and vehicle (data-lubes.js) */
+  { id: "lubes",         name: "Oils & lubricants",      unit: "product", pick: "product" },
 ];
 const VERT_BY_ID = Object.fromEntries(VERTICALS_UI.map(v => [v.id, v]));
 const EQ = { loaded: false, loading: null, failed: false, parts: [], models: [], cats: [] };
@@ -201,18 +203,22 @@ function integrateEquip() {
   EQ.loaded = true; EQ.failed = false;
 }
 
+function injectScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    s.onload = resolve;
+    s.onerror = () => { s.remove(); reject(new Error(src + " failed to load")); };
+    document.head.appendChild(s);
+  });
+}
+
 function loadEquip() {
   if (EQ.loaded) return Promise.resolve();
   if (typeof EQUIP !== "undefined") { integrateEquip(); return Promise.resolve(); } // single-file bundle
   if (EQ.loading) return EQ.loading;
-  EQ.loading = new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = "data-equip.js";
-    s.async = true;
-    s.onload = () => { try { integrateEquip(); resolve(); } catch (e) { reject(e); } };
-    s.onerror = () => { s.remove(); reject(new Error("data-equip.js failed to load")); };
-    document.head.appendChild(s);
-  }).catch(err => {
+  EQ.loading = injectScript("data-equip.js").then(integrateEquip).catch(err => {
     EQ.loading = null; EQ.failed = true;
     throw err;
   });
@@ -227,6 +233,317 @@ function ensureEquip() {
   p.then(render, () => { render(); toast("Could not load the marine & equipment catalogue"); });
 }
 
+/* ---------- Oils & lubricants: data-lubes.js, lazy-loaded like data-equip.js ----------
+   Entries are products (grade + spec + pack sizes), not part numbers. Three of
+   them are the same item as an existing priced part in data.js (entry.avasPart);
+   that pack adds the existing part. Every other pack is an ask-for-price line. */
+const LB = { loaded: false, loading: null, failed: false, entries: [], byId: {}, typeName: {}, modelOil: {}, forOf: {} };
+
+/* "For" tags are derived here from the entry's type and fitsVerticals, plus the
+   tags of the engine oils that fit the same models (so the outboard gearcase oil
+   is "Outboard 2-stroke" and "4-stroke" because both kinds of engine are in its
+   fits). The data file itself is not changed. */
+const FOR_TAGS = [
+  ["scooter", "Scooter"], ["moto", "Manual bike"], ["ob2", "Outboard 2-stroke"], ["ob4", "Outboard 4-stroke"],
+  ["jetski", "Jet ski"], ["diesel", "Diesel & generators"], ["car", "Car"],
+  ["machinery", "Machinery & hydraulics"], ["workshop", "Workshop"],
+];
+const FOR_NAME = Object.fromEntries(FOR_TAGS);
+const TYPE_FOR = {
+  "engine-scooter": ["scooter"], "engine-moto": ["moto"], "engine-2t": ["moto", "workshop"],
+  "engine-outboard-2t": ["ob2"], "engine-outboard-4t": ["ob4"], "engine-pwc": ["jetski"],
+  "engine-diesel": ["diesel"], "engine-car": ["car"], "atf": ["car"], "hydraulic": ["machinery"],
+  "brake": ["scooter", "moto", "car"], "chain": ["moto"], "fork": ["scooter", "moto"],
+  "grease": ["workshop"], "assembly": ["workshop"], "compressor": ["workshop"],
+};
+const VERT_FOR = {
+  bikes: ["scooter", "moto"], outboards: ["ob2", "ob4"], jetski: ["jetski"],
+  marine_diesel: ["diesel"], generators: ["diesel"], machinery: ["machinery"], pumps: ["machinery"],
+};
+const LF_PARAMS = { type: "t", grade: "g", spec: "s", pack: "pk", for: "for", veh: "veh", e: "e" };
+const blankLF = () => ({ type: null, grade: "", spec: "", pack: "", for: null, veh: "", e: "" });
+state.lf = blankLF();
+state.lpack = {};
+
+const lubeKey = (e, pack) => `lube~${e.id}~${pack}`;
+const squashPack = (s) => String(s).toLowerCase().replace(/\s+/g, "");
+const modelLabel = (m) => `${m.brand} ${m.name}`;
+const vertOf = (id) => MODEL_BY_ID[id] ? (MODEL_BY_ID[id].vertical || "bikes") : null;
+const lubeFits = (e, id) => e.fits.includes(id) || e.fitsVerticals.includes(vertOf(id));
+
+/* The pack the existing data.js part is; its name carries the size
+   ("Brake fluid DOT 4, 500 ml"). */
+function pricedPack(e) {
+  const p = e.avasPart && PART_BY_ID[e.avasPart];
+  if (!p || typeof e.price !== "number" || p.price !== e.price) return null;
+  const name = squashPack(p.name);
+  return e.packs.find(k => name.includes(squashPack(k))) || (e.packs.length === 1 ? e.packs[0] : null);
+}
+
+function integrateLubes() {
+  const L = LUBES;
+  LB.typeName = Object.fromEntries(L.types.map(t => [t.id, t.name]));
+  LB.entries = L.entries;
+  LB.byId = Object.fromEntries(L.entries.map(e => [e.id, e]));
+  LB.modelOil = L.modelOil || {};
+  const byModel = {};
+  L.entries.forEach(e => { if (/^engine-/.test(e.type)) e.fits.forEach(id => {
+    byModel[id] = byModel[id] || new Set();
+    (TYPE_FOR[e.type] || []).forEach(t => byModel[id].add(t));
+  }); });
+  L.entries.forEach(e => {
+    const s = new Set(TYPE_FOR[e.type] || []);
+    e.fitsVerticals.forEach(v => (VERT_FOR[v] || []).forEach(t => s.add(t)));
+    e.fits.forEach(id => (byModel[id] || []).forEach(t => s.add(t)));
+    LB.forOf[e.id] = FOR_TAGS.map(([k]) => k).filter(k => s.has(k));
+    e._pp = pricedPack(e);
+    e._h = [e.title, e.grade, e.spec, (e.brands || []).join(" "), (e.apps || []).join(" "),
+      LB.typeName[e.type] || "", LB.forOf[e.id].map(k => FOR_NAME[k]).join(" ")].join(" ").toLowerCase();
+    /* cart lines for the ask-for-price packs */
+    e.packs.forEach(pack => {
+      if (pack === e._pp) return;
+      const id = lubeKey(e, pack);
+      PART_BY_ID[id] = { id, name: `${e.title} — ${pack}`, oem: e.spec || e.grade, price: null, askPrice: true, fits: [], cat: "lubes", lube: e.id };
+    });
+  });
+  LB.loaded = true; LB.failed = false;
+}
+
+function loadLubes() {
+  if (LB.loaded) return Promise.resolve();
+  if (typeof LUBES !== "undefined") { integrateLubes(); return Promise.resolve(); } // single-file bundle
+  if (LB.loading) return LB.loading;
+  LB.loading = injectScript("data-lubes.js").then(integrateLubes).catch(err => {
+    LB.loading = null; LB.failed = true;
+    throw err;
+  });
+  return LB.loading;
+}
+
+function ensureLubes() {
+  if (LB.loaded) return;
+  const p = loadLubes();
+  if (LB.loaded) return;
+  render();
+  p.then(render, () => { render(); toast("Could not load oils & lubricants"); });
+}
+
+function lubeMatch(e, skip) {
+  const f = state.lf;
+  if (f.e && e.id !== f.e) return false;
+  if (f.type && skip !== "type" && e.type !== f.type) return false;
+  if (f.grade && e.grade !== f.grade) return false;
+  if (f.spec && e.spec !== f.spec) return false;
+  if (f.pack && !e.packs.includes(f.pack)) return false;
+  if (f.for && skip !== "for" && !LB.forOf[e.id].includes(f.for)) return false;
+  if (f.veh && !lubeFits(e, f.veh)) return false;
+  const terms = qTerms();
+  return terms.every(t => e._h.includes(t));
+}
+
+const lubePack = (e) => e.packs.includes(state.lpack[e.id]) ? state.lpack[e.id] : (e._pp || e.packs[0]);
+const lubeLineId = (e, pack) => pack === e._pp ? e.avasPart : lubeKey(e, pack);
+const lubePriceHTML = (e, pack) => priceHTML(pack === e._pp ? PART_BY_ID[e.avasPart] : { price: null, askPrice: true });
+const uniqSorted = (xs) => [...new Set(xs.filter(Boolean))].sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
+
+function renderLubeFilters() {
+  const row = $("#lubeRow");
+  if (!LB.loaded) {
+    row.innerHTML = LB.failed
+      ? `<span class="loading">Could not load oils &amp; lubricants. <button class="clearbtn" data-vertical="lubes">Try again</button></span>`
+      : `<span class="loading" role="status">Loading oils &amp; lubricants…</span>`;
+    return;
+  }
+  const f = state.lf;
+  const count = {};
+  LB.entries.forEach(e => { if (lubeMatch(e, "type")) count[e.type] = (count[e.type] || 0) + 1; });
+  const types = LUBES.types.filter(t => LB.entries.some(e => e.type === t.id));
+  const chips = `<button class="chip" data-lf="type" data-val="" aria-pressed="${!f.type}">All types</button>` +
+    types.map(t => `<button class="chip" data-lf="type" data-val="${esc(t.id)}" aria-pressed="${f.type === t.id}">${esc(t.name)}<span class="cc">${count[t.id] || 0}</span></button>`).join("");
+
+  const opts = (vals, cur, all) => `<option value="">${all}</option>` +
+    vals.map(v => `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(v)}</option>`).join("");
+  const sel = (key, id, label, inner) =>
+    `<div class="field"><label for="${id}">${label}</label><select id="${id}" data-lsel="${key}">${inner}</select></div>`;
+
+  const group = (label, models) => `<optgroup label="${esc(label)}">` + models.map(m =>
+    `<option value="${esc(m.id)}"${m.id === f.veh ? " selected" : ""}>${esc(modelLabel(m))}</option>`).join("") + `</optgroup>`;
+  let veh = `<option value="">Any vehicle</option>`;
+  BRANDS.forEach(b => {
+    const ms = MODELS.filter(m => m.brand === b).sort((x, y) => x.name.localeCompare(y.name, "en", { numeric: true }));
+    if (ms.length) veh += group(b, ms);
+  });
+  if (EQ.loaded) {
+    VERTICALS_UI.filter(v => v.id !== "bikes" && v.id !== "lubes").forEach(v => {
+      const ms = EQ.models.filter(m => m.vertical === v.id).sort((x, y) => modelLabel(x).localeCompare(modelLabel(y), "en", { numeric: true }));
+      if (ms.length) veh += group(v.name, ms);
+    });
+  } else if (f.veh && !MODEL_BY_ID[f.veh]) {
+    veh += `<option value="${esc(f.veh)}" selected>Loading…</option>`;
+  } else {
+    veh += `<option value="__eq">${EQ.loading ? "Loading engines and machines…" : "Outboards, jet skis, generators, machinery…"}</option>`;
+  }
+
+  row.innerHTML = `
+    <div class="pickrow"><div class="picklabel">Type</div><div class="chips lchips">${chips}</div></div>
+    <div class="lfilters">
+      ${sel("veh", "lfVeh", "Vehicle", veh)}
+      ${sel("grade", "lfGrade", "Grade", opts(uniqSorted(LB.entries.map(e => e.grade)), f.grade, "Any grade"))}
+      ${sel("spec", "lfSpec", "Spec", opts(uniqSorted(LB.entries.map(e => e.spec)), f.spec, "Any spec"))}
+      ${sel("pack", "lfPack", "Pack size", opts(uniqSorted(LB.entries.flatMap(e => e.packs)), f.pack, "Any size"))}
+    </div>`;
+}
+
+function renderLubeRail() {
+  $("#railHead").textContent = "For";
+  if (!LB.loaded) { $("#catWrap").innerHTML = ""; return; }
+  const base = LB.entries.filter(e => lubeMatch(e, "for"));
+  const count = {};
+  base.forEach(e => LB.forOf[e.id].forEach(k => { count[k] = (count[k] || 0) + 1; }));
+  $("#catWrap").innerHTML =
+    `<button class="catbtn" data-lf="for" data-val="" aria-pressed="${!state.lf.for}"><span>Everything</span><span class="k">${base.length}</span></button>` +
+    FOR_TAGS.filter(([k]) => count[k] || state.lf.for === k).map(([k, name]) =>
+      `<button class="catbtn" data-lf="for" data-val="${k}" aria-pressed="${state.lf.for === k}"><span>${esc(name)}</span><span class="k">${count[k] || 0}</span></button>`
+    ).join("");
+}
+
+function lubeCardHTML(e) {
+  const pack = lubePack(e);
+  const packs = e.packs.map(k =>
+    `<button class="chip pk" data-lpack="${esc(e.id)}" data-pack="${esc(k)}" aria-pressed="${k === pack}">${esc(k)}</button>`).join("");
+  return `<article class="card lubecard" data-lube="${esc(e.id)}">
+    <div class="eqtag">${esc(LB.typeName[e.type] || "")}</div>
+    <div class="cardtop"><h3 class="cardname">${esc(e.title)}</h3></div>
+    <div class="lspec"><b>${esc(e.grade)}</b>${e.spec ? " · " + esc(e.spec) : ""}</div>
+    <div class="chips lpacks" role="group" aria-label="Pack size">${packs}</div>
+    ${(e.apps || []).length ? `<p class="lapps">${esc(e.apps.join("; "))}</p>` : ""}
+    ${(e.brands || []).length ? `<p class="lbrands"><b>Brands we can source:</b> ${esc(e.brands.join(", "))}</p>` : ""}
+    ${e.note ? `<p class="lnote">${esc(e.note)}</p>` : ""}
+    <button class="moreb" data-lubedetail="${esc(e.id)}">Details &amp; what it fits →</button>
+    <div class="cardfoot">
+      <div>${lubePriceHTML(e, pack)}</div>
+      <button class="addbtn" data-add="${esc(lubeLineId(e, pack))}">Add</button>
+    </div>
+  </article>`;
+}
+
+/* Owner-manual fluids for a bike, shown exactly as the manual gives them. */
+function fluidsHTML(modelId, shop) {
+  const mo = LB.loaded && LB.modelOil[modelId];
+  if (!mo) return "";
+  const rows = mo.items.map(i =>
+    `<div class="fl-row"><span class="fl-k">${esc(i.item)}</span><span class="fl-v">${esc(i.value)}</span></div>`).join("");
+  const target = mo.entry && LB.byId[mo.entry];
+  const shopBtn = shop && target
+    ? `<a class="addbtn fl-shop" href="?v=lubes&amp;e=${encodeURIComponent(mo.entry)}" data-lubejump="e" data-val="${esc(mo.entry)}">Shop this oil</a>` : "";
+  return `<div class="fluids">
+    <div class="fl-head">Fluids (owner manual)</div>
+    <div class="fl-rows">${rows}</div>
+    ${mo.note ? `<div class="hint">${esc(mo.note)}</div>` : ""}
+    <div class="fl-foot">
+      <span class="mnote-src"><b>Source</b> <a class="srclink" href="${esc(mo.url)}" target="_blank" rel="noopener noreferrer">${esc(mo.source)} ↗</a></span>
+      ${shopBtn}
+    </div>
+  </div>`;
+}
+
+const LUBE_LINE = "Prices confirmed on WhatsApp. Check your owner's manual for grade and capacity.";
+
+function renderLubeResults() {
+  const f = state.lf;
+  const box = $("#rNote");
+  if (!LB.loaded) {
+    $("#rTitle").textContent = "Oils & lubricants";
+    $("#rCount").textContent = "";
+    $("#clearBtn").hidden = true;
+    box.hidden = true;
+    $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1"><h3>${LB.failed ? "Could not load oils & lubricants" : "Loading oils & lubricants…"}</h3>
+      <p>${LB.failed ? "Check your connection and pick the category again." : "Engine oil, gear oil, grease, coolant and brake fluid."}</p></div>`;
+    return;
+  }
+  const r = LB.entries.filter(e => lubeMatch(e));
+  const veh = f.veh && MODEL_BY_ID[f.veh];
+  let title = "Oils & lubricants";
+  if (f.e && LB.byId[f.e]) title = LB.byId[f.e].title;
+  else if (veh) title = `Oils for ${modelLabel(veh)}`;
+  if (!f.e && f.type && LB.typeName[f.type]) title += ` · ${LB.typeName[f.type]}`;
+  if (!f.e && f.for) title += ` · ${FOR_NAME[f.for]}`;
+  if (state.q.trim()) title = `“${state.q.trim()}”`;
+  $("#rTitle").textContent = title;
+  $("#rCount").textContent = `${r.length} ${r.length === 1 ? "product" : "products"}`;
+  $("#clearBtn").hidden = !(Object.values(f).some(Boolean) || state.q.trim());
+
+  box.innerHTML = `<div class="mnote-note">${esc(LUBE_LINE)}</div>` + (f.veh ? fluidsHTML(f.veh, false) : "") +
+    (f.e ? `<div><button class="clearbtn" data-clear="1">See all oils &amp; lubricants</button></div>` : "");
+  box.hidden = false;
+
+  if (!r.length) {
+    $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <h3>Nothing matches that yet</h3>
+      <p>Try fewer filters, or search for a grade like “10W-40” or a job like “grease”.</p>
+      <button class="clearbtn" data-clear="1">Reset the filters</button>
+    </div>`;
+    return;
+  }
+  $("#grid").innerHTML = r.map(lubeCardHTML).join("");
+}
+
+function renderLubes() {
+  renderLubeFilters(); renderLubeRail(); renderLubeResults();
+}
+
+function openLubeDetail(id) {
+  const e = LB.byId[id];
+  if (!e) return;
+  const pack = lubePack(e);
+  const missing = e.fits.filter(f => !MODEL_BY_ID[f]).length;
+  if (missing && !EQ.loaded && !EQ.failed) {
+    loadEquip().then(() => { if ($("#detail").classList.contains("on") && $("#detailBody").dataset.lube === id) openLubeDetail(id); }, () => {});
+  }
+  const fitModels = e.fits.map(f => MODEL_BY_ID[f]).filter(Boolean);
+  const verts = e.fitsVerticals.map(v => VERT_BY_ID[v] ? VERT_BY_ID[v].name : "").filter(Boolean);
+  const fitBlock = (fitModels.length ? `<div class="fitfull">${fitModels.map(m => `<span class="m"><b>${esc(modelLabel(m))}</b></span>`).join("")}</div>` : "") +
+    (missing && !EQ.loaded ? `<p class="hint">${EQ.failed ? `${missing} more engines and skis (names could not load).` : `Loading ${missing} engine and ski names…`}</p>` : "") +
+    (verts.length ? `<p class="hint">Also suits: ${esc(verts.join(", "))}</p>` : "") +
+    (!fitModels.length && !missing && !verts.length ? `<p class="hint">General use. Check your manual for the grade it needs.</p>` : "");
+  const packs = e.packs.map(k =>
+    `<button class="chip pk" data-lpack="${esc(e.id)}" data-pack="${esc(k)}" aria-pressed="${k === pack}">${esc(k)}</button>`).join("");
+  const forTags = LB.forOf[e.id].map(k => `<span class="fitchip">${esc(FOR_NAME[k])}</span>`).join("");
+
+  $("#detailBody").dataset.lube = id;
+  $("#detailBody").innerHTML = `
+    <div class="dsec"><h4>Grade and spec</h4>
+      <p class="lspec" style="margin:0"><b>${esc(e.grade)}</b>${e.spec ? " · " + esc(e.spec) : ""}</p>
+      <p class="hint">${esc(LB.typeName[e.type] || "")}</p></div>
+    <div class="dsec"><h4>Pack size</h4><div class="chips lpacks">${packs}</div></div>
+    ${(e.apps || []).length ? `<div class="dsec"><h4>Used for</h4><p class="lapps" style="margin:0">${esc(e.apps.join("; "))}</p>
+      ${forTags ? `<div class="ribbon" style="margin-top:7px">${forTags}</div>` : ""}</div>` : ""}
+    ${(e.brands || []).length ? `<div class="dsec"><h4>Brands we can source</h4><p class="lapps" style="margin:0">${esc(e.brands.join(", "))}</p></div>` : ""}
+    ${e.note ? `<div class="dsec"><h4>Note</h4><div class="notebox">${esc(e.note)}</div></div>` : ""}
+    <div class="dsec"><h4>Fits</h4>${fitBlock}</div>
+    <div class="dsec">
+      <h4>Price</h4>
+      ${lubePriceHTML(e, pack)}
+      <p class="hint">${pack === e._pp ? `Price is for the ${esc(pack)} pack.` : "We'll confirm the price on WhatsApp."} Check your owner's manual for grade and capacity.</p>
+    </div>
+    <button class="gobtn" data-add="${esc(lubeLineId(e, pack))}">Add to order</button>`;
+  $("#detailTitle").textContent = e.title;
+  openDrawer("#detail");
+}
+
+/* Jump into the lubes view with one filter set: "Shop this oil", "Matching oils". */
+function goLubes(filter) {
+  state.vertical = "lubes";
+  state.brand = state.model = state.cat = null;
+  state.q = ""; $("#q").value = "";
+  state.lf = Object.assign(blankLF(), filter);
+  if (filter.veh && !MODEL_BY_ID[filter.veh]) loadEquip().then(render, () => {});
+  ensureLubes();
+  render();
+  const h = $(".rhead");
+  window.scrollTo(0, h.getBoundingClientRect().top + window.scrollY - ($(".bar").offsetHeight + 8));
+}
+
 /* ---------- Render: vertical picker + hero copy ---------- */
 const BIKE_COPY = { lede: $("#lede").innerHTML, step2: $("#step2Label").innerHTML };
 
@@ -238,6 +555,12 @@ function renderVerticals() {
 
 function renderHero() {
   const v = VERT_BY_ID[state.vertical];
+  if (state.vertical === "lubes") {
+    $("#lede").textContent =
+      "Engine oil, gear oil, grease, coolant and brake fluid for bikes, boats, generators and machinery. " +
+      "Pick a type or your vehicle and add what you need. We'll confirm the price on WhatsApp.";
+    return;
+  }
   if (state.vertical === "bikes") {
     if ($("#lede").innerHTML !== BIKE_COPY.lede) $("#lede").innerHTML = BIKE_COPY.lede;
     if ($("#step2Label").innerHTML !== BIKE_COPY.step2) $("#step2Label").innerHTML = BIKE_COPY.step2;
@@ -295,6 +618,8 @@ function renderPickers() {
 
 /* ---------- Render: category rail ---------- */
 function renderRail() {
+  if (state.vertical === "lubes") { renderLubeFilters(); return renderLubeRail(); }
+  $("#railHead").textContent = "Category";
   const terms = qTerms();
   const base = pool().filter(p => inScope(p, terms) && (!terms.length || termsMatch(p, terms)));
   const counts = {};
@@ -422,9 +747,15 @@ function renderModelNote() {
   const box = $("#rNote");
   const m = state.model ? MODEL_BY_ID[state.model] : null;
   if (!m || state.q.trim()) { box.hidden = true; box.innerHTML = ""; return; }
+  /* A model page shows its owner-manual fluids / matching oils, so the first
+     model picked fetches data-lubes.js; the home page never does. */
+  if (!LB.loaded && !LB.failed) {
+    const p = loadLubes();
+    if (!LB.loaded) p.then(() => { if (state.model === m.id) renderModelNote(); }, () => {});
+  }
   /* Bike model notes are build provenance; only a customer-facing notice shows. */
   if (state.vertical === "bikes") {
-    box.innerHTML = m.notice ? `<div class="mnote-note">${esc(m.notice)}</div>` : "";
+    box.innerHTML = (m.notice ? `<div class="mnote-note">${esc(m.notice)}</div>` : "") + fluidsHTML(m.id, true);
     box.hidden = !box.innerHTML;
     return;
   }
@@ -438,11 +769,14 @@ function renderModelNote() {
      just the first page scraped (often one part's product page), so it is not
      shown as "the" catalogue; each part's drawer links its own sources. */
   const src = m.model_number && m.catalogue_url ? `<div class="mnote-src"><b>Product page</b> ${sourceLinks([m.catalogue_url])}</div>` : "";
-  box.innerHTML = `${bits.length ? `<div class="mnote-bits">${bits.join("")}</div>` : ""}${note}${src}`;
+  const oils = LB.loaded && LB.entries.some(e => lubeFits(e, m.id))
+    ? `<div class="mnote-src"><b>Oils</b> <a class="srclink" href="?v=lubes&amp;veh=${encodeURIComponent(m.id)}" data-lubejump="veh" data-val="${esc(m.id)}">Matching oils →</a></div>` : "";
+  box.innerHTML = `${bits.length ? `<div class="mnote-bits">${bits.join("")}</div>` : ""}${note}${src}${oils}`;
   box.hidden = !box.innerHTML;
 }
 
 function renderResults() {
+  if (state.vertical === "lubes") return renderLubeResults();
   if (state.vertical !== "bikes" && !EQ.loaded) {
     $("#rTitle").textContent = VERT_BY_ID[state.vertical].name;
     $("#rCount").textContent = "";
@@ -522,6 +856,7 @@ function openEqDetail(p) {
 function openDetail(id) {
   const p = PART_BY_ID[id];
   if (!p) return;
+  delete $("#detailBody").dataset.lube;
   if (isEq(p)) return openEqDetail(p);
   const pn = parsePN(p.oem);
   const others = sameJob(p);
@@ -739,7 +1074,12 @@ function renderZones() {
 
 /* ---------- Wire up ---------- */
 function render() {
-  renderVerticals(); renderHero(); renderPickers();
+  renderVerticals(); renderHero();
+  const lubes = state.vertical === "lubes";
+  $("#brandRow").hidden = lubes;
+  $("#lubeRow").hidden = !lubes;
+  if (lubes) { $("#modelRow").hidden = true; renderLubes(); syncURL(); return; }
+  renderPickers();
   if (state.vertical !== "bikes" && !EQ.loaded) { renderResults(); syncURL(); return; }
   renderRail(); renderResults(); syncURL();
 }
@@ -752,7 +1092,9 @@ function syncURL() {
   urlTouched = true;
   const ps = new URLSearchParams();
   if (state.vertical !== "bikes") ps.set("v", state.vertical);
-  if (state.model) ps.set("m", state.model);
+  if (state.vertical === "lubes") {
+    for (const [k, p] of Object.entries(LF_PARAMS)) if (state.lf[k]) ps.set(p, state.lf[k]);
+  } else if (state.model) ps.set("m", state.model);
   else if (state.brand) ps.set("b", state.brand);
   if (state.q.trim() && BOOT_PARAMS.has("q")) ps.set("q", state.q.trim());
   const qs = ps.toString();
@@ -771,6 +1113,14 @@ function applyDeepLink() {
     } else if (b) state.brand = b;
     render();
   };
+  if (v === "lubes") {
+    state.vertical = "lubes";
+    for (const [k, p] of Object.entries(LF_PARAMS)) if (ps.get(p)) state.lf[k] = ps.get(p);
+    if (state.lf.veh && !MODEL_BY_ID[state.lf.veh]) loadEquip().then(render, () => {});
+    ensureLubes();
+    render();
+    return;
+  }
   if (v && VERT_BY_ID[v]) state.vertical = v;
   const needEq = state.vertical !== "bikes" || (m && !MODEL_BY_ID[m]) || (q && q.trim().length >= 2);
   if (needEq) { ensureEquip(); loadEquip().then(apply, () => {}); }
@@ -779,10 +1129,11 @@ function applyDeepLink() {
 
 function chooseVertical(v) {
   if (!VERT_BY_ID[v]) return;
-  if (v === state.vertical && (EQ.loaded || v === "bikes")) return;
+  if (v === state.vertical && (v === "lubes" ? LB.loaded : EQ.loaded || v === "bikes")) return;
   state.vertical = v;
   state.brand = state.model = state.cat = null;
-  if (v !== "bikes") ensureEquip();
+  if (v === "lubes") { state.lf = blankLF(); ensureLubes(); }
+  else if (v !== "bikes") ensureEquip();
   render();
 }
 
@@ -807,7 +1158,7 @@ document.addEventListener("click", (e) => {
   } else if (t.dataset.q) {
     const [id, q] = t.dataset.q.split("|"); setQty(id, +q);
   } else if (t.dataset.clear) {
-    state.brand = state.model = state.cat = null; state.q = ""; $("#q").value = ""; render();
+    state.brand = state.model = state.cat = null; state.q = ""; $("#q").value = ""; state.lf = blankLF(); render();
   } else if (t.dataset.skin) {
     state.skin = t.dataset.skin; applySkin();
   } else if (t.dataset.close !== undefined) {
@@ -815,12 +1166,47 @@ document.addEventListener("click", (e) => {
   }
 });
 
+/* Oils & lubricants: filter chips, pack pickers, detail drawer, jumps from a model page. */
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-lf],[data-lpack],[data-lubedetail],[data-lubejump]");
+  if (!t) return;
+  if (t.dataset.lf) {
+    const k = t.dataset.lf, v = t.dataset.val || null;
+    state.lf[k] = state.lf[k] === v ? null : v;
+    state.lf.e = "";
+    render();
+  } else if (t.dataset.lpack) {
+    state.lpack[t.dataset.lpack] = t.dataset.pack;
+    if (state.vertical === "lubes") renderLubeResults();
+    if ($("#detail").classList.contains("on") && $("#detailBody").dataset.lube === t.dataset.lpack) openLubeDetail(t.dataset.lpack);
+  } else if (t.dataset.lubedetail) {
+    openLubeDetail(t.dataset.lubedetail);
+  } else if (t.dataset.lubejump) {
+    e.preventDefault();
+    goLubes({ [t.dataset.lubejump]: t.dataset.val });
+  }
+});
+$("#lubeRow").addEventListener("change", (e) => {
+  const s = e.target.closest("[data-lsel]");
+  if (!s) return;
+  if (s.value === "__eq") {
+    s.value = state.lf.veh || "";
+    loadEquip().then(render, () => { render(); toast("Could not load the engine and machine list"); });
+    render();
+    return;
+  }
+  state.lf[s.dataset.lsel] = s.value;
+  state.lf.e = "";
+  render();
+});
+
 /* Typing a query pulls in the equipment catalogue (debounced) so a part number
-   like 6CE-WS24A-00 or an engine code like KTA19 is found from any page. */
+   like 6CE-WS24A-00 or an engine code like KTA19 is found from any page.
+   In the oils view the search stays inside the oils. */
 let eqSearchT;
 $("#q").addEventListener("input", (e) => {
   state.q = e.target.value; renderRail(); renderResults();
-  if (!EQ.loaded && state.q.trim().length >= 2) {
+  if (state.vertical !== "lubes" && !EQ.loaded && state.q.trim().length >= 2) {
     clearTimeout(eqSearchT);
     eqSearchT = setTimeout(() => loadEquip().then(() => { renderRail(); renderResults(); }, () => {}), 250);
   }
@@ -831,7 +1217,7 @@ $("#zone").addEventListener("change", renderCart);
 ["custName", "custPhone"].forEach(id => $("#" + id).addEventListener("input", renderCart));
 $("#goBtn").addEventListener("click", sendOrder);
 $("#clearBtn").addEventListener("click", () => {
-  state.brand = state.model = state.cat = null; state.q = ""; $("#q").value = ""; render();
+  state.brand = state.model = state.cat = null; state.q = ""; $("#q").value = ""; state.lf = blankLF(); render();
 });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeDrawers();
@@ -844,5 +1230,7 @@ render();
 saveCart();
 renderCart();
 applyDeepLink();
-/* An order saved with equipment lines needs the equipment catalogue to show them. */
-if (Object.keys(state.cart).some(id => !PART_BY_ID[id])) loadEquip().then(renderCart, () => {});
+/* An order saved with equipment or oil lines needs that catalogue to show them. */
+const savedIds = Object.keys(state.cart);
+if (savedIds.some(id => id.startsWith("lube~"))) loadLubes().then(renderCart, () => {});
+if (savedIds.some(id => !id.startsWith("lube~") && !PART_BY_ID[id])) loadEquip().then(renderCart, () => {});

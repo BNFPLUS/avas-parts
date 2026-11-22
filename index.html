@@ -58,7 +58,7 @@
       <div class="chips vchips" id="vertChips" role="group" aria-label="What are you fixing?"></div>
     </div>
 
-    <div class="pickrow">
+    <div class="pickrow" id="brandRow">
       <div class="picklabel">Step 1 — pick the make</div>
       <div class="chips" id="brandChips"></div>
     </div>
@@ -67,12 +67,14 @@
       <div class="picklabel" id="step2Label">Step 2 — pick the model <span style="color:var(--hot)">●</span> = common here</div>
       <div class="chips" id="modelChips"></div>
     </div>
+
+    <div id="lubeRow" hidden></div>
   </section>
 
   <!-- ============ RESULTS ============ -->
   <div class="work">
     <aside class="rail">
-      <div class="railhead">Category</div>
+      <div class="railhead" id="railHead">Category</div>
       <div class="catwrap" id="catWrap"></div>
     </aside>
 

@@ -28,6 +28,31 @@ Aerox Alpha, Auto Care Honda numbers, Parsun outboards) is split two ways:
 `node tools/merge-dealers.js` merges the bike half into `data.js` (idempotent), and
 `tools/build-equip.js` reads the Parsun half into `data-equip.js`.
 
+### Oils & lubricants (preview)
+
+The "Oils & lubricants" category (`?v=lubes`) lists 33 products: engine, gear, hydraulic
+and compressor oils, ATF, grease, coolant, brake fluid, chain lube, fork oil and
+anti-seize. Customers filter by type, grade, spec, pack size, what it is for, and
+vehicle. The source is `src-data/lubes/` (`data-lubes.js`, plus the same data as JSON
+for reference). `node tools/build-lubes.js` checks the source file and copies it to
+`./data-lubes.js`; don't edit the root copy by hand.
+
+- **Price rule.** Three products are items already priced in `data.js`: brake fluid DOT 4
+  500 ml (p030, MVR 165), radiator coolant 1 L (p058, MVR 145) and chain lube 400 ml
+  (p133, MVR 165). Adding that pack adds the existing part. Every other product and pack
+  is "Ask for price" and goes into the order as "price to confirm", with the pack size
+  in the line. `test.js` fails if any other entry carries a price.
+- **Owner-manual fluids.** `modelOil` gives oil grade and capacities for 10 bikes, copied
+  from public owner manuals. A bike page shows them as written, links the manual and
+  offers "Shop this oil". Outboard and jet-ski pages that a product fits show a
+  "Matching oils" link.
+- **Loading.** Like `data-equip.js`, the page fetches `data-lubes.js` with an injected
+  `<script>` tag only when needed: picking the category, a `?v=lubes` link, or the first
+  model page. The bike home page never requests it. `build.js` inlines it in the
+  single-file bundle.
+
+This is a preview on the `preview-lubricants` branch, not the live site.
+
 ---
 
 ## 1. The market
