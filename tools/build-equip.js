@@ -18,7 +18,10 @@
    - Honda pumps: the honda.mv exact-model lists (WB20XT3, WB30XT3, WT30XK4)
      replace the older marine WB20XT / WB30XT / WT30X models. Marine-only rows for
      those models are kept, re-pointed to the honda.mv model and noted.
-   - Rows sharing an OEM number within one vertical merge into one part. */
+   - Rows sharing an OEM number within one vertical merge into one part.
+   - No outbound links: source / store / PDF URLs in the inputs are not
+     written out (no part sources, no model catalogue_url). Model numbers,
+     catalogue titles and notes stay as plain text. */
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
@@ -132,7 +135,6 @@ for (const m of POWER_MODELS) {
     kind: m.kind,
     engine: m.engine,
     catalogue: m.catalogue,
-    catalogue_url: m.sheesha_url,
     note: m.note,
   });
 }
@@ -145,7 +147,6 @@ for (const m of MARINE_MODELS) {
   const out = {
     id: m.id, vertical: m.vertical, brand: m.brand, name,
     size: m.size || null,
-    catalogue_url: m.catalogue_url,
     /* "generated from x.csv" is build provenance, not a customer note. Dealer
        model notes are research (a competitor's retail price), never shown. */
     note: DEALER_MARINE_MODELS.includes(m) || /^generated from /.test(m.note) ? null : m.note,
@@ -180,7 +181,6 @@ for (const m of [...SOLE_MODELS.with_parts, ...SOLE_MODELS.models_only]) {
     size: m.kva ? `${m.kva} kVA` : null,
     kind: `Solé ${m.kind} marine generator`,
     catalogue: rows.length ? rows[0].catalogue : null,
-    catalogue_url: rows.length ? rows[0].pdf : null,
     note,
   });
 }
@@ -197,7 +197,6 @@ for (const m of NEW_EQUIP) {
     model_number: m.model_number || null,
     kind: m.kind,
     engine: m.engine || null,
-    catalogue_url: m.catalogue_url,
     note: m.note,
   });
 }
@@ -227,7 +226,6 @@ for (const p of POWER_PARTS) {
     id: p.id, vertical: "pumps", cat, name: p.name, oem: p.oem, v: 1,
     alts: [], fits: [...p.fits], tier: "genuine",
     note: p.note || "", catalogue_name: p.catalogue_name, priority: p.priority,
-    sources: [...(p.sources || [])],
   });
 }
 const powerHas = new Set(POWER_PARTS.flatMap(p => p.fits.map(f => f + "|" + p.oem)));
@@ -262,12 +260,10 @@ for (const p of MARINE_PARTS) {
     id: p.id, vertical: p.vertical, cat: p.cat, name: p.name, oem, v: p.v ? 1 : 0,
     alts, fits: [...fits], tier: p.confirmed === "verify" ? "genuine-unverified" : p.tier, note,
     catalogue_name: p.catalogue_name, priority: p.priority,
-    sources: [...new Set([p.source_url, ...(p.sources || [])].filter(Boolean))],
   });
 }
 
-/* Solé service / wear parts: number as printed in the official PDF, which is
-   the source. Quantity per set is noted per model, since it can differ. */
+/* Solé service / wear parts: number as printed in the official PDF. Quantity per set is noted per model, since it can differ. */
 let soleRows = 0;
 for (const p of SOLE_PARTS) {
   if (!CAT_IDS.has(p.cat)) throw new Error("unknown cat " + p.cat);
@@ -280,7 +276,6 @@ for (const p of SOLE_PARTS) {
     alts: [], fits: [...p.fits], tier: "genuine",
     note: p.qty ? `qty ${p.qty} per set (${sets})` : "",
     catalogue_name: null, priority: null,
-    sources: [p.pdf],
   });
   soleRows++;
 }
@@ -296,13 +291,11 @@ for (const r of rows) {
   merged++; if (r.vertical === "pumps") mergedPumps++;
   prev.fits = uniq([...prev.fits, ...r.fits]);
   prev.alts = uniq([...prev.alts, ...r.alts]).filter(a => a !== prev.oem);
-  prev.sources = uniq([...prev.sources, ...r.sources]);
   prev.note = uniq([...prev.note.split("; "), ...r.note.split("; ")]).join("; ");
   if (r.tier === "genuine") prev.tier = "genuine";
   prev.v = Math.max(prev.v, r.v);
 }
 
-const urls = [], URL_IX = new Map();
 const parts = [...byKey.values()].map(r => {
   const fits = r.fits.filter(f => MODEL[f]);
   if (fits.length !== r.fits.length) throw new Error("dangling fit on " + r.id);
@@ -314,13 +307,6 @@ const parts = [...byKey.values()].map(r => {
   if (r.note) out.note = r.note;
   if (r.catalogue_name && r.catalogue_name.toLowerCase() !== r.name.toLowerCase()) out.catalogue_name = r.catalogue_name;
   if (r.priority) out.priority = r.priority;
-  /* Source URLs repeat across hundreds of rows, so they are stored once in
-     EQUIP.urls and referenced by index; the app expands p.src back into
-     p.sources / p.source_url when it loads the file. */
-  out.src = r.sources.map(u => {
-    if (!URL_IX.has(u)) { URL_IX.set(u, urls.length); urls.push(u); }
-    return URL_IX.get(u);
-  });
   return out;
 });
 
@@ -345,7 +331,9 @@ const emptyModels = models.filter(m => !used.has(m.id) && !MODELS_ONLY.has(m.id)
 const leaked = parts.filter(p => p.fits.some(f => MODELS_ONLY.has(f))).map(p => p.id);
 if (leaked.length) throw new Error("parts attached to a models-only model: " + leaked.join(", "));
 
-const EQUIP = { verticals, cats, models: models.filter(m => used.has(m.id) || MODELS_ONLY.has(m.id)), urls, parts };
+const EQUIP = { verticals, cats, models: models.filter(m => used.has(m.id) || MODELS_ONLY.has(m.id)), parts };
+const leftUrls = JSON.stringify(EQUIP).match(/https?:\/\/[^"\s]+/g);
+if (leftUrls) throw new Error("outbound URL left in data-equip.js: " + leftUrls.slice(0, 5).join(", "));
 const banner = "/* avas.parts marine + equipment catalogue. GENERATED by tools/build-equip.js from src-data/ — do not edit.\n" +
   "   Every part is ask-for-price (price:null, askPrice:true). Part numbers as printed. */\n";
 fs.writeFileSync(path.join(root, "data-equip.js"), banner + "var EQUIP=" + JSON.stringify(EQUIP) + ";\n");

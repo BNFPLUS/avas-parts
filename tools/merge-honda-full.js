@@ -15,9 +15,9 @@
    Rules:
    - No prices or part numbers are invented. New parts are price:null,
      askPrice:true, confirmed:"verify", v:1 (fiche number, still to be checked
-     against the frame number), with the fiche page as source.
-   - A number already in PARTS is merged onto that part (fits, sources, alts,
-     notes, size). Its price, staff fields, name, category and flags are kept.
+     against the frame number). No source / fiche link is stored on the part.
+   - A number already in PARTS is merged onto that part (fits, alts, notes,
+     size). Its price, staff fields, name, category and flags are kept.
    - The extractor's alts are suffix lineage (same Honda stem, another suffix
      seen in this set). They stay searchable and are listed in `lineage` so the
      UI does not call them supersessions. The input marks none obsolete.
@@ -27,6 +27,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 const { sizeObj, bnfRef, bnfSize } = require("./catalogue-refs");
+const { clean, niceName, cleanName } = require("./catalogue-clean");
 
 const root = path.join(__dirname, "..");
 const IN = path.join(root, "src-data/catalogue-2026-11");
@@ -67,7 +68,7 @@ for (const m of HM) {
     id: m.id, brand: m.brand, model: m.model, name: m.name, market: m.market,
     /* data.js calls scooters "auto" (automatic), not "scooter" */
     generation: m.generation, years: m.years, cc: m.cc, seg: m.seg === "scooter" ? "auto" : m.seg, pop: 4,
-    catalogue_code: m.catalogue_code, catalogue_url: m.catalogue_url, manual_url: null,
+    catalogue_code: m.catalogue_code,
     status: m.status,
     note: "Full kept list from the public bike-parts-honda.com fiche (engine, frame, electrical, service/wear); numbers to verify against the frame number.",
     family_codes: fam,
@@ -78,34 +79,6 @@ for (const m of HM) {
 }
 
 /* ---------- Parts ---------- */
-/* Fiche names are upper case ("DAMPER SET, WHEEL"). Sentence case reads better;
-   words with digits and bracketed maker codes ("20X25X4", "(NOK)") keep their case. */
-function niceName(n) {
-  if (n !== n.toUpperCase() || !/[A-Z]/.test(n)) return n;
-  let depth = 0;
-  const out = n.split(/(\s+)/).map(w => {
-    const opens = (w.match(/\(/g) || []).length, closes = (w.match(/\)/g) || []).length;
-    const inside = depth > 0 || opens > 0;
-    depth += opens - closes;
-    return inside || /\d/.test(w) ? w : w.toLowerCase();
-  }).join("");
-  return out.charAt(0).toUpperCase() + out.slice(1);
-}
-
-/* Fiche text quirks: "--- " marks a line printed from the French fiche,
-   "X --- X" repeats the name, and the extractor cut some names mid-bracket
-   ("(NISSI"). The raw text stays in catalogue_name; nothing is translated. */
-function cleanName(raw) {
-  let n = raw.trim();
-  const dup = n.match(/^(.*?)\s+-{3}\s+(.*)$/);
-  if (dup && dup[1].toLowerCase() === dup[2].toLowerCase()) n = dup[1];
-  n = n.replace(/^-+\s*/, "");
-  if ((n.match(/\(/g) || []).length > (n.match(/\)/g) || []).length) {
-    n = /\(\s*$/.test(n) ? n.replace(/\s*\(\s*$/, "") : n + "…)";
-  }
-  return niceName(n);
-}
-
 /* A few fiche lines print no name at all ("-"): name the part after the
    fiche diagram it sits on, and say so. */
 function partName(h) {
@@ -126,13 +99,10 @@ for (const h of HP) {
   if (!CAT_IDS.has(h.cat)) throw new Error(`unknown cat ${h.cat} on ${h.oem}`);
   if (h.obsolete) throw new Error(`input marks ${h.oem} obsolete: handle supersession explicitly`);
   const size = partSize(h), wiki = (h.size || {}).wiki || null;
-  const sources = uniq([h.source_url, ...(h.sources || [])]);
   const t = byOem.get(h.oem);
   if (t) {
     const before = JSON.stringify(t);
     t.fits = uniq([...t.fits, ...h.fits]);
-    t.sources = uniq([...(t.sources || []), t.source_url, ...sources]);
-    if (!t.source_url) t.source_url = sources[0];
     t.alts = uniq([...t.alts, ...h.alts]).filter(a => a !== t.oem);
     if (h.alts.length) t.lineage = uniq([...(t.lineage || []), ...h.alts]);
     addNote(t, h.note);
@@ -149,7 +119,6 @@ for (const h of HP) {
     price: null, cost: null, stock: null, bin: null, rop: null,
     note: h.note || "",
     catalogue_name: h.catalogue_name, priority: h.priority,
-    source_url: sources[0], sources,
     askPrice: true, confirmed: "verify", added_by: TAG,
   };
   if (h.alts.length) p.lineage = [...h.alts];
@@ -186,6 +155,9 @@ const mids = new Set(D.MODELS.map(m => m.id));
 const dangling = D.PARTS.flatMap(p => p.fits.filter(f => !mids.has(f)).map(f => p.id + "->" + f));
 if (dangling.length) throw new Error("dangling fits: " + dangling.join(", "));
 if (D.PARTS.some(p => p.bnf && /price/i.test(JSON.stringify(p.bnf)))) throw new Error("a BNF reference mentions a price");
+
+/* ---------- English names, repaired cut names, no outbound links ---------- */
+clean(D);
 
 /* ---------- Write back in the generator's format ---------- */
 const out = head + names.map(n => `const ${n} = ${n === "BRANDS"

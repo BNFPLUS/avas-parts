@@ -71,6 +71,10 @@ const bad = await page.evaluate((wave) => {
   return [...document.querySelectorAll(".card [data-detail]")].map(e => e.dataset.detail).filter(id => !ok.has(id));
 }, WAVE);
 ok(bad.length === 0, "no part shown that does not fit the selected bike" + (bad.length ? " → " + bad.join(", ") : ""));
+const frenchOnPage = await page.evaluate(() => PARTS.filter(p => /\b(Faisceau|Roulement|Couvercle|Bouchon|Rondelle|Ressort|Pignon|Ens\.|d'etancheite|de|des|du|et)\b/.test(p.name)).map(p => p.id + " " + p.name));
+ok(frenchOnPage.length === 0, "no French part names in the bike catalogue: " + frenchOnPage.slice(0, 5).join(" | "));
+const waveLinks = await page.locator("#grid a").evaluateAll(as => as.filter(a => !(a.classList.contains("wikilink") && a.href.startsWith("https://bearing.wiki/"))).map(a => a.href));
+ok(waveLinks.length === 0, "Wave 125i cards carry no outbound links except bearing.wiki: " + waveLinks.slice(0, 3).join(", "));
 
 console.log("\nCategory rail");
 await page.click('[data-cat="brake"]');
@@ -272,6 +276,7 @@ for (const [v, brand, model, word] of EXACT) {
 /* WB30XT3 is the last one picked: model note + serial notice */
 ok(await page.locator("#rNote").isVisible() && (await page.locator("#rNote").textContent()).includes("WB30XT3-DR"),
    "model note shows the honda.mv model number and fiche note");
+ok(await page.locator("#rNote a").count() === 0, "model note has no product-page / store / source link");
 ok(await page.locator(".eqcard .serialnote").count() > 0, "\"Check frame/serial number\" notice shown on serial-dependent parts");
 ok((await page.locator("#step2Label").textContent()).includes("pump or engine"), "step 2 label adapts to the category");
 
@@ -311,7 +316,8 @@ const eqBody = await page.locator("#detailBody").textContent();
 ok(eqBody.includes(eqPart.oem), `detail shows the number as printed (${eqPart.oem})`);
 ok(eqBody.includes("Fits these engines") && eqBody.includes("F250 / F300"), "detail lists the engines it fits by name");
 ok(eqBody.includes("Ask for price") && eqBody.includes("confirm the price on WhatsApp"), "detail: ask for price, confirmed on WhatsApp");
-ok(await page.locator("#detailBody a.srclink[href^='http']").count() > 0, "detail links the source catalogue");
+const eqOut = await page.locator("#detailBody a").evaluateAll(as => as.filter(a => !(a.classList.contains("wikilink") && a.href.startsWith("https://bearing.wiki/"))).map(a => a.href));
+ok(!eqOut.length && !/\bSource\b/.test(eqBody), "detail has no Source section and no outbound link: " + eqOut.join(", "));
 ok(!/undefined|NaN|\bnull\b|an unlisted/.test(eqBody), "detail shows no garbage (undefined / NaN / null / bike decoder)");
 await page.screenshot({ path: path.join(shots, "08-equipment-detail.png") });
 
@@ -525,6 +531,8 @@ await page2.click('[data-detail="n0117"]');
 await page2.waitForTimeout(350);
 const brBody = await page2.locator("#detailBody").textContent();
 ok(brBody.includes("BNF PLUS stock for 6201U") && brBody.includes("NACHI") && !/MVR\s*\d/.test(brBody), "bearing detail lists BNF PLUS matches with no price");
+const brLinks = await page2.locator("#detailBody a").evaluateAll(as => as.map(a => a.className + " " + a.href));
+ok(brLinks.length >= 1 && brLinks.every(l => /^wikilink https:\/\/bearing\.wiki\//.test(l)), "bike detail's only link is bearing.wiki: " + brLinks.join(", "));
 await page2.click("#detail [data-close]");
 await page2.waitForTimeout(250);
 await page2.fill("#q", "11100-K1M-T00");

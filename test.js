@@ -127,18 +127,14 @@ const merged = new Set(PARTS.flatMap(p => p.merged_from || []));
 const lost = DL.DEALER_PARTS.filter(d => !seen[d.id] && !merged.has(d.id)).map(d => d.id);
 ok(!lost.length, "dealer parts neither added nor merged: " + lost.join(", "));
 const newParts = PARTS.filter(p => /^d\d{4}$/.test(p.id));
-const badNew = newParts.filter(p => !isAsk(p) || !(p.sources || []).length || !p.source_url).map(p => p.id);
-ok(newParts.length > 0 && !badNew.length, "new dealer parts must be askPrice with sources: " + badNew.join(", "));
-// The full Honda lists may add fiche fits/sources onto a dealer row with the
-// same number (tools/merge-honda-full.js); the dealer's own sources stay first.
-const FICHE = /^https:\/\/www\.bike-parts-honda\.com\//;
+const badNew = newParts.filter(p => !isAsk(p) || p.price !== null).map(p => p.id);
+ok(newParts.length > 0 && !badNew.length, "new dealer parts must be askPrice with price:null: " + badNew.join(", "));
 const flagDrift = newParts.filter(p => {
   const d = DL.DEALER_PARTS.find(x => x.id === p.id);
-  const srcOk = JSON.stringify(p.sources.slice(0, d.sources.length)) === JSON.stringify(d.sources) &&
-    p.sources.slice(d.sources.length).every(u => FICHE.test(u));
-  return p.v !== d.v || p.confirmed !== d.confirmed || p.note !== cleanNote(d.note) || !srcOk;
+  return p.v !== d.v || p.confirmed !== d.confirmed || p.note !== cleanNote(d.note);
 }).map(p => p.id);
-ok(!flagDrift.length, "new dealer parts changed v/confirmed/note/sources: " + flagDrift.join(", "));
+ok(!flagDrift.length, "new dealer parts changed v/confirmed/note: " + flagDrift.join(", "));
+ok(newParts.every(p => !("sources" in p) && !("source_url" in p)), "dealer parts carry no source / store links");
 console.log(`  ${newParts.length} dealer parts added, ${merged.size} merged onto existing numbers`);
 
 const byOem = (o) => PARTS.find(p => p.oem === o);
@@ -233,19 +229,20 @@ ok(emids.has("honda-wx10-water-pump"), "Honda WX10 (not in honda.mv) should be k
 const oemSeen = {}, oemDup = [];
 E.parts.forEach(p => { const k = p.vertical + "|" + p.oem; if (oemSeen[k]) oemDup.push(k); oemSeen[k] = 1; });
 ok(!oemDup.length, "duplicate OEM within a vertical: " + oemDup.slice(0, 20).join(", "));
-const eBadSrc = E.parts.filter(p => !(p.src || []).length || p.src.some(i => !/^https?:\/\//.test(E.urls[i] || ""))).map(p => p.id);
-ok(!eBadSrc.length, "equipment parts without a resolvable source url: " + eBadSrc.slice(0, 20).join(", "));
+const eSrc = E.parts.filter(p => "src" in p || "sources" in p || "source_url" in p).map(p => p.id);
+ok(!eSrc.length && !("urls" in E), "equipment parts carry no source links and EQUIP has no url table: " + eSrc.slice(0, 20).join(", "));
+ok(E.models.every(m => !("catalogue_url" in m)), "equipment models carry no catalogue / product-page url");
 ok(E.parts.some(p => /\//.test(p.oem)), "slash part numbers (e.g. JCB 320/B4420) kept as printed");
 const unv = E.parts.filter(p => p.tier === "genuine-unverified").length;
 ok(unv > 0 && E.parts.every(p => p.tier === "genuine" || p.tier === "genuine-unverified"), "tiers are genuine / genuine-unverified");
-console.log(`  ${unv} numbers marked "to be confirmed"; ${E.urls.length} distinct source urls`);
+console.log(`  ${unv} numbers marked "to be confirmed"`);
 ok(app.includes('"data-equip.js"') && !html.includes('src="data-equip.js"'), "data-equip.js is lazy-loaded by app.js, not by index.html");
 const parsun = E.models.filter(m => m.brand === "Parsun");
 ok(parsun.length === 4 && parsun.every(m => m.vertical === "outboards"), `Parsun has 4 outboard models (${parsun.length})`);
 const pids = new Set(parsun.map(m => m.id));
 const parsunParts = E.parts.filter(p => p.fits.some(f => pids.has(f)));
 ok(parsunParts.length === DL.DEALER_MARINE_PARTS.length, `all ${DL.DEALER_MARINE_PARTS.length} Parsun rows are in data-equip.js (${parsunParts.length})`);
-ok(parsunParts.every(p => p.price === null && p.askPrice === true && p.src.length), "Parsun parts are ask-for-price with sources");
+ok(parsunParts.every(p => p.price === null && p.askPrice === true), "Parsun parts are ask-for-price");
 ok(parsunParts.every(p => p.fits.every(f => pids.has(f))), "Parsun parts fit only Parsun engines");
 console.log(`  Parsun: ${parsun.length} models, ${parsunParts.length} parts`);
 ok(html.includes('id="vertChips"'), "index.html has the category picker");
@@ -282,9 +279,8 @@ const pByOem = new Map(PARTS.map(p => [p.oem, p]));
 const lostH = HP.filter(h => { const p = pByOem.get(h.oem); return !p || h.fits.some(f => !p.fits.includes(f)); }).map(h => h.oem);
 ok(!lostH.length, "fiche numbers missing from data.js or missing a fit: " + lostH.slice(0, 20).join(", "));
 const HNEW = PARTS.filter(p => p.added_by === TAG);
-const badH = HNEW.filter(p => !isAsk(p) || p.confirmed !== "verify" || p.v !== 1 || !/^https:\/\/www\.bike-parts-honda\.com\//.test(p.source_url) ||
-  !(p.sources || []).length || !cids.has(p.cat) || !p.name.trim()).map(p => p.id);
-ok(HNEW.length > 3000 && !badH.length, `new Honda parts are askPrice, verify, v:1, fiche-sourced (${HNEW.length}): ` + badH.slice(0, 20).join(", "));
+const badH = HNEW.filter(p => !isAsk(p) || p.confirmed !== "verify" || p.v !== 1 || !cids.has(p.cat) || !p.name.trim()).map(p => p.id);
+ok(HNEW.length > 3000 && !badH.length, `new Honda parts are askPrice, verify, v:1, categorised, named (${HNEW.length}): ` + badH.slice(0, 20).join(", "));
 ok(!HNEW.some(p => typeof p.price === "number" || typeof p.cost === "number"), "no new Honda part has a numeric price or cost");
 ok(!PARTS.some(p => p.obsolete || p.superseded || p.supersedes), "no part is marked obsolete/superseded (the input marks none)");
 ok(PARTS.every(p => (p.lineage || []).every(a => p.alts.includes(a))), "suffix-lineage numbers stay in alts (searchable)");
@@ -337,8 +333,7 @@ const eFit = (id) => E.parts.filter(p => p.fits.includes(id));
 const sole7 = eFit("sole-7-gs-gsc");
 ok(E.models.find(m => m.id === "sole-7-gs-gsc" && m.vertical === "generators" && m.brand === "Solé") && sole7.length >= 10,
    `Solé 7 GS/GSC is a generator set with official parts (${sole7.length})`);
-ok(sole7.every(p => p.price === null && p.askPrice === true && p.src.some(i => /^https:\/\/www\.soleiberia\.com\/.+\.pdf$/.test(E.urls[i]))),
-   "Solé parts are ask-for-price, sourced to the official PDF");
+ok(sole7.every(p => p.price === null && p.askPrice === true), "Solé parts are ask-for-price");
 for (const m of SM.models_only) {
   ok(E.models.find(x => x.id === m.id) && eFit(m.id).length === 0, `Solé ${m.name} listed with no invented parts`);
 }
@@ -350,6 +345,41 @@ ok(kama && kama.engine === "KM178FE" && kama.vertical === "pumps" && kama.model_
 for (const m of NE) ok(E.models.find(x => x.id === m.id && x.vertical === m.vertical && x.brand === m.brand) && eFit(m.id).length === 0, `${m.brand} ${m.model_number || m.name} listed, no invented parts`);
 const prevEq = E.parts.filter(p => !/^s-/.test(p.id));
 ok(E.parts.filter(p => /^s-/.test(p.id)).every(p => p.fits.every(f => soleIds.has(f))) && prevEq.every(p => !p.fits.some(f => soleIds.has(f))), "Solé parts fit only Solé sets");
+
+sec("Customer-facing names and links");
+{
+  const isFrench = require("./tools/french-words");
+  const fr = PARTS.filter(p => isFrench(p.name)).map(p => `${p.id} ${p.name}`);
+  ok(!fr.length, "display names still in French: " + fr.slice(0, 10).join(" | "));
+  const frCat = PARTS.filter(p => p.catalogue_name && isFrench(p.catalogue_name.length === 25 ? p.catalogue_name.replace(/\s\(?[A-Z]{1,2}$/, "") : p.catalogue_name)).map(p => `${p.id} ${p.catalogue_name}`);
+  ok(!frCat.length, "catalogue names still in French: " + frCat.slice(0, 10).join(" | "));
+  ok(!PARTS.some(p => /^\s*-{3}|\s-{3}\s/.test(p.catalogue_name || "")), "no French-fiche '---' markers or doubled names left in catalogue names");
+  const w = (o, o2) => PARTS.find(p => p.oem === o && p.fits.includes(o2));
+  const harness = PARTS.find(p => p.oem === "32105-K2F-N00") || PARTS.find(p => /Sub-harness, battery/.test(p.name));
+  ok(harness && harness.name === "Sub-harness, battery", "French 'Faisceau des cables auxiliaire, batterie' reads 'Sub-harness, battery'");
+  ok(PARTS.some(p => p.name === "Bearing, radial ball, 6201 (NSK)"), "French 'Roulement a billes radial' reads 'Bearing, radial ball'");
+  const cov = PARTS.filter(p => (p.catalogue_name || "").startsWith("GASKET, CYLINDER HEAD COV"));
+  ok(cov.length && cov.every(p => !/COV$/.test(p.catalogue_name)), "cut 'GASKET, CYLINDER HEAD COV' is completed to COVER");
+  ok(PARTS.some(p => p.catalogue_name === "BULB, HEADLIGHT (12V 35/3"), "a cut size ('(12V 35/3') is left as printed, not guessed");
+  ok(PARTS.some(p => p.catalogue_name === "LEVER, L. STEERING HANDLE"), "complete Honda wording is not 'repaired'");
+
+  const URL = /https?:\/\//;
+  const wikiOnly = (u) => /^https:\/\/bearing\.wiki\//.test(u);
+  const partLinks = PARTS.filter(p => "source_url" in p || "sources" in p).map(p => p.id);
+  ok(!partLinks.length, "bike parts carry no source_url / sources: " + partLinks.slice(0, 10).join(", "));
+  const strUrls = (o) => JSON.stringify(o).match(/https?:\/\/[^"\s\\]+/g) || [];
+  const badPartUrl = PARTS.flatMap(p => strUrls({ ...p, wiki: undefined }));
+  ok(!badPartUrl.length, "no outbound URL in any bike part field: " + badPartUrl.slice(0, 5).join(", "));
+  ok(PARTS.filter(p => p.wiki).every(p => wikiOnly(p.wiki)), "the only part link is bearing.wiki");
+  const badModelUrl = MODELS.flatMap(m => strUrls(m));
+  ok(!badModelUrl.length, "no outbound URL on bike models (catalogue_url / manual / dealer pages): " + badModelUrl.slice(0, 5).join(", "));
+  const eqUrls = strUrls(E);
+  ok(!eqUrls.length, "no outbound URL anywhere in data-equip.js: " + eqUrls.slice(0, 5).join(", "));
+  ok(!/sourceLinks|srclink|catalogue_url|source_url|E\.urls/.test(app), "app.js renders no source / product-page links");
+  const anchors = [...app.matchAll(/<a\s[^>]*class="([^"]+)"[^>]*href="([^"]*)"/g)].map(m => m[1] + " " + m[2]);
+  ok(anchors.length === 1 && /^wikilink /.test(anchors[0]), "the only data-driven anchor in app.js is the bearing.wiki link: " + anchors.join(" | "));
+  ok(PARTS.filter(p => p.bnf).length >= 1 && PARTS.filter(p => p.wiki).length >= 30, "BNF references and bearing.wiki links are kept");
+}
 
 console.log("\n" + (fail ? `${fail} of ${checks} check(s) FAILED` : `All ${checks} checks passed`));
 process.exit(fail ? 1 : 0);

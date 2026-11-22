@@ -227,10 +227,6 @@ function integrateEquip() {
   E.verticals.forEach(v => { if (VERT_BY_ID[v.id]) Object.assign(VERT_BY_ID[v.id], { name: v.name, unit: v.unit }); });
   E.models.forEach(m => { MODEL_BY_ID[m.id] = m; });
   E.cats.forEach(c => { CAT_BY_ID[c.id] = c; });
-  E.parts.forEach(p => {
-    p.sources = (p.src || []).map(i => E.urls[i]).filter(Boolean);
-    p.source_url = p.sources[0] || null;
-  });
   E.parts.forEach(p => { p._h = eqHaystack(p); PART_BY_ID[p.id] = p; });
   EQ.parts = E.parts; EQ.models = E.models; EQ.cats = E.cats;
   EQ.loaded = true; EQ.failed = false;
@@ -280,7 +276,7 @@ function renderHero() {
   }
   $("#lede").textContent =
     `One wrong digit means the wrong part on the next boat. Pick the make and the ${v.pick}, ` +
-    `and we will show you the exact number from the maker's catalogue, where it was sourced, ` +
+    `and we will show you the exact number from the maker's catalogue ` +
     `and what to check before you order. Every price is confirmed on WhatsApp.`;
   $("#step2Label").textContent = `Step 2 — pick the ${v.pick}`;
 }
@@ -443,7 +439,7 @@ function eqCardHTML(p) {
       <div><span class="l">Re-order</span><span class="v">—</span></div>
       <div><span class="l">Bin</span><span class="v">—</span></div>
     </div>
-    <button class="moreb" data-detail="${esc(p.id)}">Fitment, source &amp; notes →</button>
+    <button class="moreb" data-detail="${esc(p.id)}">Fitment &amp; notes →</button>
     <div class="cardfoot">
       <div>${priceHTML(p)}</div>
       <button class="addbtn" data-add="${esc(p.id)}">Add</button>
@@ -495,14 +491,6 @@ function cardHTML(p) {
   </article>`;
 }
 
-function sourceLinks(urls) {
-  return (urls || []).filter(u => /^https?:\/\//.test(u)).map(u => {
-    let label = u;
-    try { const x = new URL(u); label = x.hostname.replace(/^www\./, "") + (x.pathname.length > 1 ? x.pathname.replace(/\/$/, "").slice(0, 38) + (x.pathname.length > 39 ? "…" : "") : ""); } catch {}
-    return `<a class="srclink" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
-  }).join("");
-}
-
 function renderModelNote() {
   const box = $("#rNote");
   const m = state.model ? MODEL_BY_ID[state.model] : null;
@@ -519,11 +507,8 @@ function renderModelNote() {
   if (m.size) bits.push(`<span><b>Size</b> ${esc(m.size)}</span>`);
   if (m.catalogue) bits.push(`<span><b>Catalogue</b> ${esc(m.catalogue)}</span>`);
   const note = m.note ? `<div class="mnote-note">${SERIAL_HINT.test(m.note) || /unverified|nearest/i.test(m.note) ? `<span class="serialnote">Check frame/serial number</span> ` : ""}${esc(m.note)}</div>` : "";
-  /* Power products link their honda.mv page. A marine model's catalogue_url is
-     just the first page scraped (often one part's product page), so it is not
-     shown as "the" catalogue; each part's drawer links its own sources. */
-  const src = m.model_number && m.catalogue_url ? `<div class="mnote-src"><b>Product page</b> ${sourceLinks([m.catalogue_url])}</div>` : "";
-  box.innerHTML = `${bits.length ? `<div class="mnote-bits">${bits.join("")}</div>` : ""}${note}${src}`;
+  /* Plain text only: no product-page, store or source links. */
+  box.innerHTML = `${bits.length ? `<div class="mnote-bits">${bits.join("")}</div>` : ""}${note}`;
   box.hidden = !box.innerHTML;
 }
 
@@ -601,8 +586,6 @@ function openEqDetail(p) {
     ? `<div class="altlist">${p.alts.map(a => `<div class="altrow"><span>${esc(a)}</span><span class="tag">cross-reference</span></div>`).join("")}</div>`
     : `<p style="margin:0;font-size:13px;color:var(--ink-3)">No alternate numbers recorded.</p>`;
 
-  const links = sourceLinks(p.sources && p.sources.length ? p.sources : [p.source_url]);
-
   $("#detailBody").innerHTML = `
     <div class="dsec">
       <h4>Part number</h4>
@@ -617,7 +600,6 @@ function openEqDetail(p) {
     <div class="dsec"><h4>Also sold as</h4>${altBlock}</div>
     ${refsDetailHTML(p)}
     ${p.note ? `<div class="dsec"><h4>Catalogue note</h4><div class="notebox">${esc(p.note)}</div></div>` : ""}
-    <div class="dsec"><h4>Source</h4>${links ? `<div class="srclist">${links}</div>` : `<p class="hint">No source link recorded.</p>`}</div>
     <div class="dsec">
       <h4>Price</h4>
       ${priceHTML(p)}

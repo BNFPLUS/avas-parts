@@ -10,8 +10,10 @@
    Rules:
    - No prices or part numbers are invented. New parts keep price:null,
      askPrice:true and every field exactly as the dealer file gives it.
-   - A dealer number already in PARTS is merged onto that part (fits, sources,
-     note) instead of creating a second part with the same number.
+   - A dealer number already in PARTS is merged onto that part (fits, note)
+     instead of creating a second part with the same number.
+   - No outbound links are kept: tools/catalogue-clean.js drops the dealer
+     source_url / sources before writing (and translates / repairs names).
    - The dealer file's v / confirmed flags mean "v:1 + confirmed:verify = seen
      on a retailer page only". app.js treats confirmed:"verify" as unconfirmed.
    - Reference prices and dated stock remarks in dealer notes are research,
@@ -22,6 +24,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 const { cleanNote, cleanModelNote } = require("./dealer-notes");
+const { clean } = require("./catalogue-clean");
 
 const root = path.join(__dirname, "..");
 const DATA = path.join(root, "data.js");
@@ -85,8 +88,6 @@ function mergeInto(t, d) {
   if (t.merged_from.includes(d.id)) return;
   t.merged_from.push(d.id);
   t.fits = uniq([...t.fits, ...d.fits]);
-  t.sources = uniq([...(t.sources || []), t.source_url, d.source_url, ...(d.sources || [])]);
-  if (!t.source_url) t.source_url = d.source_url;
   addNote(t, d.note);
   log.push(`merged ${d.id} (${d.oem}) into ${t.id}`);
 }
@@ -127,22 +128,17 @@ fpad.fits = uniq([...fpad.fits, "yamaha-exciter155-vva-b5v"]);
 addNote(fpad, "VERIFY: Webike lists 2DP-F5805-00 for Exciter T150/T155; B63-F5805-00 kept as primary");
 fpad.confirmed = "verify";
 
-/* ---------- Honda alternates (sources confirmed by the owner) ---------- */
-function addAlt(id, oem, alt, note, sources) {
+/* ---------- Honda alternates (confirmed by the owner) ---------- */
+function addAlt(id, oem, alt, note) {
   const p = byId(id);
   if (p.oem !== oem) throw new Error(`${id} is ${p.oem}, expected ${oem}`);
   p.alts = uniq([...p.alts, alt]);
   addNote(p, note);
-  p.sources = uniq([...(p.sources || []), ...sources]);
 }
 addAlt("n0061", "06455-KVB-T01", "06455-KVB-912",
-  "06455-KVB-912 = front pad for earlier Air Blade 110 (ANC110A 2008) / Click 110; ACA110B uses -T01. Check caliper.",
-  ["https://www.bike-parts-honda.com/honda-motorcycle/110-SCOOTER/WAVE/2008/ANC110ACT8/Frame/FRONT-BRAKE-CALIPER/107183/F12/2/49808",
-   "https://autocare.mv/"]);
+  "06455-KVB-912 = front pad for earlier Air Blade 110 (ANC110A 2008) / Click 110; ACA110B uses -T01. Check caliper.");
 addAlt("n0211", "40530-KPH-902", "40530-KPH-901",
-  "Honda lists -901 (DID420DX-104RB) and -902 (DID420AD-104RB) as Wave 125 drive chain variants; hondamoto.parts lists 880/900/901/902 as equivalent references.",
-  ["https://www.bike-parts-honda.com/thumbs/pdf_url/img/parts_list/0125_AFS125M3_M5_MSP6_MSP7_MSP8_AFS125MSA_MSB_PH/2500_2500/0113.pdf",
-   "https://www.hondamoto.parts/en/spare-parts/132226-chaine-of-commande-daido-did420dx-104rb-40530-kph-901.html"]);
+  "Honda lists -901 (DID420DX-104RB) and -902 (DID420AD-104RB) as Wave 125 drive chain variants; hondamoto.parts lists 880/900/901/902 as equivalent references.");
 
 /* ---------- Dealer notes: no reference prices or stock remarks ---------- */
 const dealerIds = new Set(DEALER_PARTS.map(d => d.id));
@@ -157,6 +153,9 @@ if (dupOem.length) throw new Error("duplicate part numbers: " + dupOem.join(", "
 const mids = new Set(D.MODELS.map(m => m.id));
 const dangling = D.PARTS.flatMap(p => p.fits.filter(f => !mids.has(f)).map(f => p.id + "->" + f));
 if (dangling.length) throw new Error("dangling fits: " + dangling.join(", "));
+
+/* ---------- English names, repaired cut names, no outbound links ---------- */
+clean(D);
 
 /* ---------- Write back in the generator's format ---------- */
 const out = head + names.map(n => `const ${n} = ${n === "BRANDS"
