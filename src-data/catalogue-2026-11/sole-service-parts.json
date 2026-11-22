@@ -1,0 +1,1838 @@
+[
+  {
+    "oem": "13120047",
+    "name": "Gasket Water Pump",
+    "src_line": "7 13120047 1 Gasket Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "m_gasket",
+    "qty": "1"
+  },
+  {
+    "oem": "13124051",
+    "name": "Oil Filter Element from MINI 11 to 55",
+    "src_line": "5 13124051 1 Oil Filter Element from MINI 11 to 55",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13810074",
+    "name": "Air Filter",
+    "src_line": "8 13810074 1 Air Filter 2017-02-15",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13821020",
+    "name": "Fresh Water Pump",
+    "src_line": "1 13821020 1 Fresh Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "13821022",
+    "name": "Gasket Water Pump",
+    "src_line": "2 13821022 1 Gasket Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "m_gasket",
+    "qty": "1"
+  },
+  {
+    "oem": "13821033",
+    "name": "Gasket Thermostat",
+    "src_line": "9 13821033 1 Gasket Thermostat 2020-03-25",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17621033.4",
+    "name": "Gasket Thermostat",
+    "src_line": "9 17621033.4 1 Gasket Thermostat 2018-03-27 2020-03-25",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "13821027",
+    "name": "Thermostat 71\u00ba",
+    "src_line": "15 13821027 1 Thermostat 71\u00ba",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "13821037.1",
+    "name": "FITTING Thermostat New",
+    "src_line": "16 13821037.1 1 FITTING Thermostat New",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "13811043",
+    "name": "Engine Anode 29.5 mm M.8",
+    "src_line": "15 13811043 1 Engine Anode 29.5 mm M.8",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "18011009",
+    "name": "Anode Plug",
+    "src_line": "16 18011009 1 Anode Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "31211008",
+    "name": "1/2\" Impeller",
+    "src_line": "3 31211008 1 1/2\" Impeller",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "33411026",
+    "name": "Wearplate",
+    "src_line": "8 33411026 1 Wearplate",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "13114022",
+    "name": "Fuel Filter Element from MINI 10 to 55",
+    "src_line": "5 13114022 1 Fuel Filter Element from MINI 10 to 55",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "D_13920101",
+    "name": "Gasket Kit",
+    "src_line": "D_13920101 Gasket Kit",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "37011200K",
+    "name": "Repair Kit Water Pump 1/2\"",
+    "src_line": "37011200K Repair Kit Water Pump 1/2\"",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "33811000K",
+    "name": "Repair Kit Water Pump 1/2\"",
+    "src_line": "33811000K Repair Kit Water Pump 1/2\"",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "catalogue": "Genset 7 GS/GSC & 8 GSA/GSAC",
+    "fits": [
+      "sole-7-gs-gsc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "13120047",
+    "name": "Gasket Water Pump",
+    "src_line": "7 13120047 1 Gasket Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "m_gasket",
+    "qty": "1"
+  },
+  {
+    "oem": "13124051",
+    "name": "Oil Filter Element from MINI 11 to 55",
+    "src_line": "5 13124051 1 Oil Filter Element from MINI 11 to 55",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13810074",
+    "name": "Air Filter",
+    "src_line": "8 13810074 1 Air Filter 2017-02-15",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13821020",
+    "name": "Fresh Water Pump",
+    "src_line": "1 13821020 1 Fresh Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "13821022",
+    "name": "Gasket Water Pump",
+    "src_line": "2 13821022 1 Gasket Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "m_gasket",
+    "qty": "1"
+  },
+  {
+    "oem": "13821033",
+    "name": "Gasket Thermostat",
+    "src_line": "9 13821033 1 Gasket Thermostat 2020-03-25",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17621033.4",
+    "name": "Gasket Thermostat",
+    "src_line": "9 17621033.4 1 Gasket Thermostat 2018-03-27 2020-03-25",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "13821027",
+    "name": "Thermostat 71\u00ba",
+    "src_line": "15 13821027 1 Thermostat 71\u00ba",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "13821037.1",
+    "name": "FITTING Thermostat New",
+    "src_line": "16 13821037.1 1 FITTING Thermostat New",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "13811043",
+    "name": "Engine Anode 29.5 mm M.8",
+    "src_line": "15 13811043 1 Engine Anode 29.5 mm M.8",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "18011009",
+    "name": "Anode Plug",
+    "src_line": "16 18011009 1 Anode Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "31211008",
+    "name": "1/2\" Impeller",
+    "src_line": "3 31211008 1 1/2\" Impeller",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "33411026",
+    "name": "Wearplate",
+    "src_line": "8 33411026 1 Wearplate",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "13114022",
+    "name": "Fuel Filter Element from MINI 10 to 55",
+    "src_line": "5 13114022 1 Fuel Filter Element from MINI 10 to 55",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "D_13920101",
+    "name": "Gasket Kit",
+    "src_line": "D_13920101 Gasket Kit",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "37011200K",
+    "name": "Repair Kit Water Pump 1/2\"",
+    "src_line": "37011200K Repair Kit Water Pump 1/2\"",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "33811000K",
+    "name": "Repair Kit Water Pump 1/2\"",
+    "src_line": "33811000K Repair Kit Water Pump 1/2\"",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "catalogue": "Genset 8 GT/GTC & 10 GTA/GTAC",
+    "fits": [
+      "sole-8-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "13120047",
+    "name": "Gasket Water Pump",
+    "src_line": "15 13120047 2 Gasket Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "m_gasket",
+    "qty": "2"
+  },
+  {
+    "oem": "13124051",
+    "name": "Oil Filter Element from MINI 11 to 55",
+    "src_line": "7 13124051 1 Oil Filter Element from MINI 11 to 55",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13812015.05",
+    "name": "Remote Oil Filter Gasget",
+    "src_line": "8 13812015.05 1 Remote Oil Filter Gasget",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17214032",
+    "name": "Fuel filter Racor Flange",
+    "src_line": "9 17214032 1 Fuel filter Racor Flange",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13810074",
+    "name": "Air Filter",
+    "src_line": "2 13810074 1 Air Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17221020",
+    "name": "Fresh Water Pump",
+    "src_line": "1 17221020 1 Fresh Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "13221022",
+    "name": "Gasket Water Pump",
+    "src_line": "4 13221022 1 Gasket Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "m_gasket",
+    "qty": "1"
+  },
+  {
+    "oem": "13221041",
+    "name": "Gasket Water Pump",
+    "src_line": "6 13221041 1 Gasket Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "m_gasket",
+    "qty": "1"
+  },
+  {
+    "oem": "17221033",
+    "name": "Gasket, Thermostat Case",
+    "src_line": "11 17221033 1 Gasket, Thermostat Case",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17221031",
+    "name": "Gasket,Thermostat",
+    "src_line": "17 17221031 1 Gasket,Thermostat",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17221027G",
+    "name": "Thermostat",
+    "src_line": "18 17221027G 1 Thermostat",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "6097A075",
+    "name": "Thermostat TAC 95\u00ba Trafag",
+    "src_line": "30 6097A075 1 Thermostat TAC 95\u00ba Trafag",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "13811043",
+    "name": "Engine Anode 29.5 mm M.8",
+    "src_line": "18 13811043 1 Engine Anode 29.5 mm M.8",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "18011009",
+    "name": "Anode Plug",
+    "src_line": "19 18011009 1 Anode Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "31211008",
+    "name": "1/2\" Impeller",
+    "src_line": "3 31211008 1 1/2\" Impeller",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "33411026",
+    "name": "Wearplate",
+    "src_line": "8 33411026 1 Wearplate",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "19414039",
+    "name": "Racor Fitting Male M18x150-M20x150",
+    "src_line": "6 19414039 2 Racor Fitting Male M18x150-M20x150",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "2"
+  },
+  {
+    "oem": "17314022",
+    "name": "Fuel Filter Element Double Filtre MINI-33/44",
+    "src_line": "10 17314022 2 Fuel Filter Element Double Filtre MINI-33/44",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "2"
+  },
+  {
+    "oem": "17221060G",
+    "name": "V-Belt",
+    "src_line": "14 17221060G 1 V-Belt",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_belt",
+    "qty": "1"
+  },
+  {
+    "oem": "D_17220101G",
+    "name": "Gasket Kit",
+    "src_line": "D_17220101G Gasket Kit",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "17220101G",
+    "name": "Gasket Kit MINI-33 Genset",
+    "src_line": "0 17220101G 1 Gasket Kit MINI-33 Genset",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_kit",
+    "qty": "1"
+  },
+  {
+    "oem": "33811000K",
+    "name": "Repair Kit Water Pump 1/2\"",
+    "src_line": "33811000K Repair Kit Water Pump 1/2\"",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "37611000K",
+    "name": "Repair Kit Water Pump 1/2\"",
+    "src_line": "37611000K Repair Kit Water Pump 1/2\"",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "catalogue": "Genset 11 GT/GTC & 14 GTA/GTAC TAC",
+    "fits": [
+      "sole-11-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "13120047",
+    "name": "Gasket Water Pump",
+    "src_line": "11 13120047 1 Gasket Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "m_gasket",
+    "qty": "1"
+  },
+  {
+    "oem": "13812015.05",
+    "name": "Remote Oil Filter Gasget",
+    "src_line": "7 13812015.05 1 Remote Oil Filter Gasget",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17314030",
+    "name": "Fuel filter Racor Flange",
+    "src_line": "8 17314030 1 Fuel filter Racor Flange",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13124051",
+    "name": "Oil Filter Element from MINI 11 to 55",
+    "src_line": "9 13124051 1 Oil Filter Element from MINI 11 to 55",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17210020.1",
+    "name": "Elbow, Air Filter",
+    "src_line": "10 17210020.1 1 Elbow, Air Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13810074",
+    "name": "Air Filter",
+    "src_line": "13 13810074 1 Air Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17221020",
+    "name": "Fresh Water Pump",
+    "src_line": "1 17221020 1 Fresh Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "13221041",
+    "name": "Gasket Water Pump",
+    "src_line": "1C 13221041 1 Gasket Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "m_gasket",
+    "qty": "1"
+  },
+  {
+    "oem": "13221022",
+    "name": "Gasket Water Pump",
+    "src_line": "2 13221022 1 Gasket Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "m_gasket",
+    "qty": "1"
+  },
+  {
+    "oem": "17221037",
+    "name": "Assy Thermostat",
+    "src_line": "6A 17221037 1 Assy Thermostat",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17221031",
+    "name": "Gasket,Thermostat",
+    "src_line": "6B 17221031 1 Gasket,Thermostat",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17221040",
+    "name": "Thermostat",
+    "src_line": "6C 17221040 1 Thermostat",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17221033",
+    "name": "Gasket, Thermostat Case",
+    "src_line": "7 17221033 1 Gasket, Thermostat Case",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17221060G",
+    "name": "V-Belt",
+    "src_line": "10A 17221060G 1 V-Belt",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_belt",
+    "qty": "1"
+  },
+  {
+    "oem": "6097A075",
+    "name": "Thermostat TAC 95\u00ba Trafag",
+    "src_line": "21 6097A075 1 Thermostat TAC 95\u00ba Trafag",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "13811043",
+    "name": "Engine Anode 29.5 mm M.8",
+    "src_line": "18 13811043 1 Engine Anode 29.5 mm M.8",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "18011009",
+    "name": "Anode Plug",
+    "src_line": "19 18011009 1 Anode Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "31211008",
+    "name": "1/2\" Impeller",
+    "src_line": "4 31211008 1 1/2\" Impeller",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "19414039",
+    "name": "Racor Fitting Male M18x150-M20x150",
+    "src_line": "6 19414039 2 Racor Fitting Male M18x150-M20x150",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "2"
+  },
+  {
+    "oem": "17314022",
+    "name": "Fuel Filter Element Double Filtre MINI-33/44",
+    "src_line": "11 17314022 2 Fuel Filter Element Double Filtre MINI-33/44",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "2"
+  },
+  {
+    "oem": "D_17320101G",
+    "name": "Gasket Kit",
+    "src_line": "D_17320101G Gasket Kit",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "37611000K",
+    "name": "Repair Kit Water Pump 1/2\"",
+    "src_line": "37611000K Repair Kit Water Pump 1/2\"",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "catalogue": "Genset 17 GT/GTC & 20 GTA/GTAC TAC",
+    "fits": [
+      "sole-17-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "17124047",
+    "name": "Shaft,oil filter",
+    "src_line": "7 17124047 1 Shaft,oil filter 2016-06-15",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13924051",
+    "name": "Oil Filter Element MINI-62",
+    "src_line": "17 13924051 1 Oil Filter Element MINI-62 2016-06-15",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13810074",
+    "name": "Air Filter",
+    "src_line": "8 13810074 1 Air Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17121022",
+    "name": "Gasket Water Pump",
+    "src_line": "7 17121022 1 Gasket Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "m_gasket",
+    "qty": "1"
+  },
+  {
+    "oem": "17121027",
+    "name": "Thermostat",
+    "src_line": "16 17121027 1 Thermostat",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17421037",
+    "name": "Case Assy,Thermostat",
+    "src_line": "17 17421037 1 Case Assy,Thermostat",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "18011009",
+    "name": "Anode Plug",
+    "src_line": "14 18011009 1 Anode Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "18011031",
+    "name": "Engine Anode 45 mm M.8",
+    "src_line": "16 18011031 1 Engine Anode 45 mm M.8",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "34711041",
+    "name": "Impeller Plug",
+    "src_line": "3 34711041 1 Impeller Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "34711008",
+    "name": "1\" Impeller",
+    "src_line": "4 34711008 1 1\" Impeller",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "13325231",
+    "name": "Screw, Racord",
+    "src_line": "43 13325231 1 Screw, Racord",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13325201",
+    "name": "Screw, Racord",
+    "src_line": "44 13325201 1 Screw, Racord",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17424020",
+    "name": "Fuel Filter Assy",
+    "src_line": "1 17424020 1 Fuel Filter Assy",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17424001",
+    "name": "Bracket,Fuel Filter",
+    "src_line": "2 17424001 1 Bracket,Fuel Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17414022",
+    "name": "Fuel Filter Element MINI-74 SM-105",
+    "src_line": "3 17414022 1 Fuel Filter Element MINI-74 SM-105",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13325112",
+    "name": "Screw, Racord",
+    "src_line": "9 13325112 1 Screw, Racord",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "D_17120101G",
+    "name": "Gasket Kit",
+    "src_line": "D_17120101G Gasket Kit",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "17120101.1",
+    "name": "Gasket Kit MINI-62/63G",
+    "src_line": "17120101.1 Gasket Kit MINI-62/63G",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "36511000K",
+    "name": "Repair Kit Water Pump 1\"",
+    "src_line": "36511000K Repair Kit Water Pump 1\"",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "catalogue": "Genset 25 GT/GTC & 30 GTA/GTAC",
+    "fits": [
+      "sole-25-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "17424051",
+    "name": "Oil Filter Element MINI-74/SM-82/94",
+    "src_line": "13 17424051 1 Oil Filter Element MINI-74/SM-82/94",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17424054",
+    "name": "Union,Oil Filter",
+    "src_line": "14 17424054 1 Union,Oil Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17410031",
+    "name": "Filter Element (Air Filter)",
+    "src_line": "11 17410031 1 Filter Element (Air Filter)",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17410034",
+    "name": "Air Filter",
+    "src_line": "11 17410034 2 Air Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_filter",
+    "qty": "2"
+  },
+  {
+    "oem": "17421020G.1",
+    "name": "Fresh Water Pump (tube \u00d818)",
+    "src_line": "1B 17421020G.1 1 Fresh Water Pump (tube \u00d818)",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "17421020G.2",
+    "name": "Fresh Water Pump",
+    "src_line": "1C 17421020G.2 1 Fresh Water Pump",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "17121027",
+    "name": "Thermostat",
+    "src_line": "16 17121027 1 Thermostat",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17411013",
+    "name": "Thermostat Water Outlet Elbow",
+    "src_line": "8 17411013 1 Thermostat Water Outlet Elbow",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "18011031",
+    "name": "Engine Anode 45 mm M.8",
+    "src_line": "14 18011031 1 Engine Anode 45 mm M.8",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "18011009",
+    "name": "Anode Plug",
+    "src_line": "15 18011009 1 Anode Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "34711041",
+    "name": "Impeller Plug",
+    "src_line": "3 34711041 1 Impeller Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "34711008",
+    "name": "1\" Impeller",
+    "src_line": "4 34711008 1 1\" Impeller",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "17424020",
+    "name": "Fuel Filter Assy",
+    "src_line": "1 17424020 1 Fuel Filter Assy",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17424001",
+    "name": "Bracket,Fuel Filter",
+    "src_line": "2 17424001 1 Bracket,Fuel Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17414022",
+    "name": "Fuel Filter Element MINI-74 SM-105",
+    "src_line": "3 17414022 1 Fuel Filter Element MINI-74 SM-105",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17424002",
+    "name": "Bracket,Fuel Filter",
+    "src_line": "8 17424002 1 Bracket,Fuel Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "D_17420101",
+    "name": "Gasket Kit",
+    "src_line": "D_17420101 Gasket Kit",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "17420101",
+    "name": "Gasket Kit MINI-74",
+    "src_line": "0 17420101 1 Gasket Kit MINI-74",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_kit",
+    "qty": "1"
+  },
+  {
+    "oem": "36511000K",
+    "name": "Repair Kit Water Pump 1\"",
+    "src_line": "36511000K Repair Kit Water Pump 1\"",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "catalogue": "Genset 35 GT/GTC & 40 GTA/GTAC",
+    "fits": [
+      "sole-35-gt-gtc",
+      "sole-40-gta-gtac"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "17424054",
+    "name": "Union,Oil Filter",
+    "src_line": "23 17424054 1 Union,Oil Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17810012",
+    "name": "Air Filter",
+    "src_line": "12 17810012 1 Air Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17B10041",
+    "name": "Oil Separator Filter Element 01/10/2025",
+    "src_line": "18A 17B10041 1 Oil Separator Filter Element 01/10/2025",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17421020G.1",
+    "name": "Fresh Water Pump (tube \u00d818)",
+    "src_line": "1 17421020G.1 1 Fresh Water Pump (tube \u00d818)",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "17121027R",
+    "name": "Thermostat",
+    "src_line": "10 17121027R 1 Thermostat",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "6097A075",
+    "name": "Thermostat TAC 95\u00ba Trafag",
+    "src_line": "32 6097A075 1 Thermostat TAC 95\u00ba Trafag",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17411013",
+    "name": "Thermostat Water Outlet Elbow",
+    "src_line": "22 17411013 1 Thermostat Water Outlet Elbow",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "18011031",
+    "name": "Engine Anode 45 mm M.8",
+    "src_line": "14 18011031 1 Engine Anode 45 mm M.8",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "18011009",
+    "name": "Anode Plug",
+    "src_line": "15 18011009 1 Anode Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "34711041",
+    "name": "Impeller Plug",
+    "src_line": "3 34711041 1 Impeller Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "34711008",
+    "name": "1\" Impeller",
+    "src_line": "4 34711008 1 1\" Impeller",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "17414011",
+    "name": "Racord",
+    "src_line": "46 17414011 1 Racord",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "19424022",
+    "name": "Fuel Filter Element SDZ-165/205/280",
+    "src_line": "7 19424022 2 Fuel Filter Element SDZ-165/205/280",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "2"
+  },
+  {
+    "oem": "19414039",
+    "name": "Racor Fitting Male M18x150-M20x150",
+    "src_line": "12 19414039 2 Racor Fitting Male M18x150-M20x150",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "2"
+  },
+  {
+    "oem": "19414042",
+    "name": "Female Racord Fitting G 3/8 01/01/2025",
+    "src_line": "21 19414042 1 Female Racord Fitting G 3/8 01/01/2025",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "D_GU01_6_1",
+    "name": "Gasket Kit",
+    "src_line": "D_GU01_6_1 Gasket Kit",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "17B10200",
+    "name": "Gasket Kit, SM-56",
+    "src_line": "0 17B10200 1 Gasket Kit, SM-56",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_kit",
+    "qty": "1"
+  },
+  {
+    "oem": "36511000K",
+    "name": "Repair Kit Water Pump 1\"",
+    "src_line": "36511000K Repair Kit Water Pump 1\"",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "catalogue": "Genset 45 GT/GTC & 54 GTA/GTAC TAC",
+    "fits": [
+      "sole-45-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "17524051",
+    "name": "Oil Filter Element SM-75/90/105",
+    "src_line": "13 17524051 1 Oil Filter Element SM-75/90/105",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17424054",
+    "name": "Union,Oil Filter",
+    "src_line": "14 17424054 1 Union,Oil Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17810012",
+    "name": "Air Filter",
+    "src_line": "7 17810012 1 Air Filter",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17421037",
+    "name": "Case Assy,Thermostat",
+    "src_line": "6 17421037 1 Case Assy,Thermostat",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17121027",
+    "name": "Thermostat",
+    "src_line": "16 17121027 1 Thermostat",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "17411013",
+    "name": "Thermostat Water Outlet Elbow",
+    "src_line": "16 17411013 1 Thermostat Water Outlet Elbow",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "m_service",
+    "qty": "1"
+  },
+  {
+    "oem": "18011009",
+    "name": "Anode Plug",
+    "src_line": "17 18011009 1 Anode Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "18011031",
+    "name": "Engine Anode 45 mm M.8",
+    "src_line": "18 18011031 1 Engine Anode 45 mm M.8",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "m_anode",
+    "qty": "1"
+  },
+  {
+    "oem": "34711041",
+    "name": "Impeller Plug",
+    "src_line": "3 34711041 1 Impeller Plug",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "34711008",
+    "name": "1\" Impeller",
+    "src_line": "4 34711008 1 1\" Impeller",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_pumpend",
+    "qty": "1"
+  },
+  {
+    "oem": "13325231",
+    "name": "Screw, Racord",
+    "src_line": "139 13325231 1 Screw, Racord",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "13325112",
+    "name": "Screw, Racord",
+    "src_line": "108 13325112 1 Screw, Racord",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17A24020",
+    "name": "Fuel Filter Assy",
+    "src_line": "2 17A24020 1 Fuel Filter Assy",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17A24009",
+    "name": "Gasoil Filter Element 03/03/2020",
+    "src_line": "10 17A24009 1 Gasoil Filter Element 03/03/2020",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17A24009.1",
+    "name": "Gasoil Filter Element 03/03/2020",
+    "src_line": "10 17A24009.1 1 Gasoil Filter Element 03/03/2020",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "17A24030",
+    "name": "Gasoil Filter Element SM-81 03/03/2020",
+    "src_line": "10 17A24030 1 Gasoil Filter Element SM-81 03/03/2020",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_filter",
+    "qty": "1"
+  },
+  {
+    "oem": "D_17A20101",
+    "name": "Gasket Kit",
+    "src_line": "D_17A20101 Gasket Kit",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_kit"
+  },
+  {
+    "oem": "17A20101",
+    "name": "Gasket Kit SM-81",
+    "src_line": "1 17A20101 1 Gasket Kit SM-81",
+    "pdf": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf",
+    "catalogue": "Genset 68 GT/GTC & 84 GTA/GTAC",
+    "fits": [
+      "sole-68-gt-gtc"
+    ],
+    "cat": "e_kit",
+    "qty": "1"
+  }
+]

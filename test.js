@@ -10,8 +10,8 @@ vm.runInContext(
 );
 const { MODELS, PARTS, CATS, ZONES, FAMILY, GROUP, BRANDS, SHOP } = ctx.__X;
 
-let fail = 0;
-const ok  = (c, m) => { if (!c) { fail++; console.log("  FAIL " + m); } };
+let fail = 0, checks = 0;
+const ok  = (c, m) => { checks++; if (!c) { fail++; console.log("  FAIL " + m); } };
 const sec = (n) => console.log("\n" + n);
 
 sec("Dataset shape");
@@ -129,9 +129,14 @@ ok(!lost.length, "dealer parts neither added nor merged: " + lost.join(", "));
 const newParts = PARTS.filter(p => /^d\d{4}$/.test(p.id));
 const badNew = newParts.filter(p => !isAsk(p) || !(p.sources || []).length || !p.source_url).map(p => p.id);
 ok(newParts.length > 0 && !badNew.length, "new dealer parts must be askPrice with sources: " + badNew.join(", "));
+// The full Honda lists may add fiche fits/sources onto a dealer row with the
+// same number (tools/merge-honda-full.js); the dealer's own sources stay first.
+const FICHE = /^https:\/\/www\.bike-parts-honda\.com\//;
 const flagDrift = newParts.filter(p => {
   const d = DL.DEALER_PARTS.find(x => x.id === p.id);
-  return p.v !== d.v || p.confirmed !== d.confirmed || p.note !== cleanNote(d.note) || JSON.stringify(p.sources) !== JSON.stringify(d.sources);
+  const srcOk = JSON.stringify(p.sources.slice(0, d.sources.length)) === JSON.stringify(d.sources) &&
+    p.sources.slice(d.sources.length).every(u => FICHE.test(u));
+  return p.v !== d.v || p.confirmed !== d.confirmed || p.note !== cleanNote(d.note) || !srcOk;
 }).map(p => p.id);
 ok(!flagDrift.length, "new dealer parts changed v/confirmed/note/sources: " + flagDrift.join(", "));
 console.log(`  ${newParts.length} dealer parts added, ${merged.size} merged onto existing numbers`);
@@ -257,5 +262,94 @@ const mvrModels = [...MODELS, ...E.models].filter(m => dealerModelIds.has(m.id) 
 ok(!mvrModels.length, "dealer model notes with an MVR price: " + mvrModels.join(", "));
 console.log(`  ${PARTS.length + E.parts.length} part notes checked`);
 
-console.log("\n" + (fail ? `${fail} check(s) FAILED` : "All checks passed"));
+sec("Full Honda lists (src-data/catalogue-2026-11)");
+const C26 = "src-data/catalogue-2026-11/";
+const HM = JSON.parse(fs.readFileSync(C26 + "honda-full-models.json", "utf8"));
+const HP = JSON.parse(fs.readFileSync(C26 + "honda-full-parts.json", "utf8"));
+const HR = JSON.parse(fs.readFileSync(C26 + "honda-full-report.json", "utf8"));
+const TAG = "honda-full-2026-11";
+const fitCount = (id) => PARTS.filter(p => p.fits.includes(id)).length;
+for (const m of HM) {
+  const n = fitCount(m.id), kept = HR.per_model[m.id].kept_unique_pn;
+  ok(mids.has(m.id), `${m.id} is a model`);
+  // every kept fiche number is on the model, plus the curated rows it already had
+  ok(n >= kept && n >= 350, `${m.id}: ${n} parts, expected >= ${kept} kept fiche numbers and >= 350`);
+}
+const fam = (re) => HM.filter(m => re.test(m.id)).map(m => `${m.id.replace(/^honda-/, "")} ${fitCount(m.id)}`).join(", ");
+for (const [f, re] of [["Wave 125", /wave125/], ["Air Blade", /airblade/], ["Wave 110 / Alpha", /wave110|wave-alpha/], ["Scoopy", /scoopy/], ["PCX", /pcx/], ["Click", /click/]])
+  console.log(`  ${f.padEnd(17)} ${fam(re)}`);
+const pByOem = new Map(PARTS.map(p => [p.oem, p]));
+const lostH = HP.filter(h => { const p = pByOem.get(h.oem); return !p || h.fits.some(f => !p.fits.includes(f)); }).map(h => h.oem);
+ok(!lostH.length, "fiche numbers missing from data.js or missing a fit: " + lostH.slice(0, 20).join(", "));
+const HNEW = PARTS.filter(p => p.added_by === TAG);
+const badH = HNEW.filter(p => !isAsk(p) || p.confirmed !== "verify" || p.v !== 1 || !/^https:\/\/www\.bike-parts-honda\.com\//.test(p.source_url) ||
+  !(p.sources || []).length || !cids.has(p.cat) || !p.name.trim()).map(p => p.id);
+ok(HNEW.length > 3000 && !badH.length, `new Honda parts are askPrice, verify, v:1, fiche-sourced (${HNEW.length}): ` + badH.slice(0, 20).join(", "));
+ok(!HNEW.some(p => typeof p.price === "number" || typeof p.cost === "number"), "no new Honda part has a numeric price or cost");
+ok(!PARTS.some(p => p.obsolete || p.superseded || p.supersedes), "no part is marked obsolete/superseded (the input marks none)");
+ok(PARTS.every(p => (p.lineage || []).every(a => p.alts.includes(a))), "suffix-lineage numbers stay in alts (searchable)");
+ok(!/supersession/.test(JSON.stringify(PARTS.filter(p => p.lineage).map(p => p.note))), "lineage notes do not claim a supersession");
+const pcxBelt = PARTS.find(p => p.id === "n0387");
+ok(pcxBelt.price === 645 && pcxBelt.cost === 388 && pcxBelt.bin === "A1-07", "existing priced row keeps price and staff fields after the merge");
+ok(PARTS.filter(isPriced).every(p => p.added_by !== TAG), "no priced part was created by the Honda merge");
+const CLICK = ["honda-click110i-th-2011", "honda-click125i-th-2016", "honda-click125-2021", "honda-click125-2023-acb", "honda-click160-th-2024"];
+for (const id of CLICK) {
+  const ps = PARTS.filter(p => p.fits.includes(id));
+  const c = (cat) => ps.filter(p => p.cat === cat).length;
+  const has = (g) => ps.some(p => p.oem.startsWith(g + "-"));
+  ok(MODELS.find(m => m.id === id && m.brand === "Honda" && m.seg === "auto"), `${id} model added`);
+  // air filter element is 17210-… on most fiches, 17220-K60-M00 on the 2016 Click 125i
+  ok(c("engine") >= 100 && c("elec") >= 30 && c("brake") >= 5 && (has("17210") || has("17220")) && has("23100"),
+     `${id}: engine ${c("engine")}, electrical ${c("elec")}, brakes ${c("brake")}, air filter + drive belt`);
+}
+const stub = PARTS.filter(p => p.fits.includes("honda-click-autocare"));
+ok(mids.has("honda-click-autocare") && stub.length === 3, "Auto Care Click stub kept with its 3 retailer numbers");
+const altPart = pByOem.get("11100-K1M-T00");
+ok(altPart && altPart.alts.includes("11100-K1M-T01") && altPart.lineage.includes("11100-K1M-T01"), "11100-K1M-T00 carries 11100-K1M-T01 as a lineage alt");
+
+sec("Sizes, bearing.wiki and BNF PLUS references");
+const BNF = JSON.parse(fs.readFileSync(C26 + "bnf-links.json", "utf8"));
+const bnfBike = PARTS.filter(p => p.bnf), wikiBike = PARTS.filter(p => p.wiki), sizeBike = PARTS.filter(p => p.size);
+console.log(`  bikes: ${sizeBike.length} sized, ${wikiBike.length} bearing.wiki links, ${bnfBike.length} BNF references`);
+ok(wikiBike.length >= 30 && wikiBike.every(p => /^https:\/\/bearing\.wiki\/b\//.test(p.wiki)), "bearing.wiki links are bearing.wiki/b/ URLs");
+ok(sizeBike.every(p => p.size.designation && p.size.kind), "every size has a kind and designation");
+const b6201 = PARTS.find(p => p.id === "n0117");
+ok(b6201.wiki === "https://bearing.wiki/b/6201-2RS" && b6201.size.designation === "6201U" && b6201.bnf.matches.length > 0 && b6201.askPrice && b6201.price == null,
+   "n0117 front wheel bearing: 6201U, bearing.wiki 6201-2RS, BNF matches, still ask-for-price");
+ok(PARTS.some(p => p.size && p.size.designation === "6201" && p.size.kind === "bearing"), "a fiche bearing with designation 6201 exists");
+ok(PARTS.some(p => p.size && p.size.designation === "20x25x4"), "a 20x25x4 seal exists");
+ok(PARTS.some(p => p.size && p.size.bore_mm === 20 && p.size.od_mm === 42 && p.size.width_mm === 12), "a 20x42x12 bearing (6004) exists");
+const allJSON = JSON.stringify(PARTS.map(p => p.bnf).filter(Boolean)) + JSON.stringify(E.parts.map(p => p.bnf).filter(Boolean));
+ok(!/price|mvr|\bcost\b/i.test(allJSON), "no BNF reference carries a price, cost or MVR value");
+ok(!/price_mvr/.test(fs.readFileSync("data.js", "utf8") + fs.readFileSync("data-equip.js", "utf8")), "no price_mvr field anywhere");
+const lf = E.parts.find(p => p.id === "m00003");
+ok(lf && lf.bnf && lf.bnf.sku === "FIL1784" && lf.bnf.brand === "FLEETGUARD" && lf.price === null && lf.askPrice === true,
+   "BNF exact filter match LF3959 -> FIL1784 FLEETGUARD, part still price:null + askPrice");
+const bnfEq = E.parts.filter(p => p.bnf);
+ok(bnfEq.length === BNF.filter(r => r.vertical !== "bikes").length, `every equipment BNF row is attached (${bnfEq.length})`);
+ok(BNF.filter(r => r.vertical === "bikes" && (r.bnf_sku || r.bnf_stock_matches)).every(r => PARTS.find(p => p.oem === r.avas_oem && p.bnf)), "every bike BNF row with stock is attached");
+ok(BNF.filter(r => r.bearing_wiki_url).every(r => PARTS.find(p => p.oem === r.avas_oem && p.wiki === r.bearing_wiki_url)), "every bearing.wiki link from bnf-links.json is attached");
+
+sec("Solé gensets and new equipment models");
+const SM = JSON.parse(fs.readFileSync(C26 + "sole-models.json", "utf8"));
+const NE = JSON.parse(fs.readFileSync(C26 + "new-equip-models.json", "utf8"));
+const eFit = (id) => E.parts.filter(p => p.fits.includes(id));
+const sole7 = eFit("sole-7-gs-gsc");
+ok(E.models.find(m => m.id === "sole-7-gs-gsc" && m.vertical === "generators" && m.brand === "Solé") && sole7.length >= 10,
+   `Solé 7 GS/GSC is a generator set with official parts (${sole7.length})`);
+ok(sole7.every(p => p.price === null && p.askPrice === true && p.src.some(i => /^https:\/\/www\.soleiberia\.com\/.+\.pdf$/.test(E.urls[i]))),
+   "Solé parts are ask-for-price, sourced to the official PDF");
+for (const m of SM.models_only) {
+  ok(E.models.find(x => x.id === m.id) && eFit(m.id).length === 0, `Solé ${m.name} listed with no invented parts`);
+}
+ok(/different set/.test(E.models.find(m => m.id === "sole-10-gs-gsc").note), "10 GS/GSC explains why the 10 GTA parts are not attached");
+const soleIds = new Set(E.models.filter(m => m.brand === "Solé").map(m => m.id));
+console.log(`  Solé: ${soleIds.size} models, ${E.parts.filter(p => p.fits.some(f => soleIds.has(f))).length} parts`);
+const kama = E.models.find(m => m.id === "kama-kdp30e");
+ok(kama && kama.engine === "KM178FE" && kama.vertical === "pumps" && kama.model_number === "KDP30E", "Kama KDP30E (engine KM178FE) is a pump model");
+for (const m of NE) ok(E.models.find(x => x.id === m.id && x.vertical === m.vertical && x.brand === m.brand) && eFit(m.id).length === 0, `${m.brand} ${m.model_number || m.name} listed, no invented parts`);
+const prevEq = E.parts.filter(p => !/^s-/.test(p.id));
+ok(E.parts.filter(p => /^s-/.test(p.id)).every(p => p.fits.every(f => soleIds.has(f))) && prevEq.every(p => !p.fits.some(f => soleIds.has(f))), "Solé parts fit only Solé sets");
+
+console.log("\n" + (fail ? `${fail} of ${checks} check(s) FAILED` : `All ${checks} checks passed`));
 process.exit(fail ? 1 : 0);

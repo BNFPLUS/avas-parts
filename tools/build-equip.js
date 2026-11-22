@@ -42,6 +42,21 @@ for (const p of DEALER_MARINE_PARTS) p.note = cleanNote(p.note);
 const MARINE_MODELS = [...ctx.__X.MARINE_MODELS, ...DEALER_MARINE_MODELS];
 const MARINE_PARTS = [...ctx.__X.MARINE_PARTS, ...DEALER_MARINE_PARTS];
 
+/* 2026-11 catalogue inputs (src-data/catalogue-2026-11/, copied verbatim):
+     sole-models.json / sole-service-parts.json  Solé marine gensets, service and
+                                                  wear parts from the official
+                                                  English spare-parts PDFs
+     new-equip-models.json                        Kama, Yarmax, Marquis, Shimizu,
+                                                  INGCO, Pedrollo: models only
+     bnf-links.json                               BNF PLUS stock references (no prices) */
+const C26 = path.join(root, "src-data/catalogue-2026-11");
+const readJSON = (f) => JSON.parse(fs.readFileSync(path.join(C26, f), "utf8"));
+const SOLE_MODELS = readJSON("sole-models.json");
+const SOLE_PARTS = readJSON("sole-service-parts.json");
+const NEW_EQUIP = readJSON("new-equip-models.json");
+const BNF_LINKS = readJSON("bnf-links.json").filter(r => r.vertical !== "bikes");
+const { bnfRef } = require("./catalogue-refs");
+
 /* ---------- Verticals ---------- */
 const UNIT = {
   bikes:         ["bike", "bikes"],
@@ -138,7 +153,58 @@ for (const m of MARINE_MODELS) {
   if (name !== m.name && !m.name.endsWith(name)) out.src_title = m.name;
   models.push(out);
 }
+
+/* Solé marine gensets sit with the other generator sets. A model in
+   models_only has no official catalogue of its own and gets no parts: 10 GS and
+   14 GS are NOT given the 10 GTA / 14 GTA catalogue parts. */
+const MODELS_ONLY = new Set();
+const NO_LIST = "No official parts list is published for this model yet. Send the nameplate (model and serial number) on WhatsApp and we will find the number.";
+const soleOnly = new Map(SOLE_MODELS.models_only.map(m => [m.id, m]));
+const soleSeen = new Set();
+for (const m of [...SOLE_MODELS.with_parts, ...SOLE_MODELS.models_only]) {
+  if (soleSeen.has(m.id)) continue;
+  soleSeen.add(m.id);
+  const rows = SOLE_PARTS.filter(p => p.fits.includes(m.id));
+  const only = soleOnly.get(m.id);
+  if (only && rows.length) throw new Error(`Solé ${m.id} is models_only but has part rows`);
+  let note = null;
+  if (only) {
+    MODELS_ONLY.add(m.id);
+    note = /GTA/.test(only.parts)
+      ? `The official Solé catalogue found covers the ${only.parts.match(/\d+ GTA\/GTAC/)[0]}, a different set, so its parts are not listed for the ${m.kind}. ${NO_LIST}`
+      : NO_LIST;
+  }
+  models.push({
+    id: m.id, vertical: "generators", brand: "Solé",
+    name: m.name.replace(/\bgenset\b/, "generator"),
+    size: m.kva ? `${m.kva} kVA` : null,
+    kind: `Solé ${m.kind} marine generator`,
+    catalogue: rows.length ? rows[0].catalogue : null,
+    catalogue_url: rows.length ? rows[0].pdf : null,
+    note,
+  });
+}
+
+/* Machines sold in the Maldives with no official public parts list: the model
+   is listed (engine code, catalogue page, note as given), with no parts. */
+for (const m of NEW_EQUIP) {
+  if (!UNIT[m.vertical] || m.vertical === "bikes") throw new Error("bad vertical on " + m.id);
+  if (m.parts !== "none") throw new Error(`new equipment model ${m.id} has parts; add them through a source file`);
+  MODELS_ONLY.add(m.id);
+  models.push({
+    id: m.id, vertical: m.vertical, brand: m.brand, name: m.name,
+    size: m.size || null,
+    model_number: m.model_number || null,
+    kind: m.kind,
+    engine: m.engine || null,
+    catalogue_url: m.catalogue_url,
+    note: m.note,
+  });
+}
 const MODEL = Object.fromEntries(models.map(m => [m.id, m]));
+const modelIds = models.map(m => m.id);
+const dupModel = modelIds.filter((id, i) => modelIds.indexOf(id) !== i);
+if (dupModel.length) throw new Error("duplicate equipment model ids: " + dupModel.join(", "));
 
 /* ---------- Parts ---------- */
 const POWER_CAT = {
@@ -200,6 +266,25 @@ for (const p of MARINE_PARTS) {
   });
 }
 
+/* Solé service / wear parts: number as printed in the official PDF, which is
+   the source. Quantity per set is noted per model, since it can differ. */
+let soleRows = 0;
+for (const p of SOLE_PARTS) {
+  if (!CAT_IDS.has(p.cat)) throw new Error("unknown cat " + p.cat);
+  const bad = p.fits.filter(f => !MODEL[f] || MODELS_ONLY.has(f));
+  if (bad.length) throw new Error(`Solé ${p.oem} fits a model with no catalogue: ${bad.join(", ")}`);
+  const sets = p.fits.map(f => MODEL[f].name.replace(/ marine generator$/, "")).join(" / ");
+  rows.push({
+    id: "s-" + p.oem.replace(/[^0-9A-Za-z]+/g, "_").toLowerCase(),
+    vertical: "generators", cat: p.cat, name: p.name, oem: p.oem, v: 1,
+    alts: [], fits: [...p.fits], tier: "genuine",
+    note: p.qty ? `qty ${p.qty} per set (${sets})` : "",
+    catalogue_name: null, priority: null,
+    sources: [p.pdf],
+  });
+  soleRows++;
+}
+
 /* Merge rows with the same OEM inside a vertical. */
 const byKey = new Map();
 const uniq = (a) => [...new Set(a.filter(Boolean))];
@@ -239,11 +324,28 @@ const parts = [...byKey.values()].map(r => {
   return out;
 });
 
-/* Drop models that ended up with no parts (none expected). */
-const used = new Set(parts.flatMap(p => p.fits));
-const emptyModels = models.filter(m => !used.has(m.id)).map(m => m.id);
+/* BNF PLUS stock references (exact filter matches). Joined by part id, or by
+   vertical + number when the id was merged into another row. sku / brand /
+   their number / availability only: no price exists in the input or here. */
+const partById = new Map(parts.map(p => [p.id, p]));
+const partByKey = new Map(parts.map(p => [p.vertical + "|" + p.oem, p]));
+const bnfMissing = [];
+for (const r of BNF_LINKS) {
+  const t = partById.get(r.avas_part_id) || partByKey.get(r.vertical + "|" + r.avas_oem);
+  if (!t || t.oem !== r.avas_oem) { bnfMissing.push(r.avas_part_id || r.avas_oem); continue; }
+  const ref = bnfRef(r);
+  if (ref) t.bnf = ref;
+}
+if (bnfMissing.length) throw new Error("bnf-links rows with no matching equipment part: " + bnfMissing.join(", "));
 
-const EQUIP = { verticals, cats, models: models.filter(m => used.has(m.id)), urls, parts };
+/* Drop models that ended up with no parts, except models listed on purpose
+   without parts (no official parts list published). */
+const used = new Set(parts.flatMap(p => p.fits));
+const emptyModels = models.filter(m => !used.has(m.id) && !MODELS_ONLY.has(m.id)).map(m => m.id);
+const leaked = parts.filter(p => p.fits.some(f => MODELS_ONLY.has(f))).map(p => p.id);
+if (leaked.length) throw new Error("parts attached to a models-only model: " + leaked.join(", "));
+
+const EQUIP = { verticals, cats, models: models.filter(m => used.has(m.id) || MODELS_ONLY.has(m.id)), urls, parts };
 const banner = "/* avas.parts marine + equipment catalogue. GENERATED by tools/build-equip.js from src-data/ — do not edit.\n" +
   "   Every part is ask-for-price (price:null, askPrice:true). Part numbers as printed. */\n";
 fs.writeFileSync(path.join(root, "data-equip.js"), banner + "var EQUIP=" + JSON.stringify(EQUIP) + ";\n");
@@ -261,6 +363,9 @@ console.log(`rows merged by OEM within a vertical: ${merged} (pumps: ${mergedPum
 if (emptyModels.length) console.log(`models with no parts, omitted: ${emptyModels.join(", ")}`);
 console.log(`output: ${EQUIP.models.length} models, ${parts.length} parts`);
 console.log(`dealer marine (Parsun): ${parsun.length} models, ${parts.filter(p => p.fits.some(f => parsun.some(m => m.id === f))).length} parts`);
+const sole = EQUIP.models.filter(m => m.brand === "Solé");
+console.log(`Solé: ${sole.length} models (${sole.filter(m => MODELS_ONLY.has(m.id)).length} models only), ${soleRows} part rows -> ${parts.filter(p => p.fits.some(f => sole.some(m => m.id === f))).length} parts`);
+console.log(`models listed without parts: ${MODELS_ONLY.size}; parts with a BNF PLUS reference: ${parts.filter(p => p.bnf).length}`);
 for (const v of verticals.filter(v => v.id !== "bikes")) {
   const nm = EQUIP.models.filter(m => m.vertical === v.id).length;
   const np = parts.filter(p => p.vertical === v.id).length;

@@ -1,0 +1,133 @@
+{
+  "with_parts": [
+    {
+      "id": "sole-7-gs-gsc",
+      "name": "7 GS/GSC marine generator",
+      "kva": "7",
+      "kind": "GS/GSC"
+    },
+    {
+      "id": "sole-8-gt-gtc",
+      "name": "8 GT/GTC marine generator",
+      "kva": "8",
+      "kind": "GT/GTC"
+    },
+    {
+      "id": "sole-10-gs-gsc",
+      "name": "10 GS/GSC marine generator",
+      "kva": "10",
+      "kind": "GS/GSC",
+      "note": "Maldives listing is 10 GS/GSC; this official catalogue is 8 GT/GTC & 10 GTA/GTAC. Parts applied only to 8 GT/GTC unless a 10 GS catalogue is found. 10 GTA parts not attached to 10 GS."
+    },
+    {
+      "id": "sole-11-gt-gtc",
+      "name": "11 GT/GTC marine generator",
+      "kva": "11",
+      "kind": "GT/GTC"
+    },
+    {
+      "id": "sole-14-gs-gsc",
+      "name": "14 GS/GSC marine generator",
+      "kva": "14",
+      "kind": "GS/GSC",
+      "note": "Maldives listing is 14 GS/GSC; this official catalogue is 11 GT/GTC & 14 GTA/GTAC TAC. Parts attached only to 11 GT/GTC until a 14 GS catalogue is confirmed."
+    },
+    {
+      "id": "sole-17-gt-gtc",
+      "name": "17 GT/GTC marine generator",
+      "kva": "17",
+      "kind": "GT/GTC"
+    },
+    {
+      "id": "sole-25-gt-gtc",
+      "name": "25 GT/GTC marine generator",
+      "kva": "25",
+      "kind": "GT/GTC"
+    },
+    {
+      "id": "sole-35-gt-gtc",
+      "name": "35 GT/GTC marine generator",
+      "kva": "35",
+      "kind": "GT/GTC"
+    },
+    {
+      "id": "sole-40-gta-gtac",
+      "name": "40 GTA/GTAC marine genset",
+      "kva": "40",
+      "kind": "GTA/GTAC"
+    },
+    {
+      "id": "sole-45-gt-gtc",
+      "name": "45 GT/GTC marine genset",
+      "kva": "45",
+      "kind": "GT/GTC"
+    },
+    {
+      "id": "sole-68-gt-gtc",
+      "name": "68 GT/GTC marine generator",
+      "kva": "68",
+      "kind": "GT/GTC"
+    }
+  ],
+  "models_only": [
+    {
+      "id": "sole-4-gsch-v3",
+      "name": "4 GSCH V3 marine generator",
+      "kva": "4",
+      "kind": "GSCH",
+      "parts": "no official public catalogue found"
+    },
+    {
+      "id": "sole-10-gs-gsc",
+      "name": "10 GS/GSC marine generator",
+      "kva": "10",
+      "kind": "GS/GSC",
+      "parts": "official catalogue found was 10 GTA/GTAC (with 8 GT), not used for 10 GS"
+    },
+    {
+      "id": "sole-14-gs-gsc",
+      "name": "14 GS/GSC marine generator",
+      "kva": "14",
+      "kind": "GS/GSC",
+      "parts": "official catalogue found was 14 GTA/GTAC (with 11 GT), not used for 14 GS"
+    },
+    {
+      "id": "sole-50-gt-gtc",
+      "name": "50 GT/GTC marine generator",
+      "kva": "50",
+      "kind": "GT/GTC",
+      "parts": "no official public catalogue found in this batch"
+    },
+    {
+      "id": "sole-60-gta-gtac",
+      "name": "60 GTA/GTAC marine genset",
+      "kva": "60",
+      "kind": "GTA/GTAC",
+      "parts": "no official public catalogue found in this batch"
+    },
+    {
+      "id": "sole-85-gt-gtc",
+      "name": "85 GT/GTC marine genset",
+      "kva": "85",
+      "kind": "GT/GTC",
+      "parts": "no official public catalogue found in this batch"
+    },
+    {
+      "id": "sole-115-gt-gtc",
+      "name": "115 GT/GTC marine generator",
+      "kva": "115",
+      "kind": "GT/GTC",
+      "parts": "no official public catalogue found in this batch"
+    }
+  ],
+  "sources": {
+    "D_FA0642_EN.txt": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0642_EN.pdf",
+    "D_FA0640_EN.txt": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0640_EN.pdf",
+    "D_FA1699_EN.txt": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1699_EN.pdf",
+    "D_FA1705_EN.txt": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1705_EN.pdf",
+    "D_FA1468_EN.txt": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1468_EN.pdf",
+    "D_FA0722_EN.txt": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA0722_EN.pdf",
+    "D_FA1620_EN.txt": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1620_EN.pdf",
+    "D_FA1450_EN.txt": "https://www.soleiberia.com/SoleIberia/Despieces/D_FA1450_EN.pdf"
+  }
+}

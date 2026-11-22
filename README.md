@@ -28,6 +28,24 @@ Aerox Alpha, Auto Care Honda numbers, Parsun outboards) is split two ways:
 `node tools/merge-dealers.js` merges the bike half into `data.js` (idempotent), and
 `tools/build-equip.js` reads the Parsun half into `data-equip.js`.
 
+Catalogue inputs from November 2026 sit in `src-data/catalogue-2026-11/` (copied verbatim):
+- `node tools/merge-honda-full.js` merges the full kept Honda fiche lists (Wave 125,
+  Wave 110 / Alpha, Air Blade, Scoopy, PCX, and five new Click models) into `data.js`.
+  It is idempotent. Numbers already in `PARTS` get the extra fits, sources, alts and
+  sizes, and keep their price and staff fields. New numbers are ask-for-price and
+  `confirmed:"verify"`. Other suffixes of the same Honda stem go in `alts` and
+  `lineage`, so they are searchable without being called supersessions. Some fiche
+  names are in French (the source site is French). The raw text is kept in
+  `catalogue_name`, and nothing is translated.
+- `tools/build-equip.js` also reads the Solé marine gensets (official PDF service
+  parts) and the Kama, Yarmax, Marquis, Shimizu, INGCO and Pedrollo models. Models
+  with no official parts list are listed with no parts. The page says so and asks
+  for the nameplate.
+- `bnf-links.json` adds BNF PLUS stock references (SKU, brand, their number,
+  availability) and bearing.wiki links to both catalogues. BNF prices are not public
+  and are never copied. Search also matches sizes and designations (`6201`, `6201-2RS`,
+  `20x42x12`), BNF SKUs, alternates, and engine codes of machines with no parts yet.
+
 ---
 
 ## 1. The market

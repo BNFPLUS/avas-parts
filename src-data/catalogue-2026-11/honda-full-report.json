@@ -1,0 +1,504 @@
+{
+  "models_built": [
+    "honda-wave125i-th-2012-2017-kyz",
+    "honda-wave125i-th-2018-2022-k73",
+    "honda-wave125i-th-2023-k1m",
+    "honda-wave125i-th-2024-k3f",
+    "honda-airblade125-ad-2023",
+    "honda-airblade125-vn-2013-2015",
+    "honda-airblade160-2022-2025",
+    "honda-airblade160-2025-cafs",
+    "honda-wave110i-th-2009-2013",
+    "honda-wave110i-th-2014-2020",
+    "honda-wave110i-th-2021",
+    "honda-wave-alpha110-2017-2022",
+    "honda-scoopy110-th-2012-2016",
+    "honda-scoopy110-th-2017-2020",
+    "honda-scoopy110-th-2021-k2f",
+    "honda-scoopy110-th-2024-cbtr",
+    "honda-pcx150-th-2014-2017",
+    "honda-pcx160-th-2021-2023",
+    "honda-pcx160-th-2024",
+    "honda-click110i-th-2011",
+    "honda-click125i-th-2016",
+    "honda-click125-2021",
+    "honda-click125-2023-acb",
+    "honda-click160-th-2024"
+  ],
+  "models_missing_json": [],
+  "unique_parts": 4182,
+  "fits_rows": 10110,
+  "with_size": 90,
+  "with_bearing": 32,
+  "with_seal": 39,
+  "obsolete": 0,
+  "superseded_marked": 0,
+  "suffix_lineage_notes": 617,
+  "per_model": {
+    "honda-wave125i-th-2012-2017-kyz": {
+      "raw_rows": 865,
+      "raw_unique_pn": 808,
+      "kept_rows": 483,
+      "kept_unique_pn": 474,
+      "dropped": {
+        "filtered": 382
+      },
+      "cats": {
+        "engine": 185,
+        "elec": 120,
+        "cvt": 7,
+        "drive": 4,
+        "chassis": 105,
+        "brake": 36,
+        "control": 21,
+        "tyre": 5
+      }
+    },
+    "honda-wave125i-th-2018-2022-k73": {
+      "raw_rows": 786,
+      "raw_unique_pn": 735,
+      "kept_rows": 459,
+      "kept_unique_pn": 452,
+      "dropped": {
+        "filtered": 327
+      },
+      "cats": {
+        "engine": 185,
+        "elec": 119,
+        "cvt": 7,
+        "drive": 3,
+        "chassis": 84,
+        "brake": 36,
+        "control": 21,
+        "tyre": 4
+      }
+    },
+    "honda-wave125i-th-2023-k1m": {
+      "raw_rows": 779,
+      "raw_unique_pn": 734,
+      "kept_rows": 446,
+      "kept_unique_pn": 440,
+      "dropped": {
+        "filtered": 333
+      },
+      "cats": {
+        "engine": 192,
+        "elec": 87,
+        "cvt": 5,
+        "drive": 10,
+        "chassis": 82,
+        "body": 4,
+        "brake": 35,
+        "control": 20,
+        "tyre": 11
+      }
+    },
+    "honda-wave125i-th-2024-k3f": {
+      "raw_rows": 763,
+      "raw_unique_pn": 718,
+      "kept_rows": 444,
+      "kept_unique_pn": 438,
+      "dropped": {
+        "filtered": 319
+      },
+      "cats": {
+        "engine": 192,
+        "elec": 88,
+        "cvt": 5,
+        "drive": 9,
+        "chassis": 82,
+        "body": 4,
+        "brake": 35,
+        "control": 18,
+        "tyre": 11
+      }
+    },
+    "honda-airblade125-ad-2023": {
+      "raw_rows": 782,
+      "raw_unique_pn": 723,
+      "kept_rows": 422,
+      "kept_unique_pn": 417,
+      "dropped": {
+        "filtered": 360
+      },
+      "cats": {
+        "engine": 196,
+        "elec": 93,
+        "cvt": 15,
+        "body": 2,
+        "brake": 31,
+        "control": 14,
+        "chassis": 67,
+        "tyre": 4
+      }
+    },
+    "honda-airblade125-vn-2013-2015": {
+      "raw_rows": 780,
+      "raw_unique_pn": 712,
+      "kept_rows": 433,
+      "kept_unique_pn": 423,
+      "dropped": {
+        "filtered": 347
+      },
+      "cats": {
+        "engine": 201,
+        "elec": 99,
+        "cvt": 14,
+        "body": 3,
+        "brake": 37,
+        "control": 6,
+        "chassis": 65,
+        "tyre": 8
+      }
+    },
+    "honda-airblade160-2022-2025": {
+      "raw_rows": 745,
+      "raw_unique_pn": 686,
+      "kept_rows": 413,
+      "kept_unique_pn": 407,
+      "dropped": {
+        "filtered": 332
+      },
+      "cats": {
+        "engine": 192,
+        "elec": 89,
+        "cvt": 16,
+        "body": 2,
+        "brake": 32,
+        "control": 12,
+        "chassis": 66,
+        "tyre": 4
+      }
+    },
+    "honda-airblade160-2025-cafs": {
+      "raw_rows": 723,
+      "raw_unique_pn": 665,
+      "kept_rows": 410,
+      "kept_unique_pn": 404,
+      "dropped": {
+        "filtered": 313
+      },
+      "cats": {
+        "engine": 192,
+        "elec": 85,
+        "cvt": 16,
+        "body": 4,
+        "brake": 31,
+        "control": 11,
+        "chassis": 66,
+        "tyre": 5
+      }
+    },
+    "honda-wave110i-th-2009-2013": {
+      "raw_rows": 905,
+      "raw_unique_pn": 857,
+      "kept_rows": 519,
+      "kept_unique_pn": 508,
+      "dropped": {
+        "filtered": 386
+      },
+      "cats": {
+        "engine": 184,
+        "elec": 115,
+        "cvt": 5,
+        "drive": 12,
+        "chassis": 117,
+        "control": 37,
+        "brake": 48,
+        "tyre": 1
+      }
+    },
+    "honda-wave110i-th-2014-2020": {
+      "raw_rows": 819,
+      "raw_unique_pn": 777,
+      "kept_rows": 465,
+      "kept_unique_pn": 456,
+      "dropped": {
+        "filtered": 354
+      },
+      "cats": {
+        "engine": 182,
+        "elec": 108,
+        "cvt": 6,
+        "drive": 3,
+        "chassis": 94,
+        "body": 4,
+        "brake": 37,
+        "control": 20,
+        "tyre": 11
+      }
+    },
+    "honda-wave110i-th-2021": {
+      "raw_rows": 781,
+      "raw_unique_pn": 737,
+      "kept_rows": 461,
+      "kept_unique_pn": 454,
+      "dropped": {
+        "filtered": 320
+      },
+      "cats": {
+        "engine": 182,
+        "elec": 107,
+        "cvt": 7,
+        "drive": 2,
+        "chassis": 62,
+        "body": 4,
+        "brake": 90,
+        "control": 7
+      }
+    },
+    "honda-wave-alpha110-2017-2022": {
+      "raw_rows": 820,
+      "raw_unique_pn": 770,
+      "kept_rows": 487,
+      "kept_unique_pn": 475,
+      "dropped": {
+        "filtered": 333
+      },
+      "cats": {
+        "engine": 170,
+        "cvt": 5,
+        "drive": 11,
+        "elec": 107,
+        "chassis": 125,
+        "control": 28,
+        "body": 2,
+        "brake": 32,
+        "tyre": 7
+      }
+    },
+    "honda-scoopy110-th-2012-2016": {
+      "raw_rows": 708,
+      "raw_unique_pn": 670,
+      "kept_rows": 420,
+      "kept_unique_pn": 414,
+      "dropped": {
+        "filtered": 288
+      },
+      "cats": {
+        "control": 6,
+        "engine": 180,
+        "elec": 125,
+        "cvt": 14,
+        "brake": 18,
+        "chassis": 76,
+        "tyre": 1
+      }
+    },
+    "honda-scoopy110-th-2017-2020": {
+      "raw_rows": 739,
+      "raw_unique_pn": 689,
+      "kept_rows": 400,
+      "kept_unique_pn": 397,
+      "dropped": {
+        "filtered": 339
+      },
+      "cats": {
+        "engine": 183,
+        "elec": 109,
+        "cvt": 13,
+        "brake": 36,
+        "control": 5,
+        "chassis": 50,
+        "tyre": 4
+      }
+    },
+    "honda-scoopy110-th-2021-k2f": {
+      "raw_rows": 750,
+      "raw_unique_pn": 697,
+      "kept_rows": 397,
+      "kept_unique_pn": 390,
+      "dropped": {
+        "filtered": 353
+      },
+      "cats": {
+        "engine": 177,
+        "elec": 108,
+        "cvt": 14,
+        "brake": 39,
+        "control": 6,
+        "chassis": 49,
+        "tyre": 4
+      }
+    },
+    "honda-scoopy110-th-2024-cbtr": {
+      "raw_rows": 743,
+      "raw_unique_pn": 690,
+      "kept_rows": 397,
+      "kept_unique_pn": 390,
+      "dropped": {
+        "filtered": 346
+      },
+      "cats": {
+        "engine": 177,
+        "elec": 108,
+        "cvt": 14,
+        "brake": 39,
+        "control": 6,
+        "chassis": 49,
+        "tyre": 4
+      }
+    },
+    "honda-pcx150-th-2014-2017": {
+      "raw_rows": 811,
+      "raw_unique_pn": 734,
+      "kept_rows": 399,
+      "kept_unique_pn": 392,
+      "dropped": {
+        "filtered": 412
+      },
+      "cats": {
+        "engine": 170,
+        "elec": 85,
+        "cvt": 14,
+        "body": 3,
+        "brake": 47,
+        "control": 10,
+        "chassis": 66,
+        "tyre": 4
+      }
+    },
+    "honda-pcx160-th-2021-2023": {
+      "raw_rows": 803,
+      "raw_unique_pn": 719,
+      "kept_rows": 423,
+      "kept_unique_pn": 406,
+      "dropped": {
+        "filtered": 380
+      },
+      "cats": {
+        "engine": 185,
+        "elec": 73,
+        "cvt": 16,
+        "body": 2,
+        "brake": 58,
+        "control": 13,
+        "chassis": 72,
+        "tyre": 4
+      }
+    },
+    "honda-pcx160-th-2024": {
+      "raw_rows": 838,
+      "raw_unique_pn": 755,
+      "kept_rows": 414,
+      "kept_unique_pn": 398,
+      "dropped": {
+        "filtered": 424
+      },
+      "cats": {
+        "engine": 182,
+        "elec": 69,
+        "cvt": 16,
+        "body": 2,
+        "brake": 57,
+        "control": 13,
+        "chassis": 71,
+        "tyre": 4
+      }
+    },
+    "honda-click110i-th-2011": {
+      "raw_rows": 757,
+      "raw_unique_pn": 701,
+      "kept_rows": 439,
+      "kept_unique_pn": 432,
+      "dropped": {
+        "filtered": 318
+      },
+      "cats": {
+        "engine": 209,
+        "elec": 114,
+        "control": 13,
+        "cvt": 14,
+        "brake": 30,
+        "chassis": 59
+      }
+    },
+    "honda-click125i-th-2016": {
+      "raw_rows": 728,
+      "raw_unique_pn": 667,
+      "kept_rows": 396,
+      "kept_unique_pn": 392,
+      "dropped": {
+        "filtered": 332
+      },
+      "cats": {
+        "engine": 188,
+        "elec": 76,
+        "cvt": 14,
+        "body": 1,
+        "brake": 35,
+        "control": 13,
+        "chassis": 67,
+        "tyre": 2
+      }
+    },
+    "honda-click125-2021": {
+      "raw_rows": 735,
+      "raw_unique_pn": 672,
+      "kept_rows": 390,
+      "kept_unique_pn": 386,
+      "dropped": {
+        "filtered": 345
+      },
+      "cats": {
+        "engine": 192,
+        "elec": 69,
+        "cvt": 15,
+        "body": 4,
+        "brake": 29,
+        "control": 8,
+        "chassis": 67,
+        "tyre": 6
+      }
+    },
+    "honda-click125-2023-acb": {
+      "raw_rows": 706,
+      "raw_unique_pn": 643,
+      "kept_rows": 381,
+      "kept_unique_pn": 377,
+      "dropped": {
+        "filtered": 325
+      },
+      "cats": {
+        "engine": 178,
+        "elec": 71,
+        "cvt": 15,
+        "body": 4,
+        "brake": 32,
+        "control": 10,
+        "chassis": 65,
+        "tyre": 6
+      }
+    },
+    "honda-click160-th-2024": {
+      "raw_rows": 766,
+      "raw_unique_pn": 696,
+      "kept_rows": 397,
+      "kept_unique_pn": 388,
+      "dropped": {
+        "filtered": 369
+      },
+      "cats": {
+        "engine": 178,
+        "elec": 94,
+        "cvt": 15,
+        "body": 4,
+        "brake": 34,
+        "control": 6,
+        "chassis": 61,
+        "tyre": 5
+      }
+    }
+  },
+  "cats": {
+    "chassis": 644,
+    "brake": 291,
+    "engine": 1702,
+    "elec": 1159,
+    "control": 166,
+    "cvt": 117,
+    "drive": 32,
+    "tyre": 49,
+    "body": 22
+  }
+}

@@ -24,6 +24,9 @@ const VERTICALS_UI = [
 const VERT_BY_ID = Object.fromEntries(VERTICALS_UI.map(v => [v.id, v]));
 const EQ = { loaded: false, loading: null, failed: false, parts: [], models: [], cats: [] };
 const isEq = (p) => !!p.vertical;
+const isEqModel = (m) => !!m.vertical;
+/* cards rendered per page; "Show more" adds another page */
+const PAGE = 120;
 
 const state = {
   vertical: "bikes",
@@ -31,6 +34,7 @@ const state = {
   model: null,
   cat: null,
   q: "",
+  limit: PAGE,
   skin: localStorage.getItem("avas.skin") || "public",
   cart: JSON.parse(localStorage.getItem("avas.cart") || "{}"),
   /* which machine an equipment line was added for, so the WhatsApp order says it */
@@ -103,18 +107,37 @@ const isConfirmed = (p) => !!p.v && p.confirmed !== "verify";
 const needsCheck = (p) => !isConfirmed(p) && !isOwnSku(p);
 
 /* ---------- Search ---------- */
+/* "Solé" is found by "sole": accents are folded on both sides. */
+const fold = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+/* Size, bearing.wiki designation and BNF PLUS stock numbers, so "6201",
+   "6201-2RS", "20x42x12" or a BNF SKU find the part. */
+const wikiCode = (p) => p.wiki ? decodeURIComponent(p.wiki.replace(/\/+$/, "").split("/").pop()) : "";
+const dims = (s) => s && s.bore_mm != null && s.od_mm != null && s.width_mm != null ? `${s.bore_mm}x${s.od_mm}x${s.width_mm}` : "";
+function refText(p) {
+  const s = p.size, b = p.bnf;
+  return [
+    s ? `${s.designation} ${dims(s)} ${s.kind === "bearing" ? "bearing" : s.kind && s.kind.includes("seal") ? "seal oil seal" : ""}` : "",
+    wikiCode(p),
+    b ? [b.sku, b.brand, b.pn, b.pn ? b.pn.replace(/[-\s]/g, "") : "", b.designation,
+         ...(b.matches || []).map(m => `${m.sku} ${m.brand} ${m.pn}`)].filter(Boolean).join(" ") : "",
+  ].join(" ");
+}
+
 function haystack(p) {
   const models = p.fits.map(id => MODEL_BY_ID[id] ? MODEL_BY_ID[id].brand + " " + MODEL_BY_ID[id].name : "").join(" ");
   const pn = parsePN(p.oem);
-  return [
+  return fold([
     p.name, p.oem, p.oem.replace(/-/g, ""), (p.alts || []).join(" "),
     (p.alts || []).map(a => a.replace(/-/g, "")).join(" "),
+    p.catalogue_name || "",
     models, CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "",
     pn.group ? GROUP[pn.group] || "" : "",
     pn.family ? FAMILY[pn.family] || "" : "",
     p.universal ? "universal fits all any bike" : "",
     p.note || "",
-  ].join(" ").toLowerCase();
+    refText(p),
+  ].join(" "));
 }
 PARTS.forEach(p => { p._h = haystack(p); });
 
@@ -127,16 +150,28 @@ function eqModelText(m) {
 }
 function eqHaystack(p) {
   const v = VERT_BY_ID[p.vertical];
-  return [
+  return fold([
     p.name, p.oem, squash(p.oem), (p.alts || []).join(" "), (p.alts || []).map(squash).join(" "),
     p.catalogue_name || "",
     p.fits.map(id => MODEL_BY_ID[id] ? eqModelText(MODEL_BY_ID[id]) : "").join(" "),
     CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "", v ? v.name : "",
     p.note || "",
-  ].join(" ").toLowerCase();
+    refText(p),
+  ].join(" "));
 }
 
-const qTerms = () => { const q = state.q.trim().toLowerCase(); return q ? q.split(/\s+/) : []; };
+/* "20X42X12", "20×42×12" and "20*42*12" all read as 20x42x12. */
+const qTerms = () => { const q = fold(state.q.trim()).replace(/(\d)\s*[×*]\s*(?=\d)/g, "$1x"); return q ? q.split(/\s+/) : []; };
+
+/* Machines whose name, model number or engine code match the query, so a
+   machine with no parts list yet (Kama KDP30E, engine KM178FE) is still found. */
+function modelHits(terms) {
+  if (!terms.length) return [];
+  const eq = EQ.loaded ? EQ.models.map(m => [m, fold(eqModelText(m))]) : [];
+  const bikes = MODELS.map(m => [m, fold(`${m.brand} ${m.model || ""} ${m.name}`)]);
+  return bikes.concat(eq).filter(([, h]) => terms.every(t => h.includes(t) || (t.length > 2 && squash(h).includes(squash(t)))))
+    .map(([m]) => m);
+}
 const termsMatch = (p, terms) => terms.every(t =>
   p._h.includes(t) || (isEq(p) && t.length > 2 && p._h.includes(squash(t))));
 
@@ -272,7 +307,7 @@ function renderEqPickers() {
   EQ.parts.forEach(p => { if (p.vertical === state.vertical) p.fits.forEach(id => { count[id] = (count[id] || 0) + 1; }); });
   $("#modelChips").innerHTML = list
     .sort((a, b) => a.name.localeCompare(b.name, "en", { numeric: true }))
-    .map(m => `<button class="chip" data-model="${esc(m.id)}" aria-pressed="${state.model === m.id}">${esc(m.name)}<span class="cc">${count[m.id] || 0} parts</span></button>`)
+    .map(m => `<button class="chip" data-model="${esc(m.id)}" aria-pressed="${state.model === m.id}">${esc(m.name)}<span class="cc">${count[m.id] ? count[m.id] + " parts" : "no parts list yet"}</span></button>`)
     .join("");
 }
 
@@ -323,6 +358,54 @@ const needsSerial = (p) => SERIAL_HINT.test(p.note || "");
 const unverified = (p) => p.tier === "genuine-unverified";
 const eqModelName = (m) => `${m.brand} ${m.name}`;
 
+/* ---------- Size, bearing.wiki and BNF PLUS stock references ----------
+   BNF PLUS prices are not public, so only the SKU, brand, their number and
+   availability are shown; the part itself stays "Ask for price". */
+const AVAIL = { stock: "in stock", low: "low stock", indent: "on indent" };
+const availLabel = (a) => AVAIL[a] || a || "";
+const SIZE_KIND = { bearing: "Bearing", seal: "Seal", oil_seal: "Oil seal", tyre: "Tyre" };
+
+function sizeLabel(s) {
+  if (!s) return "";
+  const d = dims(s);
+  return `${SIZE_KIND[s.kind] || "Size"} ${s.designation}${d && d !== s.designation ? ` · ${d.replace(/x/g, "×")} mm` : ""}`;
+}
+
+function wikiLink(p) {
+  return p.wiki && /^https:\/\/bearing\.wiki\//.test(p.wiki)
+    ? `<a class="wikilink" href="${esc(p.wiki)}" target="_blank" rel="noopener noreferrer">bearing.wiki ↗</a>` : "";
+}
+
+function bnfSummary(b) {
+  if (b.sku) return `${esc(b.sku)} · ${esc(b.brand)} ${esc(b.pn)}${b.avail ? " · " + esc(availLabel(b.avail)) : ""}`;
+  const ms = b.matches || [];
+  const brands = [...new Set(ms.map(m => m.brand))];
+  const inStock = ms.filter(m => m.avail === "stock").length;
+  return `${ms.length} match${ms.length === 1 ? "" : "es"} · ${esc(brands.slice(0, 3).join(", "))}${brands.length > 3 ? ` +${brands.length - 3}` : ""}` +
+    (inStock ? ` · ${inStock} in stock` : "");
+}
+
+function refsHTML(p) {
+  if (!p.size && !p.wiki && !p.bnf) return "";
+  return `<div class="refs">
+    ${p.size || p.wiki ? `<div class="refrow">${p.size ? `<span class="sizechip">${esc(sizeLabel(p.size))}</span>` : ""}${wikiLink(p)}</div>` : ""}
+    ${p.bnf ? `<div class="bnfline"><b>BNF PLUS stock</b> ${bnfSummary(p.bnf)}</div>` : ""}
+  </div>`;
+}
+
+function refsDetailHTML(p) {
+  if (!p.size && !p.wiki && !p.bnf) return "";
+  const ms = p.bnf ? (p.bnf.matches || []) : [];
+  const rows = ms.slice(0, 8).map(m =>
+    `<div class="altrow"><span>${esc(m.sku)} · ${esc(m.brand)} ${esc(m.pn)}</span><span class="tag">${esc(availLabel(m.avail))}</span></div>`).join("");
+  return `<div class="dsec"><h4>Size &amp; stock references</h4>
+    ${p.size || p.wiki ? `<div class="refrow">${p.size ? `<span class="sizechip">${esc(sizeLabel(p.size))}</span>` : ""}${wikiLink(p)}</div>` : ""}
+    ${p.bnf ? `<p class="hint" style="margin-top:8px"><b>BNF PLUS stock${p.bnf.sku ? "" : ` for ${esc(p.bnf.designation || (p.size ? p.size.designation : ""))}`}:</b> ${p.bnf.sku ? bnfSummary(p.bnf) : `${ms.length} matching item${ms.length === 1 ? "" : "s"}`}</p>
+      ${p.bnf.sku ? "" : `<div class="altlist">${rows}</div>${ms.length > 8 ? `<p class="hint">+${ms.length - 8} more matching items</p>` : ""}`}
+      <p class="hint">BNF PLUS prices are not public. Ask for the price on WhatsApp.</p>` : ""}
+  </div>`;
+}
+
 function eqPlateHTML(oem) {
   return `<span class="plate plain eq"><span class="seg g"><span class="val">${esc(oem)}</span><span class="lab">part no</span></span></span>`;
 }
@@ -351,6 +434,7 @@ function eqCardHTML(p) {
     </div>
     ${eqPlateHTML(p.oem)}
     ${eqFlagsHTML(p)}
+    ${refsHTML(p)}
     <div class="ribbon">${fitNames}</div>
     <div class="staffbox">
       <div><span class="l">Cost</span><span class="v">—</span></div>
@@ -391,6 +475,7 @@ function cardHTML(p) {
     ${plateHTML(p.oem)}
     ${decodeHTML(p.oem)}
     ${needsCheck(p) ? `<span class="unver">Verify number before ordering</span>` : ""}
+    ${refsHTML(p)}
     <div class="ribbon">${fitNames}</div>
     <div class="staffbox">
       <div><span class="l">Cost</span><span class="v">${dash(p.cost, true)}</span></div>
@@ -467,15 +552,40 @@ function renderResults() {
   $("#clearBtn").hidden = !(state.brand || state.model || state.cat || state.q.trim());
   renderModelNote();
 
+  const hits = state.q.trim() ? modelHits(qTerms()) : [];
+  const hitsHTML = hits.length ? `<div class="modelhits" style="grid-column:1/-1">
+      <span class="mh-lab">Machines matching</span>
+      ${hits.slice(0, 6).map(hm => {
+        const n = (isEqModel(hm) ? EQ.parts : PARTS).filter(p => p.fits.includes(hm.id)).length;
+        return `<button class="chip" data-pick="${esc(hm.id)}">${esc(hm.brand)} ${esc(hm.name)}<span class="cc">${n ? n + " parts" : "no parts list yet"}</span></button>`;
+      }).join("")}${hits.length > 6 ? `<span class="mh-lab">+${hits.length - 6} more</span>` : ""}
+    </div>` : "";
+
   if (!r.length) {
-    $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1">
-      <h3>Nothing matches that yet</h3>
-      <p>Try the part number without dashes, the model, or what the part does — “belt”, “brake pad”, “battery”.</p>
-      <button class="clearbtn" data-clear="1">Reset the search</button>
-    </div>`;
+    const noList = m && !state.q.trim() && !state.cat && isEqModel(m);
+    $("#grid").innerHTML = hitsHTML + (noList
+      ? `<div class="empty" style="grid-column:1/-1">
+          <h3>No parts list for this ${esc(VERT_BY_ID[m.vertical].unit)} yet</h3>
+          <p>The maker has not published a parts catalogue we can check. Send the nameplate (model and serial number) on WhatsApp and we will find the part number for you.</p>
+        </div>`
+      : hits.length
+      ? `<div class="empty" style="grid-column:1/-1">
+          <h3>No parts listed under that search</h3>
+          <p>Pick the machine above to see what we have for it, or send the nameplate on WhatsApp and we will find the part number.</p>
+        </div>`
+      : `<div class="empty" style="grid-column:1/-1">
+          <h3>Nothing matches that yet</h3>
+          <p>Try the part number without dashes, the model, a bearing or seal size (“6201”, “20x42x12”), or what the part does — “belt”, “brake pad”, “battery”.</p>
+          <button class="clearbtn" data-clear="1">Reset the search</button>
+        </div>`);
     return;
   }
-  $("#grid").innerHTML = r.map(cardHTML).join("");
+  /* Large lists render a page at a time; the count above is always the full total. */
+  const shown = r.slice(0, state.limit);
+  const rest = r.length - shown.length;
+  $("#grid").innerHTML = hitsHTML + shown.map(cardHTML).join("") + (rest > 0
+    ? `<div class="morewrap" style="grid-column:1/-1"><button class="clearbtn morebtn" data-more="1">Show ${Math.min(PAGE, rest)} more <span class="cc">${rest} not shown</span></button></div>`
+    : "");
 }
 
 /* ---------- Detail drawer: equipment part ---------- */
@@ -505,6 +615,7 @@ function openEqDetail(p) {
     </div>
     <div class="dsec"><h4>Fits these ${esc(v ? v.unit : "machine")}s</h4>${fitBlock}</div>
     <div class="dsec"><h4>Also sold as</h4>${altBlock}</div>
+    ${refsDetailHTML(p)}
     ${p.note ? `<div class="dsec"><h4>Catalogue note</h4><div class="notebox">${esc(p.note)}</div></div>` : ""}
     <div class="dsec"><h4>Source</h4>${links ? `<div class="srclist">${links}</div>` : `<p class="hint">No source link recorded.</p>`}</div>
     <div class="dsec">
@@ -533,10 +644,14 @@ function openDetail(id) {
         return m ? `<span class="m"><b>${esc(m.name)}</b> · ${m.cc}cc · ${esc(m.years)}</span>` : "";
       }).join("")}</div>`;
 
+  /* Lineage alts are other suffixes of the same Honda stem seen on other
+     fiches: searchable, but not a confirmed supersession. */
+  const lineage = new Set(p.lineage || []);
   const altBlock = (p.alts && p.alts.length)
     ? `<div class="altlist">${p.alts.map(a => {
         const oemish = /^[0-9A-Z]{3,5}-/.test(a);
-        return `<div class="altrow"><span>${esc(a)}</span><span class="tag">${oemish ? "supersession / OEM" : "aftermarket equivalent"}</span></div>`;
+        const tag = lineage.has(a) ? "other suffix · confirm frame no." : oemish ? "supersession / OEM" : "aftermarket equivalent";
+        return `<div class="altrow"><span>${esc(a)}</span><span class="tag">${tag}</span></div>`;
       }).join("")}</div>`
     : `<p style="margin:0;font-size:13px;color:var(--ink-3)">No alternate numbers recorded.</p>`;
 
@@ -568,7 +683,8 @@ function openDetail(id) {
     <div class="dsec"><h4>Fits these bikes</h4>${fitBlock}</div>
     <div class="dsec"><h4>Also sold as</h4>${altBlock}</div>
     <div class="dsec"><h4>Same job, other model families</h4>${jobBlock}</div>
-    ${p.note ? `<div class="dsec"><h4>Counter note</h4><div class="notebox">${esc(p.note)}</div></div>` : ""}
+    ${refsDetailHTML(p)}
+    ${p.note ?`<div class="dsec"><h4>Counter note</h4><div class="notebox">${esc(p.note)}</div></div>` : ""}
 
     <div class="dsec">
       <h4>Price</h4>
@@ -739,6 +855,7 @@ function renderZones() {
 
 /* ---------- Wire up ---------- */
 function render() {
+  state.limit = PAGE;
   renderVerticals(); renderHero(); renderPickers();
   if (state.vertical !== "bikes" && !EQ.loaded) { renderResults(); syncURL(); return; }
   renderRail(); renderResults(); syncURL();
@@ -787,10 +904,19 @@ function chooseVertical(v) {
 }
 
 document.addEventListener("click", (e) => {
-  const t = e.target.closest("[data-vertical],[data-brand],[data-model],[data-cat],[data-add],[data-detail],[data-q],[data-clear],[data-skin],[data-close]");
+  const t = e.target.closest("[data-vertical],[data-brand],[data-model],[data-cat],[data-add],[data-detail],[data-q],[data-clear],[data-skin],[data-close],[data-more],[data-pick]");
   if (!t) return;
 
-  if (t.dataset.vertical !== undefined) {
+  if (t.dataset.more) {
+    state.limit += PAGE; renderResults();
+  } else if (t.dataset.pick) {
+    const m = MODEL_BY_ID[t.dataset.pick];
+    if (!m) return;
+    state.vertical = m.vertical || "bikes";
+    state.brand = m.brand; state.model = m.id; state.cat = null;
+    state.q = ""; $("#q").value = "";
+    render();
+  } else if (t.dataset.vertical !== undefined) {
     chooseVertical(t.dataset.vertical);
   } else if (t.dataset.brand !== undefined) {
     state.brand = state.brand === t.dataset.brand ? null : t.dataset.brand;
@@ -819,7 +945,7 @@ document.addEventListener("click", (e) => {
    like 6CE-WS24A-00 or an engine code like KTA19 is found from any page. */
 let eqSearchT;
 $("#q").addEventListener("input", (e) => {
-  state.q = e.target.value; renderRail(); renderResults();
+  state.q = e.target.value; state.limit = PAGE; renderRail(); renderResults();
   if (!EQ.loaded && state.q.trim().length >= 2) {
     clearTimeout(eqSearchT);
     eqSearchT = setTimeout(() => loadEquip().then(() => { renderRail(); renderResults(); }, () => {}), 250);

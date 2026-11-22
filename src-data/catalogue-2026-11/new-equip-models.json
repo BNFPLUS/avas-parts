@@ -1,0 +1,388 @@
+[
+  {
+    "id": "kama-kdp30e",
+    "vertical": "pumps",
+    "brand": "Kama",
+    "name": "KDP30E 3\" diesel water pump",
+    "model_number": "KDP30E",
+    "size": "3 inch",
+    "kind": "diesel water pump",
+    "engine": "KM178FE",
+    "catalogue_url": "https://www.wxkama.com.cn/water-pump/diesel-water-pump/key-start-diesel-water-pump.html",
+    "note": "Sold by Sonee Hardware and Leo Stores. Official Kama page lists engine KM178FE, 80 mm (3\") ports, 4 kW / 5.44 hp. No official public parts list found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware",
+      "Leo Stores and Supply"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "kama-kdp40e",
+    "vertical": "pumps",
+    "brand": "Kama",
+    "name": "KDP40E 4\" diesel water pump",
+    "model_number": "KDP40E",
+    "size": "4 inch",
+    "kind": "diesel water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/kama-water-pump-plumbing-18-505151",
+    "note": "Sold by Sonee and Leo Stores (Leo lists KDP40). Official public parts list not found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware",
+      "Leo Stores and Supply"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "kama-kde15tn",
+    "vertical": "generators",
+    "brand": "Kama",
+    "name": "KDE15TN 12.5 kVA diesel generator",
+    "model_number": "KDE15TN",
+    "size": "12.5 kVA",
+    "kind": "diesel generator",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/kama-generator-505155",
+    "note": "Sold by Sonee Hardware as KDE15TN 12.5 kV 220V/50Hz. No official public parts list found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "kama-kge1000xi",
+    "vertical": "generators",
+    "brand": "Kama",
+    "name": "KGE1000XI 0.9 kVA inverter generator",
+    "model_number": "KGE1000XI",
+    "size": "0.9 kVA",
+    "kind": "inverter generator",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/kama-generator-505153",
+    "note": "Sold by Sonee Hardware. No official public parts list found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "yarmax-11000e",
+    "vertical": "generators",
+    "brand": "Yarmax",
+    "name": "11000E open-type diesel generator",
+    "model_number": "11000E",
+    "size": "",
+    "kind": "open diesel generator",
+    "engine": "",
+    "catalogue_url": "https://dbluemarine.mv/product/yarmax-open-type-diesel-generator-11000e/",
+    "note": "Listed by D Blue Marine. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "D Blue Marine"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "yarmax-12000e",
+    "vertical": "generators",
+    "brand": "Yarmax",
+    "name": "12000E open-type diesel generator",
+    "model_number": "12000E",
+    "size": "",
+    "kind": "open diesel generator",
+    "engine": "",
+    "catalogue_url": "https://dbluemarine.mv/product/yarmax-open-type-diesel-generator-12000e/",
+    "note": "Listed by D Blue Marine. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "D Blue Marine"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mkp62-3",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MKP62-3 25 mm water pump",
+    "model_number": "MKP62-3",
+    "size": "25 mm",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-11-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mqs138da-2",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MQS138DA-2 25 mm water pump",
+    "model_number": "MQS138DA-2",
+    "size": "25 mm",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-16-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mkp63s",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MKP63S water pump",
+    "model_number": "MKP63S",
+    "size": "",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-13-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mkp63",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MKP63 water pump",
+    "model_number": "MKP63",
+    "size": "",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-12-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mhm4-20s",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MHM4-20S water pump",
+    "model_number": "MHM4-20S",
+    "size": "",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-08-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mh-7br-3ph",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MH/7BR 4\" three-phase water pump",
+    "model_number": "MH/7BR",
+    "size": "4 inch",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-82-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mhf-7br-1ph",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MHF/7BR 4\" single-phase water pump",
+    "model_number": "MHF/7BR",
+    "size": "4 inch",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-81-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mqs338a-2",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MQS338A-2 25 mm water pump",
+    "model_number": "MQS338A-2",
+    "size": "25 mm",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-17-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mqs138a-2",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MQS138A-2 25 mm water pump",
+    "model_number": "MQS138A-2",
+    "size": "25 mm",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-15-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mhm4-30s",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MHM4-30S water pump",
+    "model_number": "MHM4-30S",
+    "size": "",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-09-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mkp200-2",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MKP200-2 25 mm water pump",
+    "model_number": "MKP200-2",
+    "size": "25 mm",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-10-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "marquis-mcph150s",
+    "vertical": "pumps",
+    "brand": "Marquis",
+    "name": "MCPH150S hot water pump",
+    "model_number": "MCPH150S",
+    "size": "",
+    "kind": "hot water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/marquis-water-pump-plumbing-07-535033",
+    "note": "Sold by Sonee Hardware. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "shimizu-ps230",
+    "vertical": "pumps",
+    "brand": "Shimizu",
+    "name": "PS230 BIT water pump",
+    "model_number": "PS230",
+    "size": "1 inch",
+    "kind": "domestic water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/shimizu-water-pump-plumbing-39-535094",
+    "note": "Sold by Sonee. Listing: 200 W output, 400 W start, suction 9 m, head 40 m. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "shimizu-ps103",
+    "vertical": "pumps",
+    "brand": "Shimizu",
+    "name": "PS103 BIT water pump",
+    "model_number": "PS103",
+    "size": "",
+    "kind": "domestic water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/unbranded-water-pump-plumbing-535074",
+    "note": "Sold by Sonee. Listing: 100 W output, 0.3 kW input, 220 V/50 Hz. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "shimizu-ps130",
+    "vertical": "pumps",
+    "brand": "Shimizu",
+    "name": "PS130 water pump",
+    "model_number": "PS130",
+    "size": "",
+    "kind": "domestic water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/unbranded-water-pump-plumbing-22-535074",
+    "note": "Sold by Sonee. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "shimizu-ps150",
+    "vertical": "pumps",
+    "brand": "Shimizu",
+    "name": "PS150 water pump",
+    "model_number": "PS150",
+    "size": "",
+    "kind": "domestic water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/shimizu-water-pump-plumbing-535094",
+    "note": "Sold by Sonee. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "ingco-gep301",
+    "vertical": "pumps",
+    "brand": "INGCO",
+    "name": "GEP301 3-inch diesel water pump",
+    "model_number": "GEP301",
+    "size": "3 inch / 80 mm",
+    "kind": "diesel water pump",
+    "engine": "5.5 HP",
+    "catalogue_url": "https://sonee.com.mv/products/ingco-hardware-549081",
+    "note": "Sold by Sonee. No official public parts catalogue found \u2014 models only.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  },
+  {
+    "id": "pedrollo-0-5hp-unspecified",
+    "vertical": "pumps",
+    "brand": "Pedrollo",
+    "name": "0.5 hp pump (model not stated on the Sonee listing)",
+    "model_number": "",
+    "size": "0.5 hp",
+    "kind": "water pump",
+    "engine": "",
+    "catalogue_url": "https://sonee.com.mv/products/pedrollo-water-pump-plumbing-535002",
+    "note": "Sonee lists only 'Pedrollo - Pump .05hp' with no model or revision letter. Pedrollo's official spare-parts portal is login-only and requires the model and revision from the nameplate. No parts added \u2014 do not invent a model.",
+    "sold_in_mv": [
+      "Sonee Hardware"
+    ],
+    "parts": "none"
+  }
+]
