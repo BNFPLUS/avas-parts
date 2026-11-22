@@ -6,6 +6,8 @@
    Inputs (copied verbatim, never edited by hand):
      src-data/data-marine.js       VERTICALS, MARINE_CATS, MARINE_MODELS, MARINE_PARTS
      src-data/data-power-next.js   POWER_MODELS, POWER_PARTS (Honda power products, honda.mv)
+     src-data/data-dealers-next.js DEALER_MARINE_MODELS, DEALER_MARINE_PARTS (Parsun outboards;
+                                   its bike half is merged into data.js by tools/merge-dealers.js)
 
    Output: data-equip.js — one global, `var EQUIP = {verticals, cats, models, parts}`.
    The site loads it lazily; data.js (bikes) is untouched.
@@ -26,10 +28,16 @@ const ctx = {};
 vm.createContext(ctx);
 vm.runInContext(
   fs.readFileSync(path.join(root, "src-data/data-marine.js"), "utf8") + "\n" +
-  fs.readFileSync(path.join(root, "src-data/data-power-next.js"), "utf8") +
-  "\n;globalThis.__X = {VERTICALS, MARINE_CATS, MARINE_MODELS, MARINE_PARTS, POWER_MODELS, POWER_PARTS};",
+  fs.readFileSync(path.join(root, "src-data/data-power-next.js"), "utf8") + "\n" +
+  fs.readFileSync(path.join(root, "src-data/data-dealers-next.js"), "utf8") +
+  "\n;globalThis.__X = {VERTICALS, MARINE_CATS, MARINE_MODELS, MARINE_PARTS, POWER_MODELS, POWER_PARTS," +
+  " DEALER_MARINE_MODELS, DEALER_MARINE_PARTS};",
   ctx);
-const { VERTICALS, MARINE_CATS, MARINE_MODELS, MARINE_PARTS, POWER_MODELS, POWER_PARTS } = ctx.__X;
+const { VERTICALS, MARINE_CATS, POWER_MODELS, POWER_PARTS, DEALER_MARINE_MODELS, DEALER_MARINE_PARTS } = ctx.__X;
+/* Dealer marine rows (Parsun) share the marine schema, so they go through the
+   same path as the scraped marine catalogue. */
+const MARINE_MODELS = [...ctx.__X.MARINE_MODELS, ...DEALER_MARINE_MODELS];
+const MARINE_PARTS = [...ctx.__X.MARINE_PARTS, ...DEALER_MARINE_PARTS];
 
 /* ---------- Verticals ---------- */
 const UNIT = {
@@ -120,8 +128,9 @@ for (const m of MARINE_MODELS) {
     id: m.id, vertical: m.vertical, brand: m.brand, name,
     size: m.size || null,
     catalogue_url: m.catalogue_url,
-    /* "generated from x.csv" is build provenance, not a customer note */
-    note: /^generated from /.test(m.note) ? null : m.note,
+    /* "generated from x.csv" is build provenance, not a customer note. Dealer
+       model notes are research (a competitor's retail price), never shown. */
+    note: DEALER_MARINE_MODELS.includes(m) || /^generated from /.test(m.note) ? null : m.note,
   };
   if (name !== m.name && !m.name.endsWith(name)) out.src_title = m.name;
   models.push(out);
@@ -182,7 +191,7 @@ for (const p of MARINE_PARTS) {
   if (!CAT_IDS.has(p.cat)) throw new Error("unknown cat " + p.cat);
   rows.push({
     id: p.id, vertical: p.vertical, cat: p.cat, name: p.name, oem, v: p.v ? 1 : 0,
-    alts, fits: [...fits], tier: p.tier, note,
+    alts, fits: [...fits], tier: p.confirmed === "verify" ? "genuine-unverified" : p.tier, note,
     catalogue_name: p.catalogue_name, priority: p.priority,
     sources: [...new Set([p.source_url, ...(p.sources || [])].filter(Boolean))],
   });
@@ -238,6 +247,7 @@ fs.writeFileSync(path.join(root, "data-equip.js"), banner + "var EQUIP=" + JSON.
 
 /* ---------- Report ---------- */
 const rowsIn = POWER_PARTS.length + MARINE_PARTS.length;
+const parsun = EQUIP.models.filter(m => m.brand === "Parsun");
 console.log(`data-equip.js written (${fs.statSync(path.join(root, "data-equip.js")).size} bytes)`);
 console.log(`inputs: ${MARINE_MODELS.length} marine + ${POWER_MODELS.length} power models; ${MARINE_PARTS.length} marine + ${POWER_PARTS.length} power part rows = ${rowsIn}`);
 console.log(`dropped marine pump models (replaced by honda.mv lists): ${droppedModels.join(", ")}`);
@@ -247,6 +257,7 @@ console.log(`rows dropped with no part number at all: ${noNumber.length}${noNumb
 console.log(`rows merged by OEM within a vertical: ${merged} (pumps: ${mergedPumps})`);
 if (emptyModels.length) console.log(`models with no parts, omitted: ${emptyModels.join(", ")}`);
 console.log(`output: ${EQUIP.models.length} models, ${parts.length} parts`);
+console.log(`dealer marine (Parsun): ${parsun.length} models, ${parts.filter(p => p.fits.some(f => parsun.some(m => m.id === f))).length} parts`);
 for (const v of verticals.filter(v => v.id !== "bikes")) {
   const nm = EQUIP.models.filter(m => m.vertical === v.id).length;
   const np = parts.filter(p => p.vertical === v.id).length;

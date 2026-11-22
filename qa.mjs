@@ -347,6 +347,61 @@ ok((await page.locator("#rTitle").textContent()).includes("Wave 125i"), "heading
 await page.click("#clearBtn");
 await page.waitForTimeout(200);
 
+console.log("\nNew makes and dealer models");
+const fitCheck = (want) => page.evaluate((want) =>
+  [...document.querySelectorAll(".card [data-detail]")].map(e => PART_BY_ID[e.dataset.detail])
+    .filter(p => !p.universal && !p.fits.some(f => want.includes(f))).map(p => p.id), want);
+await page.click('#brandChips [data-brand="CFMoto"]');
+await page.waitForTimeout(250);
+const cfIds = await page.evaluate(() => MODELS.filter(m => m.brand === "CFMoto").map(m => m.id));
+const cfN = await page.locator(".card").count();
+ok(cfN > 0 && (await fitCheck(cfIds)).length === 0, `CFMoto make shows CFMoto parts (${cfN})`);
+ok(await page.locator('#brandChips [data-brand="Keeway"]').count() === 1, "Keeway make chip shown");
+ok(await page.locator('#brandChips [data-brand="Suzuki"]').count() === 0, "makes with no models still hidden (Suzuki)");
+const BIKES = [
+  ["CFMoto", "cfmoto-300sr-cf300-3-my22", "300SR"],
+  ["Keeway", "keeway-vieste-300-xdv-e5", "Vieste 300 XDV"],
+  ["Yamaha", "yamaha-exciter155-vva-b5v", "Exciter 155 VVA"],
+  ["Yamaha", "yamaha-aerox-alpha155-std-id", "Aerox Alpha"],
+];
+for (const [brand, model, word] of BIKES) {
+  await page.click("#clearBtn").catch(() => {});
+  await page.waitForTimeout(150);
+  await page.click(`#brandChips [data-brand="${brand}"]`);
+  await page.waitForTimeout(200);
+  await page.click(`#modelChips [data-model="${model}"]`);
+  await page.waitForTimeout(250);
+  const n = await page.locator(".card").count();
+  const title = await page.locator("#rTitle").textContent();
+  ok(n > 0 && (await fitCheck([model])).length === 0 && title.includes(word) && !title.includes(`${brand} ${brand}`),
+     `${brand} ${word} loads its parts (${n}) under "${title.trim()}"`);
+}
+ok(await page.locator('.card [data-detail]').evaluateAll(els => els.some(e => PART_BY_ID[e.dataset.detail].oem === "B8R-E7641-00")),
+   "Aerox Alpha shows the B8R-E7641-00 belt");
+await page.click("#clearBtn");
+await page.waitForTimeout(150);
+await page.click('#brandChips [data-brand="Yamaha"]');
+await page.waitForTimeout(150);
+await page.click('#modelChips [data-model="aerox155"]');
+await page.waitForTimeout(250);
+ok(await page.locator("#rNote").isVisible() && /drum/.test(await page.locator("#rNote").textContent()), "Aerox 155 shows the drum rear-brake notice");
+const aeroxOems = await page.locator('.card [data-detail]').evaluateAll(els => els.map(e => PART_BY_ID[e.dataset.detail].oem));
+ok(!aeroxOems.includes("3C1-F5805-10") && aeroxOems.includes("B8R-E7641-00"), "Aerox 155: no 3C1 rear pad, belt is B8R-E7641-00");
+await page.click("#clearBtn");
+await page.waitForTimeout(150);
+ok(!(await page.locator("#rNote").isVisible()), "notice clears with the selection");
+
+await pickModel("outboards", "Parsun", "parsun-f60-efi");
+const parsunIds = await cardIds();
+const parsunMisfit = await page.evaluate((ids) => ids.filter(id => !PART_BY_ID[id].fits.includes("parsun-f60-efi")), parsunIds);
+ok(parsunIds.length > 0 && parsunMisfit.length === 0 && (await page.locator("#rTitle").textContent()).includes("Parsun F60"),
+   `Outboards > Parsun > F60 loads its parts (${parsunIds.length})`);
+ok(await page.locator("#modelChips [data-model]").count() === 4, "Parsun lists 4 engines");
+await page.click('[data-vertical="bikes"]');
+await page.waitForTimeout(250);
+await page.click("#clearBtn").catch(() => {});
+await page.waitForTimeout(150);
+
 console.log("\nSearch from the default page");
 const page2 = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
 page2.on("pageerror", e => errors.push("pageerror(2): " + e.message));
@@ -375,6 +430,13 @@ await searchFinds("PC200-8", `p.vertical && p.fits.includes("komatsu-pc200-8")`,
 await searchFinds("F250 oil filter", `p.vertical === "outboards"`, "F250 oil filter");
 await searchFinds("WB30XT3", `p.vertical && p.fits.includes("honda-wb30xt-water-pump")`, "Honda WB30XT3 parts");
 ok(await page2.locator(".eqcard .eqtag").first().isVisible(), "equipment results are labelled with category and part type");
+for (const q of ["B65-E7641-00", "B8R-E7641-00", "06455-KVB-912", "40530-KPH-901"]) {
+  await page2.fill("#q", q);
+  await page2.waitForTimeout(350);
+  const oems = await page2.locator(".card [data-detail]").evaluateAll(els => els.map(e => PART_BY_ID[e.dataset.detail].oem));
+  const want = { "B65-E7641-00": "B8R-E7641-00", "B8R-E7641-00": "B8R-E7641-00", "06455-KVB-912": "06455-KVB-T01", "40530-KPH-901": "40530-KPH-902" }[q];
+  ok(oems.includes(want), `search "${q}" finds ${want} (${oems.length} result${oems.length === 1 ? "" : "s"})`);
+}
 await page2.fill("#q", "23100K36J01");
 await page2.waitForTimeout(350);
 ok(await page2.locator(".card").count() === 1, "bike part-number search still returns exactly one part with equipment loaded");

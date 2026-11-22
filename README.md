@@ -23,6 +23,11 @@ someone picks one of those categories, types a search, or opens a deep link such
 Every equipment part is ask-for-price, and part numbers are shown exactly as printed.
 `node shots-preview.mjs` serves the folder over http and saves preview screenshots.
 
+Dealer-gap data (`src-data/data-dealers-next.js`: CFMoto, Keeway, Exciter 155 VVA,
+Aerox Alpha, Auto Care Honda numbers, Parsun outboards) is split two ways:
+`node tools/merge-dealers.js` merges the bike half into `data.js` (idempotent), and
+`tools/build-equip.js` reads the Parsun half into `data-equip.js`.
+
 ---
 
 ## 1. The market

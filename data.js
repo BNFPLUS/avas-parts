@@ -2,7 +2,7 @@
 // Model = make + model + market + generation. Part rows carry source_url (bike-parts-honda.com diagram page).
 // price/cost/stock/bin/rop are copied from the current data.js ONLY when the OEM number matches exactly (price_flag 'kept_from_pXXX').
 // Unpriced parts keep price: null and are flagged askPrice: true (shown as "Ask for price" on the site). No prices were invented.
-const BRANDS = ["Honda", "Yamaha", "Suzuki"];
+const BRANDS = ["Honda", "Yamaha", "Suzuki", "CFMoto", "Keeway"];
 const FAMILY = {
  "KVY": "Beat / Scoopy 110 (carb)",
  "KZR": "Beat / Scoopy 110 FI eSP",
@@ -33,7 +33,8 @@ const FAMILY = {
  "B7B": "Yamaha Exciter 150 / Y15ZR",
  "1S7": "Yamaha LC135",
  "P99": "Honda genuine oils & chemicals",
- "M99": "Honda genuine gear oil"
+ "M99": "Honda genuine gear oil",
+ "B8R": "Yamaha Aerox Alpha 155"
 };
 const GROUP = {
  "12191": "Cylinder gasket",
@@ -665,7 +666,8 @@ const MODELS = [
   "pop": 4,
   "market": "?",
   "generation": "?",
-  "status": "legacy_unverified: needs Alia parts catalogue"
+  "status": "legacy_unverified: needs Alia parts catalogue",
+  "notice": "The Aerox 155 VVA has a drum rear brake, so it takes brake shoes, not a rear disc pad. The rear shoe number is not confirmed yet: send your frame number and we will check it."
  },
  {
   "id": "mio125",
@@ -835,6 +837,165 @@ const MODELS = [
    "K2Z"
   ],
   "family_codes_from": "middle code of air filter / belt / disc / throttle cable PNs in catalogue"
+ },
+ {
+  "id": "yamaha-exciter155-vva-b5v",
+  "brand": "Yamaha",
+  "name": "Exciter 155 VVA (B5V / T155)",
+  "market": "VN/TH/MV (ASEAN)",
+  "generation": "2021+",
+  "years": "2021–2026",
+  "cc": 155,
+  "seg": "manual",
+  "catalogue_code": "B5V",
+  "family_codes": [
+   "B5V"
+  ],
+  "catalogue_url": "https://www.litusautomobiles.com/motorcycles/exciter-155-vva-standard-2026",
+  "note": "Sold by LITUS (Standard MVR 83,900 / Premium 86,000) and Alia. Yamaha YPEC not used (terms forbid extraction). Most numbers verify.",
+  "pop": 1,
+  "status": "dealers-2026-11 draft: verify"
+ },
+ {
+  "id": "yamaha-aerox-alpha155-std-id",
+  "brand": "Yamaha",
+  "name": "Aerox Alpha 155 (Standard)",
+  "market": "ID",
+  "generation": "2024+",
+  "years": "2024–2026",
+  "cc": 155,
+  "seg": "auto",
+  "catalogue_code": "",
+  "family_codes": [
+   "B8R",
+   "B6H"
+  ],
+  "catalogue_url": "https://www.litusautomobiles.com/motorcycles/aerox-alpha-155-standard",
+  "note": "Sold by LITUS (MVR 74,400). Numbers from authorised Indonesian Yamaha dealer articles; verify against Alia.",
+  "pop": 1,
+  "status": "dealers-2026-11 draft: verify"
+ },
+ {
+  "id": "cfmoto-150sc-cf150t-31-2025",
+  "brand": "CFMoto",
+  "name": "150SC (CF150T-31)",
+  "market": "AU fiche",
+  "generation": "2024+",
+  "years": "2024–2026",
+  "cc": 149,
+  "seg": "auto",
+  "catalogue_code": "CF150T-31",
+  "family_codes": [],
+  "catalogue_url": "https://parts.carrbrothers.com.au/",
+  "note": "Sold by MotoX (MVR 69,120). Fiche = Australian CFMoto dealer partFinder.",
+  "pop": 1,
+  "status": "dealers-2026-11 draft: sourced"
+ },
+ {
+  "id": "cfmoto-300sr-cf300-3-my22",
+  "brand": "CFMoto",
+  "name": "300SR (CF300-3F)",
+  "market": "AU fiche",
+  "generation": "MY22+",
+  "years": "2022–2026",
+  "cc": 292,
+  "seg": "sport",
+  "catalogue_code": "CF300-3F",
+  "family_codes": [],
+  "catalogue_url": "https://parts.carrbrothers.com.au/",
+  "note": "Sold by MotoX (MVR 120,000; MotoX quotes 298 cc). AU fiche has frame diagrams only; engine service parts from other public sources.",
+  "pop": 1,
+  "status": "dealers-2026-11 draft: sourced"
+ },
+ {
+  "id": "keeway-vieste-300-xdv-e5",
+  "brand": "Keeway",
+  "name": "Vieste 300 XDV (Euro 5)",
+  "market": "HU fiche",
+  "generation": "Euro 5",
+  "years": "2021–2026",
+  "cc": 278,
+  "seg": "auto",
+  "catalogue_code": "",
+  "family_codes": [],
+  "catalogue_url": "https://alkatresz.keeway.hu/",
+  "note": "Sold by MotoX (MVR 100,000). Official Keeway Hungary catalogue; Asian spec may differ.",
+  "pop": 1,
+  "status": "dealers-2026-11 draft: sourced"
+ },
+ {
+  "id": "honda-wave100-autocare",
+  "brand": "Honda",
+  "name": "Wave 100 (Auto Care numbers)",
+  "market": "?",
+  "generation": "?",
+  "years": "?",
+  "cc": 100,
+  "seg": "manual",
+  "catalogue_code": "KRS/KTL",
+  "family_codes": [
+   "KRS",
+   "KTL"
+  ],
+  "catalogue_url": "https://autocare.mv",
+  "note": "Only Auto Care retailer numbers; no fiche checked.",
+  "pop": 1,
+  "status": "dealers-2026-11 draft: verify"
+ },
+ {
+  "id": "honda-dream-autocare",
+  "brand": "Honda",
+  "name": "Dream (Auto Care numbers)",
+  "market": "?",
+  "generation": "?",
+  "years": "?",
+  "cc": 100,
+  "seg": "manual",
+  "catalogue_code": "GN5",
+  "family_codes": [
+   "GN5"
+  ],
+  "catalogue_url": "https://autocare.mv",
+  "note": "Only Auto Care retailer numbers.",
+  "pop": 1,
+  "status": "dealers-2026-11 draft: verify"
+ },
+ {
+  "id": "honda-click-autocare",
+  "brand": "Honda",
+  "name": "Click 110i (Auto Care numbers)",
+  "market": "TH/VN",
+  "generation": "?",
+  "years": "?",
+  "cc": 110,
+  "seg": "auto",
+  "catalogue_code": "KVB",
+  "family_codes": [
+   "KVB"
+  ],
+  "catalogue_url": "https://autocare.mv",
+  "note": "Only Auto Care retailer numbers.",
+  "pop": 1,
+  "status": "dealers-2026-11 draft: verify"
+ },
+ {
+  "id": "honda-moove-autocare",
+  "brand": "Honda",
+  "name": "Moove (Auto Care numbers)",
+  "market": "TH",
+  "generation": "?",
+  "years": "?",
+  "cc": 110,
+  "seg": "auto",
+  "catalogue_code": "K44",
+  "family_codes": [
+   "K44",
+   "GGC"
+  ],
+  "catalogue_url": "https://autocare.mv",
+  "note": "Only Auto Care retailer numbers.",
+  "pop": 1,
+  "status": "dealers-2026-11 draft: verify"
  }
 ];
 const PARTS = [
@@ -2483,7 +2644,9 @@ const PARTS = [
   "name": "Front brake pads",
   "oem": "06455-KVB-T01",
   "v": 1,
-  "alts": [],
+  "alts": [
+   "06455-KVB-912"
+  ],
   "fits": [
    "honda-airblade125-vn-2013-2015",
    "honda-lead125-th-2022-k2t",
@@ -2496,7 +2659,7 @@ const PARTS = [
   "stock": null,
   "bin": null,
   "rop": null,
-  "note": "",
+  "note": "06455-KVB-912 = front pad for earlier Air Blade 110 (ANC110A 2008) / Click 110; ACA110B uses -T01. Check caliper.",
   "catalogue_name": "PAD SET, FR. BRAKE",
   "priority": "A",
   "source_url": "https://www.bike-parts-honda.com/honda-motorcycle/125-SCOOTER/AIR-BLADE/2014/ACA125CBFE_V/Frame/FRONT-BRAKE-CALIPER/109074/F18/2/20741",
@@ -2504,7 +2667,9 @@ const PARTS = [
    "https://www.bike-parts-honda.com/honda-motorcycle/125-SCOOTER/AIR-BLADE/2014/ACA125CBFE_V/Frame/FRONT-BRAKE-CALIPER/109074/F18/2/20741",
    "https://www.bike-parts-honda.com/honda-motorcycle/125-SCOOTER/LEAD/2023/NHX125N_TH/Frame/FRONT-BRAKE-CALIPER/108334/F18/2/47367",
    "https://www.bike-parts-honda.com/honda-motorcycle/110-SCOOTER/SCOOPY/2014/ACF110SFE_TH/Frame/FRONT-BRAKE-CALIPER/101328/F_18/2/39404",
-   "https://www.bike-parts-honda.com/honda-motorcycle/160-SCOOTER/AIR-BLADE/2025/ACA160CAFS/Frame/FRONT-BRAKE-CALIPER/108905/F18/2/50160"
+   "https://www.bike-parts-honda.com/honda-motorcycle/160-SCOOTER/AIR-BLADE/2025/ACA160CAFS/Frame/FRONT-BRAKE-CALIPER/108905/F18/2/50160",
+   "https://www.bike-parts-honda.com/honda-motorcycle/110-SCOOTER/WAVE/2008/ANC110ACT8/Frame/FRONT-BRAKE-CALIPER/107183/F12/2/49808",
+   "https://autocare.mv/"
   ],
   "askPrice": true
  },
@@ -6946,7 +7111,9 @@ const PARTS = [
   "name": "Drive chain",
   "oem": "40530-KPH-902",
   "v": 1,
-  "alts": [],
+  "alts": [
+   "40530-KPH-901"
+  ],
   "fits": [
    "honda-wave-alpha110-2017-2022",
    "honda-wave110i-th-2009-2013"
@@ -6957,13 +7124,15 @@ const PARTS = [
   "stock": null,
   "bin": null,
   "rop": null,
-  "note": "catalogue name truncated at 25 chars",
+  "note": "catalogue name truncated at 25 chars; Honda lists -901 (DID420DX-104RB) and -902 (DID420AD-104RB) as Wave 125 drive chain variants; hondamoto.parts lists 880/900/901/902 as equivalent references.",
   "catalogue_name": "CHAIN, DRIVE (DAIDO) (DID",
   "priority": "A",
   "source_url": "https://www.bike-parts-honda.com/honda-motorcycle/110-MOTO/WAVE/2019/AFS110MDK/Frame/SWINGARM--CHAIN-CASE/99798/F_32/2/38408",
   "sources": [
    "https://www.bike-parts-honda.com/honda-motorcycle/110-MOTO/WAVE/2019/AFS110MDK/Frame/SWINGARM--CHAIN-CASE/99798/F_32/2/38408",
-   "https://www.bike-parts-honda.com/honda-motorcycle/110-MOTO/WAVE/2011/AFS110MSFB_TH/Frame/SWINGARM--CHAIN-CASE/96439/F_21/2/20680"
+   "https://www.bike-parts-honda.com/honda-motorcycle/110-MOTO/WAVE/2011/AFS110MSFB_TH/Frame/SWINGARM--CHAIN-CASE/96439/F_21/2/20680",
+   "https://www.bike-parts-honda.com/thumbs/pdf_url/img/parts_list/0125_AFS125M3_M5_MSP6_MSP7_MSP8_AFS125MSA_MSB_PH/2500_2500/0113.pdf",
+   "https://www.hondamoto.parts/en/spare-parts/132226-chaine-of-commande-daido-did420dx-104rb-40530-kph-901.html"
   ],
   "askPrice": true
  },
@@ -11305,7 +11474,8 @@ const PARTS = [
    "honda-scoopy110-th-2012-2016",
    "honda-scoopy110-th-2017-2020",
    "honda-zoomerx-2016-2017",
-   "honda-zoomerx-th-2012-2015"
+   "honda-zoomerx-th-2012-2015",
+   "honda-moove-autocare"
   ],
   "tier": "genuine",
   "price": null,
@@ -11313,7 +11483,7 @@ const PARTS = [
   "stock": null,
   "bin": null,
   "rop": null,
-  "note": "2 numbers in catalogue for this part (variant/supplier/colour): check frame no.",
+  "note": "2 numbers in catalogue for this part (variant/supplier/colour): check frame no.; VERIFY: Auto Care (Maldives) retail price and stock \"In Stock\" on 22 Nov 2026; number as published by retailer, not checked against a Honda fiche; ref price 45.00 MVR; catalogue: autocare.mv retailer listing",
   "catalogue_name": "GASKET, CYLINDER HEAD",
   "priority": "B",
   "source_url": "https://www.bike-parts-honda.com/honda-motorcycle/110-SCOOTER/SCOOPY/2014/ACF110SFE_TH/Engine/CYLINDER-HEAD/101328/E_03/1/39404",
@@ -11321,9 +11491,13 @@ const PARTS = [
    "https://www.bike-parts-honda.com/honda-motorcycle/110-SCOOTER/SCOOPY/2014/ACF110SFE_TH/Engine/CYLINDER-HEAD/101328/E_03/1/39404",
    "https://www.bike-parts-honda.com/honda-motorcycle/110-SCOOTER/SCOOPY/2019/ACF110CBTK_TH/Engine/CYLINDER-HEAD/108349/E3/1/39115",
    "https://www.bike-parts-honda.com/honda-motorcycle/110-SCOOTER/ZOOMER/2016/ACG110CBTG/Engine/CYLINDER-HEAD-COVER/99723/E_03/1/36684",
-   "https://www.bike-parts-honda.com/honda-motorcycle/110-SCOOTER/ZOOMER/2014/ACG110CBFE_TH/Engine/CYLINDER-HEAD/103320/E_03/1/39209"
+   "https://www.bike-parts-honda.com/honda-motorcycle/110-SCOOTER/ZOOMER/2014/ACG110CBFE_TH/Engine/CYLINDER-HEAD/103320/E_03/1/39209",
+   "https://autocare.mv/product/gasket-cylinder-head-zoomer-xmoove-scoopy-ino12251-ggc-"
   ],
-  "askPrice": true
+  "askPrice": true,
+  "merged_from": [
+   "d0047"
+  ]
  },
  {
   "id": "n0368",
@@ -16069,14 +16243,16 @@ const PARTS = [
   "id": "p016",
   "cat": "cvt",
   "name": "V-belt, drive",
-  "oem": "B65-E7641-00",
+  "oem": "B8R-E7641-00",
   "v": 0,
   "alts": [
+   "B65-E7641-00",
    "B65-E7641-10"
   ],
   "fits": [
    "aerox155",
-   "nmax155"
+   "nmax155",
+   "yamaha-aerox-alpha155-std-id"
   ],
   "tier": "genuine",
   "price": 735,
@@ -16084,11 +16260,18 @@ const PARTS = [
   "stock": 13,
   "bin": "A1-12",
   "rop": 6,
-  "note": "NMAX and Aerox 155 share the belt.",
+  "note": "NMAX and Aerox 155 share the belt.; VERIFY: authorised Yamaha dealer (BRM, Indonesia) quoting Yamaha data: B8R-E7641-00 for Aerox Alpha Standard/CyberCity (Turbo uses B9Y-E7641-00); supersedes B65-E7641-00; ref price 145000 IDR; catalogue: Yamaha BRM dealer article; B65-E7641-00 superseded by B8R-E7641-00 (authorised Indonesian Yamaha dealer)",
   "old_id": "p016",
   "price_flag": "kept_from_p016",
-  "source_url": null,
-  "legacy": "yamaha_pending_alia_catalogue"
+  "source_url": "https://www.yamahabrm.co.id/news/v-belt-aerox-155-alpha-turbo-kode-asli",
+  "legacy": "yamaha_pending_alia_catalogue",
+  "merged_from": [
+   "d0083"
+  ],
+  "sources": [
+   "https://www.yamahabrm.co.id/news/v-belt-aerox-155-alpha-turbo-kode-asli"
+  ],
+  "confirmed": "verify"
  },
  {
   "id": "p017",
@@ -16165,7 +16348,6 @@ const PARTS = [
   "v": 0,
   "alts": [],
   "fits": [
-   "aerox155",
    "nmax155"
   ],
   "tier": "genuine",
@@ -16177,7 +16359,8 @@ const PARTS = [
   "old_id": "p028",
   "price_flag": "kept_from_p028",
   "source_url": null,
-  "legacy": "yamaha_pending_alia_catalogue"
+  "legacy": "yamaha_pending_alia_catalogue",
+  "note": "Not for Aerox 155 VVA: its rear brake is a drum (dealer data)"
  },
  {
   "id": "p029",
@@ -16190,7 +16373,9 @@ const PARTS = [
   ],
   "fits": [
    "aerox155",
-   "exciter150"
+   "exciter150",
+   "yamaha-aerox-alpha155-std-id",
+   "yamaha-exciter155-vva-b5v"
   ],
   "tier": "genuine",
   "price": 455,
@@ -16200,8 +16385,18 @@ const PARTS = [
   "rop": 4,
   "old_id": "p029",
   "price_flag": "kept_from_p029",
-  "source_url": null,
-  "legacy": "yamaha_pending_alia_catalogue"
+  "source_url": "https://www.yamahabrm.co.id/news/kampas-rem-belakang-aerox-tromol-cakram-kode-harga",
+  "legacy": "yamaha_pending_alia_catalogue",
+  "merged_from": [
+   "d0084",
+   "d0094"
+  ],
+  "sources": [
+   "https://www.yamahabrm.co.id/news/kampas-rem-belakang-aerox-tromol-cakram-kode-harga",
+   "https://japan.webike.net/products/25483516.html"
+  ],
+  "note": "VERIFY: dealer article: same front pad on Aerox 155 VVA and Aerox Alpha; ref price 80000 IDR; catalogue: Yamaha BRM dealer article; Webike Thai Yamaha OEM listing; fit list includes T155 EXCITER 155 ALL NEW 2021; catalogue: Webike Japan (Thai Yamaha OEM parts); VERIFY: Webike lists 2DP-F5805-00 for Exciter T150/T155; B63-F5805-00 kept as primary",
+  "confirmed": "verify"
  },
  {
   "id": "p030",
@@ -16259,7 +16454,8 @@ const PARTS = [
   ],
   "fits": [
    "aerox155",
-   "nmax155"
+   "nmax155",
+   "yamaha-aerox-alpha155-std-id"
   ],
   "tier": "genuine",
   "price": 340,
@@ -16267,11 +16463,17 @@ const PARTS = [
   "stock": 12,
   "bin": "C2-10",
   "rop": 5,
-  "note": "2020-on Connected models.",
+  "note": "2020-on Connected models.; VERIFY: Indonesian Yamaha dealer lists for NMAX New / Aerox New Connected; fit on Aerox Alpha not confirmed; ref price 59000 IDR; catalogue: TM Motor Group dealer listing",
   "old_id": "p046",
   "price_flag": "kept_from_p046",
-  "source_url": null,
-  "legacy": "yamaha_pending_alia_catalogue"
+  "source_url": "https://www.tmmotorgroup.com/produk?slug=element-air-cleaner-b6h1-567",
+  "legacy": "yamaha_pending_alia_catalogue",
+  "merged_from": [
+   "d0087"
+  ],
+  "sources": [
+   "https://www.tmmotorgroup.com/produk?slug=element-air-cleaner-b6h1-567"
+  ]
  },
  {
   "id": "p047",
@@ -16364,7 +16566,9 @@ const PARTS = [
    "honda-wave110i-th-2021",
    "honda-zoomerx-th-2012-2015",
    "nmax155",
-   "aerox155"
+   "aerox155",
+   "yamaha-aerox-alpha155-std-id",
+   "yamaha-exciter155-vva-b5v"
   ],
   "tier": "oem-alt",
   "price": 180,
@@ -16374,9 +16578,16 @@ const PARTS = [
   "rop": 12,
   "old_id": "p050",
   "price_flag": "kept_from_p050",
-  "source_url": null,
-  "note": " [Honda fitment re-derived from plug code in catalogue]",
-  "legacy": "yamaha_pending_alia_catalogue"
+  "source_url": "https://yamahamaldives.com/wp-content/uploads/2025/03/AEROX-155_Warranty-Booklet-Owners-Manual.pdf",
+  "note": "[Honda fitment re-derived from plug code in catalogue]; VERIFY: from Alia Aerox 155 owner manual (GDR155 generation); Alpha not confirmed; catalogue: Alia owner manual",
+  "legacy": "yamaha_pending_alia_catalogue",
+  "merged_from": [
+   "d0089"
+  ],
+  "sources": [
+   "https://yamahamaldives.com/wp-content/uploads/2025/03/AEROX-155_Warranty-Booklet-Owners-Manual.pdf",
+   "https://yamahamaldives.com/wp-content/uploads/2025/07/EXCITER-155_Warranty-Booklet-Owners-Manual.pdf"
+  ]
  },
  {
   "id": "p053",
@@ -18616,6 +18827,2548 @@ const PARTS = [
   ],
   "askPrice": true,
   "added_by": "hondamv"
+ },
+ {
+  "id": "d0001",
+  "cat": "engine",
+  "name": "Cylinder / head gasket (Cylinder Seal Gasket)",
+  "oem": "L-120050115-0001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 16.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "CYLINDER SEAL GASKET",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e06-body-set-cylinder",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e06-body-set-cylinder"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0002",
+  "cat": "engine",
+  "name": "Cylinder / head gasket (Cylinder Seal Gasket)",
+  "oem": "L-120150259-0001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 9.50 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "CYLINDER SEAL GASKET",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e07-cylinder-head",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e07-cylinder-head"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0003",
+  "cat": "engine",
+  "name": "Spark plug (Spark Plug Ngk Cpr8Ea9)",
+  "oem": "L-270960060-0001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 79.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "SPARK PLUG NGK CPR8EA9",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e07-cylinder-head",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e07-cylinder-head"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0004",
+  "cat": "engine",
+  "name": "Cam chain (Timing Chain)",
+  "oem": "L-140610018-0001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 87.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "TIMING CHAIN",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e08-camshaft",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e08-camshaft"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0005",
+  "cat": "cvt",
+  "name": "Drive belt (Belt)",
+  "oem": "L-193000036-0001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 135.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "BELT",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e11-clutch-kit",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e11-clutch-kit"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0006",
+  "cat": "cvt",
+  "name": "Variator roller (Roller)",
+  "oem": "L-192840016-0001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 12.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "ROLLER",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e11-clutch-kit",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e11-clutch-kit"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0007",
+  "cat": "engine",
+  "name": "Oil filter",
+  "oem": "L-150290001-0001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 2.70 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "OIL FILTER",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e12-oil-pump",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e12-oil-pump"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0008",
+  "cat": "engine",
+  "name": "Thermostat (Thermostat Assy)",
+  "oem": "L-160110056-0001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 93.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "THERMOSTAT ASSY",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e13-cooling-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/e13-cooling-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0009",
+  "cat": "elec",
+  "name": "Ignition coil (Ignition Coil Assy)",
+  "oem": "8AJV-003100-1001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 42.50 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "IGNITION COIL ASSY",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f00-ignition-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f00-ignition-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0010",
+  "cat": "tyre",
+  "name": "Tyre",
+  "oem": "30705-1404",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 145.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "TYRE",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f07-front-wheel",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f07-front-wheel"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0011",
+  "cat": "brake",
+  "name": "Brake disc (Front Brake Disc Assy)",
+  "oem": "8AJV-080010-1000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 64.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "FRONT BRAKE DISC ASSY",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f07-front-wheel",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f07-front-wheel"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0012",
+  "cat": "control",
+  "name": "Lever (Brake Lever)",
+  "oem": "8AJV-080140-1000-28",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 29.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "BRAKE LEVER",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f08-brake-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f08-brake-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0013",
+  "cat": "brake",
+  "name": "Brake pads (Brake Pad Assy)",
+  "oem": "8AJV-0812A0",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 49.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "BRAKE PAD ASSY",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f08-brake-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f08-brake-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0014",
+  "cat": "control",
+  "name": "Lever (Brake Lever)",
+  "oem": "8AJV-080240-1000-28",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 29.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "BRAKE LEVER",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f08-brake-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f08-brake-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0015",
+  "cat": "brake",
+  "name": "Brake pads (Brake Pad Assy)",
+  "oem": "8AJV-0814A0",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 59.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "BRAKE PAD ASSY",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f08-brake-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f08-brake-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0016",
+  "cat": "control",
+  "name": "Throttle cable",
+  "oem": "8AJV-100400-1001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 33.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "THROTTLE CABLE",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f10-steering-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f10-steering-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0017",
+  "cat": "control",
+  "name": "Throttle cable (Adjustable Throttle Cable)",
+  "oem": "8AJV-100500-1001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 33.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "ADJUSTABLE THROTTLE CABLE",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f10-steering-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f10-steering-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0018",
+  "cat": "tyre",
+  "name": "Tyre",
+  "oem": "30705-1302",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 185.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "TYRE",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f11-rear-wheel",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f11-rear-wheel"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0019",
+  "cat": "elec",
+  "name": "Battery",
+  "oem": "6SMV-151600-1001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 405.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "BATTERY",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0020",
+  "cat": "elec",
+  "name": "Fuse (5A Fuse 5A)",
+  "oem": "8010-151301",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 1.40 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "5A FUSE 5A",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0021",
+  "cat": "elec",
+  "name": "Fuse (10A Fuse 10A)",
+  "oem": "806A-151302",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025",
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 1.40 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "10A FUSE 10A",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f15-electric-system",
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0022",
+  "cat": "elec",
+  "name": "Fuse (15A Fuse 15A)",
+  "oem": "806A-151305",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025",
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 1.40 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "15A FUSE 15A",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f15-electric-system",
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0023",
+  "cat": "elec",
+  "name": "Fuse (25A Fuse)",
+  "oem": "806A-151307",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 1.40 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "25A FUSE",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0024",
+  "cat": "elec",
+  "name": "Fuse (30A Fuse)",
+  "oem": "806A-151308",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 2.70 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "30A FUSE",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f15-v2-electric-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0025",
+  "cat": "engine",
+  "name": "Air filter element (Air Filter Element Assy)",
+  "oem": "0UJV-112000-1000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-150sc-cf150t-31-2025"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 17.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 150SC CF150T-31 2025",
+  "catalogue_name": "AIR FILTER ELEMENT ASSY",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f41-air-filter",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2025/150sc-cf150t-31/f41-air-filter"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0026",
+  "cat": "tyre",
+  "name": "Tyre (Front Tyre)",
+  "oem": "30705-1723",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 320.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "FRONT TYRE",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f07-front-wheel",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f07-front-wheel"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0027",
+  "cat": "brake",
+  "name": "Brake disc (Rear Brake Disc)",
+  "oem": "6KJ0-080002-10000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 62.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "REAR BRAKE DISC",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f08-a-mab-brake-assyiabs-uaesi",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f08-a-mab-brake-assyiabs-uaesi"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0028",
+  "cat": "brake",
+  "name": "Brake disc (Front Brake Disc)",
+  "oem": "6KJ0-080001-20000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 82.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "FRONT BRAKE DISC",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f08-a-mab-brake-assyiabs-uaesi",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f08-a-mab-brake-assyiabs-uaesi"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0029",
+  "cat": "brake",
+  "name": "Brake pads (Front Brake Pad Assy)",
+  "oem": "6KM0-0812B0",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 25.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "FRONT BRAKE PAD ASSY",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f08-a-mab-brake-assyiabs-uaesi",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f08-a-mab-brake-assyiabs-uaesi"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0030",
+  "cat": "brake",
+  "name": "Brake pads (Rear Brake Pad Comp)",
+  "oem": "6KM0-0911A0",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 25.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "REAR BRAKE PAD COMP",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f08-a-mab-brake-assyiabs-uaesi",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f08-a-mab-brake-assyiabs-uaesi"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0031",
+  "cat": "control",
+  "name": "Clutch cable",
+  "oem": "6KM#-100400-8001",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 64.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "CLUTCH CABLE",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f10-b-steering-systemidouble-throttle-cablei",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f10-b-steering-systemidouble-throttle-cablei"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0032",
+  "cat": "tyre",
+  "name": "Tyre (Rear Tyre)",
+  "oem": "30705-1724",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 440.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "REAR TYRE",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f11-rear-wheel",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f11-rear-wheel"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0033",
+  "cat": "drive",
+  "name": "Drive chain (Chain Choho 520Hx 104L)",
+  "oem": "3120918",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 130.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "CHAIN CHOHO 520HX 104L",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f11-rear-wheel",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f11-rear-wheel"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0034",
+  "cat": "drive",
+  "name": "Sprocket (Rear Sprocket)",
+  "oem": "6KN0-110007-10000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 88.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "REAR SPROCKET",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f11-rear-wheel",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f11-rear-wheel"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0035",
+  "cat": "elec",
+  "name": "Regulator / rectifier (Regulator)",
+  "oem": "6KJC-177000-8000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 62.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "REGULATOR",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f15-electric-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f15-electric-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0036",
+  "cat": "elec",
+  "name": "Starter relay (Relay, Starter)",
+  "oem": "6KJ0-150500",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 76.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "RELAY, STARTER",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f15-electric-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f15-electric-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0037",
+  "cat": "elec",
+  "name": "Battery",
+  "oem": "6KMV-151600-M000-M1",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 120.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "BATTERY",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f15-electric-system",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f15-electric-system"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0038",
+  "cat": "body",
+  "name": "Mirror (Rh Rear View Mirror Assy)",
+  "oem": "6KM#-200400-8002",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 115.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "RH REAR VIEW MIRROR ASSY",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f20-v2-tools",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f20-v2-tools"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0039",
+  "cat": "body",
+  "name": "Mirror (Lh Rear View Mirror Assy)",
+  "oem": "6KM#-200300-8002",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 115.00 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "LH REAR VIEW MIRROR ASSY",
+  "priority": "B",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f20-v2-tools",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f20-v2-tools"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0040",
+  "cat": "engine",
+  "name": "Air filter element",
+  "oem": "0DM0-110100",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "ref price = Australian dealer retail (Carr Brothers fiche), not MVR; ref price 25.10 AUD; catalogue: Carr Brothers Motorcycles (AU) CFMoto partFinder fiche 300SR MY22 CF300-3F (2023)",
+  "catalogue_name": "AIR FILTER ELEMENT",
+  "priority": "A",
+  "source_url": "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f41-air-filter",
+  "sources": [
+   "https://parts.carrbrothersmotorcycles.com.au/partFinder/fiche/cf-moto/2023/300sr-my22-cf300-3f/f41-air-filter"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0041",
+  "cat": "engine",
+  "name": "Spark plug",
+  "oem": "0700-170200",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "EU CFMoto parts retailer; compatibility list includes 300SR CF300-3F EU5 2021-2023 and CF300-5F/5H; ref price 97 RON; catalogue: retailer compatibility list",
+  "catalogue_name": "SPARK PLUG",
+  "priority": "A",
+  "source_url": "https://atvmotoshop.com/en/oils-chemicals-spark-plug/448777-spark-pluc-motorcycle-cfmoto.html",
+  "sources": [
+   "https://atvmotoshop.com/en/oils-chemicals-spark-plug/448777-spark-pluc-motorcycle-cfmoto.html"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0042",
+  "cat": "engine",
+  "name": "Oil filter assy",
+  "oem": "0DM0-013200",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "cfmoto-300sr-cf300-3-my22"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: CFMOTO Canada official parts store lists fit 300NK, 300SS (same 292cc engine family as 300SR); 300SR fit not stated; ref price 54.42 CAD; catalogue: CFMOTO Canada parts store",
+  "catalogue_name": "OIL FILTER ASSY, ENGINE",
+  "priority": "A",
+  "source_url": "https://cfmoto.ca/en/oil-filter-assy-engine-0dm0-013200",
+  "sources": [
+   "https://cfmoto.ca/en/oil-filter-assy-engine-0dm0-013200"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0043",
+  "cat": "drive",
+  "name": "Gear Comp 45 Teeth Click-I, Scoopy-I, Zoomer-X",
+  "oem": "23430-KVB-900",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "honda-click-autocare"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: Auto Care (Maldives) retail price and stock \"Low Stock\" on 22 Nov 2026; number as published by retailer, not checked against a Honda fiche; ref price 480.00 MVR; catalogue: autocare.mv retailer listing",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://autocare.mv/product/gear-comp-45-teeth-click-i-scoopy-i-zoomer-xno23430-kvb",
+  "sources": [
+   "https://autocare.mv/product/gear-comp-45-teeth-click-i-scoopy-i-zoomer-xno23430-kvb"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0044",
+  "cat": "chassis",
+  "name": "Nut special 30MM Airblade-I, Click- I",
+  "oem": "90202-KN7-670",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "honda-click-autocare"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: Auto Care (Maldives) retail price and stock \"Low Stock\" on 22 Nov 2026; number as published by retailer, not checked against a Honda fiche; ref price 25.00 MVR; catalogue: autocare.mv retailer listing",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://autocare.mv/product/nut-special-30mm-airblade-i-click-ino-90202-kn7-670",
+  "sources": [
+   "https://autocare.mv/product/nut-special-30mm-airblade-i-click-ino-90202-kn7-670"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0045",
+  "cat": "control",
+  "name": "Speedometer Cable Airblade And Click 110 i",
+  "oem": "44830-KVB-T00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "honda-click-autocare"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: Auto Care (Maldives) retail price and stock \"In Stock\" on 22 Nov 2026; number as published by retailer, not checked against a Honda fiche; ref price 120.00 MVR; catalogue: autocare.mv retailer listing",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://autocare.mv/product/speedometer-cable-airbladeno44830-kvb-t00",
+  "sources": [
+   "https://autocare.mv/product/speedometer-cable-airbladeno44830-kvb-t00"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0046",
+  "cat": "engine",
+  "name": "Piston Honda Dream",
+  "oem": "13101-GN5-505",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "honda-dream-autocare"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: Auto Care (Maldives) retail price and stock \"Low Stock\" on 22 Nov 2026; number as published by retailer, not checked against a Honda fiche; ref price 200.00 MVR; catalogue: autocare.mv retailer listing",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://autocare.mv/product/piston-honda-dreamno13101-gn5-505",
+  "sources": [
+   "https://autocare.mv/product/piston-honda-dreamno13101-gn5-505"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0048",
+  "cat": "engine",
+  "name": "Piston Moove, zoomer-x",
+  "oem": "13101-K44-V00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "honda-moove-autocare"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: Auto Care (Maldives) retail price and stock \"In Stock\" on 22 Nov 2026; number as published by retailer, not checked against a Honda fiche; ref price 250.00 MVR; catalogue: autocare.mv retailer listing",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://autocare.mv/product/piston-mooveno13101-k44-v00",
+  "sources": [
+   "https://autocare.mv/product/piston-mooveno13101-k44-v00"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0049",
+  "cat": "engine",
+  "name": "Ringset Moove",
+  "oem": "13011-K44-V00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "honda-moove-autocare"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: Auto Care (Maldives) retail price and stock \"In Stock\" on 22 Nov 2026; number as published by retailer, not checked against a Honda fiche; ref price 185.00 MVR; catalogue: autocare.mv retailer listing",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://autocare.mv/product/ringset-mooveno13011-k44-v00",
+  "sources": [
+   "https://autocare.mv/product/ringset-mooveno13011-k44-v00"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0050",
+  "cat": "drive",
+  "name": "Shaft Drive Moove, Scoopy-I, Zoomer-X",
+  "oem": "23411-KZL-930",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "honda-moove-autocare"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: Auto Care (Maldives) retail price and stock \"Low Stock\" on 22 Nov 2026; number as published by retailer, not checked against a Honda fiche; ref price 160.00 MVR; catalogue: autocare.mv retailer listing",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://autocare.mv/product/shaft-drive-moove-scoopy-i-zoomer-xno23411-kzl-930",
+  "sources": [
+   "https://autocare.mv/product/shaft-drive-moove-scoopy-i-zoomer-xno23411-kzl-930"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0051",
+  "cat": "engine",
+  "name": "Bolt Oil Wave 100",
+  "oem": "90145-KRS-T00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "honda-wave100-autocare"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: Auto Care (Maldives) retail price and stock \"Low Stock\" on 22 Nov 2026; number as published by retailer, not checked against a Honda fiche; ref price 35.00 MVR; catalogue: autocare.mv retailer listing",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://autocare.mv/product/bolt-oil-wave-100no90145-krs-t00",
+  "sources": [
+   "https://autocare.mv/product/bolt-oil-wave-100no90145-krs-t00"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0052",
+  "cat": "chassis",
+  "name": "Front Shock Pipe Wave 100",
+  "oem": "51410-KRS-971",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "honda-wave100-autocare"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: Auto Care (Maldives) retail price and stock \"In Stock\" on 22 Nov 2026; number as published by retailer, not checked against a Honda fiche; ref price 240.00 MVR; catalogue: autocare.mv retailer listing",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://autocare.mv/product/front-shock-pipe-wave-100-no51410-krs-971",
+  "sources": [
+   "https://autocare.mv/product/front-shock-pipe-wave-100-no51410-krs-971"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0053",
+  "cat": "engine",
+  "name": "Piston Wave 100",
+  "oem": "13101-KTL-850",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "honda-wave100-autocare"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: Auto Care (Maldives) retail price and stock \"In Stock\" on 22 Nov 2026; number as published by retailer, not checked against a Honda fiche; ref price 310.00 MVR; catalogue: autocare.mv retailer listing",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://autocare.mv/product/piston-wave-100no13101-ktl-850",
+  "sources": [
+   "https://autocare.mv/product/piston-wave-100no13101-ktl-850"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0054",
+  "cat": "engine",
+  "name": "Oil strainer / screen",
+  "oem": "P0130610710000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 1856 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "SZŰRŐ",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/blokkfelek",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/blokkfelek"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0055",
+  "cat": "elec",
+  "name": "Regulator / rectifier",
+  "oem": "P0133790250000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 35468 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "FESZÜLTSÉGSZABÁLYZÓ",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elektromos-alkatreszek-fojtoszelep",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elektromos-alkatreszek-fojtoszelep"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0056",
+  "cat": "elec",
+  "name": "Battery 12V 10Ah",
+  "oem": "P0133795500000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail (nem rendelhető); catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "AKKUMULÁTOR 12V/10AH",
+  "priority": "A",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elektromos-alkatreszek-fojtoszelep",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elektromos-alkatreszek-fojtoszelep"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0057",
+  "cat": "elec",
+  "name": "Ignition coil",
+  "oem": "P0133780410000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 7138 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "GYÚJTÓTRAFÓ",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elektromos-alkatreszek-fojtoszelep",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elektromos-alkatreszek-fojtoszelep"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0058",
+  "cat": "elec",
+  "name": "Starter relay",
+  "oem": "P0133785110000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 2957 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "INDÍTÓRELÉ",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elektromos-alkatreszek-fojtoszelep",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elektromos-alkatreszek-fojtoszelep"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0059",
+  "cat": "brake",
+  "name": "Brake disc, front",
+  "oem": "P0135410540000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 10070 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "FÉKTÁRCSA ELSŐ 240mm",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-kerek",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-kerek"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0060",
+  "cat": "tyre",
+  "name": "Tyre",
+  "oem": "P0135026520000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail (nem rendelhető); catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "KÜLSŐ GUMI",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-kerek",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-kerek"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0061",
+  "cat": "cvt",
+  "name": "Drive belt",
+  "oem": "P0130900810000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 82499 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "MEGHAJTÓSZÍJ",
+  "priority": "A",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-variator-meghajtoszij",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-variator-meghajtoszij"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0062",
+  "cat": "cvt",
+  "name": "Variator slider",
+  "oem": "P0130731320000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 1064 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "CSÚSZÓSZILENT",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-variator-meghajtoszij",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-variator-meghajtoszij"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0063",
+  "cat": "cvt",
+  "name": "Variator roller",
+  "oem": "P0130700470000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 1073 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "GÖRGŐ/DB 13.8g",
+  "priority": "A",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-variator-meghajtoszij",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-variator-meghajtoszij"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0064",
+  "cat": "cvt",
+  "name": "Variator roller",
+  "oem": "P0130700700000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 7840 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "GÖRGŐSZORÍTÓ LEMEZ",
+  "priority": "A",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-variator-meghajtoszij",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/elso-variator-meghajtoszij"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0065",
+  "cat": "brake",
+  "name": "Brake pads, front",
+  "oem": "P0135472520000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 15544 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "FÉKBETÉT/PÁR ELSŐ",
+  "priority": "A",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/fekrendszer",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/fekrendszer"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0066",
+  "cat": "brake",
+  "name": "Brake pads, rear",
+  "oem": "P0135472530000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 13708 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "FÉKBETÉT/PÁR HÁTSÓ",
+  "priority": "A",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/fekrendszer",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/fekrendszer"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0067",
+  "cat": "control",
+  "name": "Brake lever, right",
+  "oem": "P0135473630000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 9489 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "FÉKKAR JOBB",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/fekrendszer",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/fekrendszer"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0068",
+  "cat": "control",
+  "name": "Brake lever, left",
+  "oem": "P0135473620000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 9487 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "FÉKKAR BAL",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/fekrendszer",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/fekrendszer"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0069",
+  "cat": "brake",
+  "name": "Brake disc, rear",
+  "oem": "P0135410560000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 9578 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "FÉKTÁRCSA HÁTSÓ 220mm",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/hatso-kerek-hatso-sarvedo",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/hatso-kerek-hatso-sarvedo"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0070",
+  "cat": "tyre",
+  "name": "Tyre",
+  "oem": "P0135026530000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail (nem rendelhető); catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "KÜLSŐ GUMI",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/hatso-kerek-hatso-sarvedo",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/hatso-kerek-hatso-sarvedo"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0071",
+  "cat": "cvt",
+  "name": "Final drive cover gasket",
+  "oem": "P0131601590000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 3883 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "KIHAJTÁSFEDÉL TÖMÍTÉS",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/hatso-kihajtas",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/hatso-kihajtas"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0072",
+  "cat": "engine",
+  "name": "Cylinder base gasket",
+  "oem": "P0131601570000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 1237 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "HENGERTALP TÖMÍTÉS",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/henger-dugattyu",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/henger-dugattyu"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0073",
+  "cat": "engine",
+  "name": "Thermostat",
+  "oem": "P0130420190000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 4977 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "TERMOSZTÁT",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/hengerfej-termosztat",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/hengerfej-termosztat"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0074",
+  "cat": "engine",
+  "name": "Cylinder head gasket",
+  "oem": "P0131601640000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 4352 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "HENGERFEJ TÖMÍTÉS",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/hengerfej-termosztat",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/hengerfej-termosztat"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0075",
+  "cat": "control",
+  "name": "Throttle cable A",
+  "oem": "P0134800740000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 2064 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "GÁZBOWDEN A",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/kormany-gazbowden-kormanykapcsolo",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/kormany-gazbowden-kormanykapcsolo"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0076",
+  "cat": "control",
+  "name": "Throttle cable B",
+  "oem": "P0134800730000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 2064 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "GÁZBOWDEN B",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/kormany-gazbowden-kormanykapcsolo",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/kormany-gazbowden-kormanykapcsolo"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0077",
+  "cat": "engine",
+  "name": "Air filter element",
+  "oem": "P0131531050000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 2833 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "LÉGSZŰRŐBETÉT",
+  "priority": "A",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/legszuro",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/legszuro"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0078",
+  "cat": "chassis",
+  "name": "Rear shock absorber",
+  "oem": "P0135121510000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 108287 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "LENGÉSCSILLAPÍTÓ",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/lengescsillapito",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/lengescsillapito"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0079",
+  "cat": "engine",
+  "name": "Generator cover gasket",
+  "oem": "P0131601610000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 1950 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "GENERÁTORFEDÉL TÖMÍTÉS",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/olajszuro-generatorfedel-vizpumpa",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/olajszuro-generatorfedel-vizpumpa"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0080",
+  "cat": "engine",
+  "name": "Oil strainer / screen",
+  "oem": "P0130520700000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 3009 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "SZŰRŐ",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/olajszuro-generatorfedel-vizpumpa",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/olajszuro-generatorfedel-vizpumpa"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0081",
+  "cat": "engine",
+  "name": "Oil filter element",
+  "oem": "P0130520660000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 10852 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "OLAJSZŰRŐ BETÉT",
+  "priority": "A",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/olajszuro-generatorfedel-vizpumpa",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/olajszuro-generatorfedel-vizpumpa"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0082",
+  "cat": "body",
+  "name": "Mirror",
+  "oem": "P0135611640000",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "keeway-vieste-300-xdv-e5"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "name translated from Hungarian; ref price = Keeway Hungary retail; ref price 6599 HUF; catalogue: alkatresz.keeway.hu official Keeway Hungary parts catalogue: Vieste 300 XDV Euro 5 (nearest public catalogue to MotoX Vieste 300 XDV; verify Euro 5 vs Asian spec)",
+  "catalogue_name": "TÜKÖR/PÁR",
+  "priority": "B",
+  "source_url": "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/tukor",
+  "sources": [
+   "https://alkatresz.keeway.hu/vieste-300-xdv-euro-5/tukor"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0085",
+  "cat": "brake",
+  "name": "Brake pad kit, rear (disc)",
+  "oem": "B6H-F5805-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-aerox-alpha155-std-id"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: dealer article: Aerox Alpha Standard/CyberCity/Turbo rear disc pad; ref price 80000 IDR; catalogue: Yamaha BRM dealer article",
+  "catalogue_name": "BRAKE PAD KIT",
+  "priority": "A",
+  "source_url": "https://www.yamahabrm.co.id/news/kampas-rem-belakang-aerox-tromol-cakram-kode-harga",
+  "sources": [
+   "https://www.yamahabrm.co.id/news/kampas-rem-belakang-aerox-tromol-cakram-kode-harga"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0086",
+  "cat": "elec",
+  "name": "Battery YTZ6V",
+  "oem": "BN1-H2100-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-aerox-alpha155-std-id"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: dealer article: YTZ6V for Aerox Alpha Standard and CyberCity (Turbo: YTZ7V 2DP-H2100-31); ref price 305500 IDR; catalogue: Yamaha BRM dealer article",
+  "catalogue_name": "BATTERY",
+  "priority": "A",
+  "source_url": "https://www.yamahabrm.co.id/news/aki-aerox-alpha-tipe-ytz6v-ytz7v-per-varian",
+  "sources": [
+   "https://www.yamahabrm.co.id/news/aki-aerox-alpha-tipe-ytz6v-ytz7v-per-varian"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0088",
+  "cat": "cvt",
+  "name": "Roller weight set",
+  "oem": "B65-WE763-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-aerox-alpha155-std-id"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: dealer lists for Aerox 155 (Connected, ABS, All New); fit on Aerox Alpha not confirmed; catalogue: TM Motor Group dealer listing",
+  "catalogue_name": "WEIGHT SET",
+  "priority": "B",
+  "source_url": "https://www.tmmotorgroup.com/produk?slug=weight-set-b651-557",
+  "sources": [
+   "https://www.tmmotorgroup.com/produk?slug=weight-set-b651-557"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0090",
+  "cat": "tyre",
+  "name": "Tyre 110/80-14, front",
+  "oem": "110/80-14",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "yamaha-aerox-alpha155-std-id"
+  ],
+  "tier": "aftermarket",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "size from Litus spec sheet; catalogue: dealer spec",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://www.litusautomobiles.com/motorcycles/aerox-alpha-155-standard",
+  "sources": [
+   "https://www.litusautomobiles.com/motorcycles/aerox-alpha-155-standard"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0091",
+  "cat": "tyre",
+  "name": "Tyre 140/70-14, rear",
+  "oem": "140/70-14",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "yamaha-aerox-alpha155-std-id"
+  ],
+  "tier": "aftermarket",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "size from Litus spec sheet; catalogue: dealer spec",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://www.litusautomobiles.com/motorcycles/aerox-alpha-155-standard",
+  "sources": [
+   "https://www.litusautomobiles.com/motorcycles/aerox-alpha-155-standard"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0092",
+  "cat": "engine",
+  "name": "Air filter element",
+  "oem": "B5V-E4450-00",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "yamaha-exciter155-vva-b5v"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "mototh Thai Yamaha fiche (EXCITER 155 ALL NEW 2021/2022, T155 BAW1/3/4/5) seen via search index on 22 Nov 2026; site itself was down (DB error) when fetched; catalogue: mototh.com Thai Yamaha fiche",
+  "catalogue_name": "ELEMENT ASSY, AIR CLEANER",
+  "priority": "A",
+  "source_url": "https://mototh.com/en/parts/598/Yamaha+EXCITER+155+ALL+NEW+2022/11786/INTAKE",
+  "sources": [
+   "https://mototh.com/en/parts/598/Yamaha+EXCITER+155+ALL+NEW+2022/11786/INTAKE"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0093",
+  "cat": "engine",
+  "name": "Oil filter element",
+  "oem": "38B-E3440-01",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-exciter155-vva-b5v"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: listed on mototh Exciter 155 oil-pump fiche (search index only, site down); later number 1S7-E3440-00 also sold as equivalent - verify; catalogue: mototh.com Thai Yamaha fiche",
+  "catalogue_name": "ELEMENT ASSY, OIL CLEANER",
+  "priority": "A",
+  "source_url": "https://mototh.com/en/parts/598/Yamaha+EXCITER+155+ALL+NEW+2022/11785/OIL+PUMP",
+  "sources": [
+   "https://mototh.com/en/parts/598/Yamaha+EXCITER+155+ALL+NEW+2022/11785/OIL+PUMP"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0095",
+  "cat": "drive",
+  "name": "Drive sprocket 14T",
+  "oem": "93822-14800",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-exciter155-vva-b5v"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: Vietnamese parts retailer quoting Yamaha reference numbers for Exciter 155; Auto Care MV also sells 93822-14800 as \"Sprocket Drive Yamaha Exciter\" MVR 80; catalogue: retailer",
+  "catalogue_name": "SPROCKET, DRIVE",
+  "priority": "A",
+  "source_url": "https://phutungchinhhieu.com/snd-did-hdn-exciter155-22-428hdn-126l-14t-46t-black-edp/",
+  "sources": [
+   "https://phutungchinhhieu.com/snd-did-hdn-exciter155-22-428hdn-126l-14t-46t-black-edp/"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0096",
+  "cat": "drive",
+  "name": "Rear sprocket 46T",
+  "oem": "B5V-F5446-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-exciter155-vva-b5v"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: retailer reference number only; catalogue: retailer",
+  "catalogue_name": "SPROCKET, DRIVEN",
+  "priority": "A",
+  "source_url": "https://phutungchinhhieu.com/snd-did-hdn-exciter155-22-428hdn-126l-14t-46t-black-edp/",
+  "sources": [
+   "https://phutungchinhhieu.com/snd-did-hdn-exciter155-22-428hdn-126l-14t-46t-black-edp/"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0097",
+  "cat": "drive",
+  "name": "Drive chain 428 x 124L",
+  "oem": "94568-K8124",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-exciter155-vva-b5v"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: retailer reference number only; chain length varies by year (124L/126L); catalogue: retailer",
+  "catalogue_name": "CHAIN",
+  "priority": "A",
+  "source_url": "https://phutungchinhhieu.com/snd-did-hdn-exciter155-22-428hdn-126l-14t-46t-black-edp/",
+  "sources": [
+   "https://phutungchinhhieu.com/snd-did-hdn-exciter155-22-428hdn-126l-14t-46t-black-edp/"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0098",
+  "cat": "engine",
+  "name": "Cam chain",
+  "oem": "94568-J9096",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-exciter155-vva-b5v"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "VERIFY: mototh part page title seen in search index (EXCITER 155 camshaft & chain); site down; catalogue: mototh.com Thai Yamaha fiche",
+  "catalogue_name": "CHAIN",
+  "priority": "B",
+  "source_url": "https://mototh.com/en/part/57121/94568-J9096",
+  "sources": [
+   "https://mototh.com/en/part/57121/94568-J9096"
+  ],
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0099",
+  "cat": "tyre",
+  "name": "Tyre 90/80-17, front",
+  "oem": "90/80-17",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "yamaha-exciter155-vva-b5v"
+  ],
+  "tier": "aftermarket",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "size from Litus spec sheet; catalogue: dealer spec",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://www.litusautomobiles.com/motorcycles/exciter-155-vva-standard-2026",
+  "sources": [
+   "https://www.litusautomobiles.com/motorcycles/exciter-155-vva-standard-2026"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
+ },
+ {
+  "id": "d0100",
+  "cat": "tyre",
+  "name": "Tyre 120/70-17, rear",
+  "oem": "120/70-17",
+  "v": 0,
+  "alts": [],
+  "fits": [
+   "yamaha-exciter155-vva-b5v"
+  ],
+  "tier": "aftermarket",
+  "price": null,
+  "cost": null,
+  "stock": null,
+  "bin": null,
+  "rop": null,
+  "note": "size from Litus spec sheet; catalogue: dealer spec",
+  "catalogue_name": "",
+  "priority": "B",
+  "source_url": "https://www.litusautomobiles.com/motorcycles/exciter-155-vva-standard-2026",
+  "sources": [
+   "https://www.litusautomobiles.com/motorcycles/exciter-155-vva-standard-2026"
+  ],
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "dealers-2026-11"
  }
 ];
 const ZONES = [

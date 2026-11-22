@@ -97,7 +97,10 @@ function decodeHTML(oem) {
    nonsense: we are the ones who assigned them. */
 const OWN_SKU = /^(AVS-|\d+\/\d+-\d+|TUBE\b|TL VALVE|DOT \d|CHAIN \d)/;
 const isOwnSku = (p) => OWN_SKU.test(p.oem);
-const needsCheck = (p) => !p.v && !isOwnSku(p);
+/* Dealer-sourced rows carry confirmed:"verify" (seen on a retailer page only),
+   which overrides v. */
+const isConfirmed = (p) => !!p.v && p.confirmed !== "verify";
+const needsCheck = (p) => !isConfirmed(p) && !isOwnSku(p);
 
 /* ---------- Search ---------- */
 function haystack(p) {
@@ -417,8 +420,14 @@ function sourceLinks(urls) {
 
 function renderModelNote() {
   const box = $("#rNote");
-  const m = state.vertical !== "bikes" && state.model ? MODEL_BY_ID[state.model] : null;
+  const m = state.model ? MODEL_BY_ID[state.model] : null;
   if (!m || state.q.trim()) { box.hidden = true; box.innerHTML = ""; return; }
+  /* Bike model notes are build provenance; only a customer-facing notice shows. */
+  if (state.vertical === "bikes") {
+    box.innerHTML = m.notice ? `<div class="mnote-note">${esc(m.notice)}</div>` : "";
+    box.hidden = !box.innerHTML;
+    return;
+  }
   const bits = [];
   if (m.model_number) bits.push(`<span><b>Model</b> ${esc(m.model_number)}</span>`);
   if (m.engine) bits.push(`<span><b>Engine</b> ${esc(m.engine)}</span>`);
@@ -544,7 +553,7 @@ function openDetail(id) {
       <h4>Part number</h4>
       ${plateHTML(p.oem)}
       ${decodeHTML(p.oem)}
-      ${p.v ? `<p class="hint" style="margin-top:6px">Confirmed against a published parts source.</p>` : isOwnSku(p) ? `<p class="hint" style="margin-top:6px">An avas.parts shop code. There is no manufacturer number for this item.</p>` : `<p class="hint" style="margin-top:6px"><span class="unver">Not yet confirmed</span> — check this number against the bike’s frame number before you order.</p>`}
+      ${isConfirmed(p) ? `<p class="hint" style="margin-top:6px">Confirmed against a published parts source.</p>` : isOwnSku(p) ? `<p class="hint" style="margin-top:6px">An avas.parts shop code. There is no manufacturer number for this item.</p>` : `<p class="hint" style="margin-top:6px"><span class="unver">Not yet confirmed</span> — check this number against the bike’s frame number before you order.</p>`}
     </div>
 
     ${pn.group || pn.family ? `<div class="dsec">
