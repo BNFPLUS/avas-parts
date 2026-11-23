@@ -289,32 +289,15 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .card:hover { border-color: var(--ink-2); }
 
-/* Thumb: the shop's own photo when one exists, otherwise a quiet
-   "no photo yet" panel. Never a stock photo or a drawing standing in for the part. */
+/* Thumb: only the shop's own photo. A part without one (or whose photo
+   fails to load) has no .art element at all, so the card starts at its name. */
 .art {
-  position: relative;
   height: 64px; margin: -3px -4px 2px;
   background: var(--panel-2);
   border: 1px solid var(--rule-2); border-radius: 2px;
   overflow: hidden;
 }
-.nophoto {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  color: var(--ink-3);
-  font-family: var(--f-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
-}
-.nophoto-ico {
-  width: 22px; height: 22px; flex-shrink: 0;
-  fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round;
-  opacity: .8;
-}
-/* Photo sits over the placeholder. If it fails, onerror removes it. */
-.art img {
-  position: absolute; inset: 0; z-index: 1;
-  width: 100%; height: 100%; object-fit: cover; display: block;
-  background: var(--panel-2);
-}
+.art img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .cardtop { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
 
@@ -22364,31 +22347,24 @@ const IMAGES = {
  *
  * A part shows a photo only when the shop has a real one: `img` in data.js,
  * or an entry in images.js (generated from img/ by import-images.js).
- * Every other part gets the same quiet "no photo yet" panel. No stock
- * photography and no illustrative drawings of parts: a picture on a card
- * must be the part itself.
+ * Every other part renders no image area at all; the card starts with its
+ * name. No stock photography, no illustrative drawings, no placeholder:
+ * a picture on a card must be the part itself.
  */
-
-const NO_PHOTO_ICON = `<svg class="nophoto-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-  <rect x="3" y="5" width="18" height="14" rx="1.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.5L20 17"/>
-</svg>`;
-
-const NO_PHOTO = `<div class="nophoto">${NO_PHOTO_ICON}<span>No photo yet</span></div>`;
 
 function photoFor(part) {
   return part.img || (typeof IMAGES !== "undefined" && IMAGES[part.id]) || null;
 }
 
-/* The placeholder sits under the photo: if the file 404s or fails to decode,
-   onerror drops the image and the placeholder shows instead of a broken icon. */
+/* If the file 404s or fails to decode, onerror removes the whole thumb, so
+   the card ends up exactly like a part with no photo (no broken-image icon). */
 function artHTML(part) {
   const photo = photoFor(part);
-  if (!photo) return `<div class="art no-photo">${NO_PHOTO}</div>`;
+  if (!photo) return "";
   const esc = s => String(s).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";");
-  return `<div class="art has-photo">
+  return `<div class="art">
     <img src="${esc(photo)}" alt="${esc(part.name)}" loading="lazy" decoding="async"
-         onerror="this.closest('.art').classList.replace('has-photo','no-photo'); this.remove();">
-    ${NO_PHOTO}
+         onerror="this.closest('.art').remove();">
   </div>`;
 }
 

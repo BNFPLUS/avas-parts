@@ -9,7 +9,7 @@
  *
  * Writes images.js — a plain id -> path map that art.js reads. data.js is
  * never modified, so re-running is safe and deleting an image just drops
- * that entry and the "No photo yet" placeholder comes back.
+ * that entry and the card goes back to having no image area.
  *
  * Only use images you have the right to publish. Manufacturer catalogue
  * photography is copyrighted; a sales territory does not by itself grant a
@@ -68,7 +68,7 @@ fs.writeFileSync(
 const covered = Object.keys(map).length;
 console.log(`${files.length} image file(s) in ${DIR}/`);
 console.log(`${covered} matched to parts — written to images.js`);
-console.log(`${PARTS.length - covered} part(s) still showing the no-photo placeholder`);
+console.log(`${PARTS.length - covered} part(s) still without a photo`);
 
 if (unmatched.length) {
   console.log(`\n${unmatched.length} file(s) matched no part number or id:`);

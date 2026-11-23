@@ -206,14 +206,16 @@ const A = ictx.__A;
 ok(!/unsplash|picsum|pexels|placeholder\.com|loremflickr/i.test(html + app + art + css), "no stock-photo hosts referenced");
 ok(!/<svg[^>]*role="img"|schematic/i.test(art), "art.js draws no schematic parts");
 const noPhoto = A.artHTML({ id: "zz-none", name: "Drive belt", oem: "23100-K36-J01", cat: "drive" });
-ok(/class="art no-photo"/.test(noPhoto) && /No photo yet/.test(noPhoto) && !/<img/.test(noPhoto), "a part without a photo gets the neutral placeholder");
+ok(noPhoto === "", "a part without a photo renders no image area at all");
 const eqNoPhoto = A.artHTML({ id: "zz-eq", name: "Impeller", oem: "6CE-44352-00", cat: "cooling", vertical: "outboards" });
-ok(eqNoPhoto === noPhoto, "every part without a photo gets the same placeholder");
+ok(eqNoPhoto === "", "an equipment part without a photo renders no image area either");
+ok(!/No photo yet|nophoto|no-photo/i.test(art + css + app), "no 'No photo yet' label, .nophoto icon or no-photo class left in art.js, styles.css or app.js");
 const withPhoto = A.artHTML({ id: "zz-photo", name: "Belt <x>", img: "img/belt.jpg" });
-ok(/<img src="img\/belt\.jpg"/.test(withPhoto) && /alt="Belt &#60;x&#62;"/.test(withPhoto) && /onerror=/.test(withPhoto) && /No photo yet/.test(withPhoto),
-   "a real photo is shown, escaped, with the placeholder as the 404 fallback");
+ok(/<img src="img\/belt\.jpg"/.test(withPhoto) && /alt="Belt &#60;x&#62;"/.test(withPhoto) && /<svg|No photo/i.test(withPhoto) === false,
+   "a real photo is shown, escaped, with nothing else in the thumb");
+ok(/onerror="this\.closest\('\.art'\)\.remove\(\);"/.test(withPhoto), "a photo that fails to load removes the whole thumb (blank fallback)");
 const photoN = PARTS.filter(p => p.img || A.IMAGES[p.id]).length;
-console.log(`  ${photoN} part(s) with a real photo; ${PARTS.length - photoN} show the placeholder`);
+console.log(`  ${photoN} part(s) with a real photo; ${PARTS.length - photoN} have no image area`);
 
 ["data.js","app.js","styles.css"].forEach(f =>
   ok(html.includes(f), `index.html does not load ${f}`));

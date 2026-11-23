@@ -64,12 +64,41 @@ ok(equipReqs.length === 0, "data-equip.js is not requested on the default bike p
 ok(await page.locator('#vertChips [data-vertical="bikes"][aria-pressed="true"]').count() === 1, "category picker shows Bikes selected by default");
 ok(await page.locator("#vertChips [data-vertical]").count() === 7, "category picker lists 7 categories");
 ok(await page.locator(".eqcard").count() === 0 && !(await page.locator("#rNote").isVisible()), "no equipment cards or model note on the bike default");
-ok(await page.locator(".card .art.no-photo .nophoto").count() === total, "every card shows the neutral no-photo placeholder");
-ok(await page.locator(".card .art svg[role=img], .card .art img").count() === 0, "no schematic drawings or stock images on cards");
+ok(await page.locator(".card .art, .card .nophoto, .card svg[role=img], .card img").count() === 0, "photoless cards have no image area, icon, drawing or stock image");
+ok(!/No photo yet/i.test(await page.locator("#grid, .grid").first().textContent()), "no 'No photo yet' label on cards");
+ok(await page.locator(".card").evaluateAll(cs => cs.every(c => c.firstElementChild && c.firstElementChild.classList.contains("cardtop"))), "every bike card starts with its name row");
 ok(JSON.stringify(await page.locator("#zoneList li").allTextContents()) === JSON.stringify(["MaléFree", "HulhumaléFree", "Boats (harbour drop-off)Free"]),
    "flag off: footer delivery list is the three free destinations too");
 ok(!/every island|nationwide|inhabited island/i.test(await page.locator("body").textContent()), "no every-island / nationwide delivery claims on the page");
 await page.screenshot({ path: path.join(shots, "01-home.png"), fullPage: false });
+
+console.log("\nReal photo + broken-photo fallback");
+/* IMAGES ships empty; give two parts a photo (one real, one that fails to decode) and re-render.
+   A corrupt image fires the same onerror as a 404 without logging a network error. */
+const PNG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+const photoIds = await page.evaluate(png => {
+  const ids = [...document.querySelectorAll(".card .addbtn")].slice(0, 3).map(b => b.dataset.add);
+  IMAGES[ids[0]] = png; IMAGES[ids[1]] = "data:image/jpeg;base64,bm90IGFuIGltYWdl";
+  renderResults();
+  return ids;
+}, PNG);
+await page.waitForTimeout(400);
+const cardOf = id => page.locator(".card", { has: page.locator(`[data-add="${id}"]`) });
+ok(await cardOf(photoIds[0]).locator(".art > img").count() === 1 && await cardOf(photoIds[0]).locator(".art > img").evaluate(i => i.complete && i.naturalWidth > 0),
+   "a part with a real photo shows it in the thumb");
+ok(await cardOf(photoIds[0]).locator(".art").evaluate(a => a.children.length === 1 && a.textContent.trim() === ""), "the photo thumb holds only the image");
+ok(await cardOf(photoIds[1]).locator(".art, img").count() === 0, "a photo that fails to load leaves no thumb, no broken image and no label");
+ok(await cardOf(photoIds[1]).evaluate(c => c.firstElementChild.classList.contains("cardtop")), "the failed-photo card starts with its name row, like a photoless card");
+ok(await cardOf(photoIds[2]).locator(".art").count() === 0, "untouched photoless card still has no image area");
+const pArt = await cardOf(photoIds[0]).locator(".art").boundingBox(), pCard = await cardOf(photoIds[0]).boundingBox();
+ok(pArt.height <= 64 && pArt.height < pCard.height / 4, `real-photo thumb stays modest (${Math.round(pArt.height)}px of a ${Math.round(pCard.height)}px card)`);
+const rowTops = await page.locator(".card").evaluateAll(cs => cs.slice(0, 6).map(c => { const r = c.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.height)]; }));
+const sameRow = rowTops.filter(r => r[0] === rowTops[0][0]);
+ok(sameRow.length > 1 && sameRow.every(r => r[1] === sameRow[0][1]), "cards in the first row (photo and no photo) line up at the same height");
+await page.screenshot({ path: path.join(shots, "01b-photo-and-fallback.png"), fullPage: false });
+await page.evaluate(ids => { delete IMAGES[ids[0]]; delete IMAGES[ids[1]]; renderResults(); }, photoIds);
+await page.waitForTimeout(200);
+ok(await page.locator(".card .art").count() === 0, "removing the photos returns the cards to blank");
 
 console.log("\nBike picker");
 await page.click('[data-brand="Honda"]');
@@ -721,8 +750,16 @@ async function mobileRun(width) {
   ok(await pg.locator("#q").evaluate(e => parseFloat(getComputedStyle(e).fontSize)) >= 16, "search text is 16px (no iOS zoom on focus)");
   ok(await tall("#cartOpen") && await tall("#modeSwitch button") && await tall("#vertChips .chip", 44) && await tall("#brandChips .chip", 44), "Order, Shop/Counter and picker chips are tappable (≥40/44px)");
   ok(await tall(".card .addbtn", 44), "Add button is 44px tall");
+  ok(await pg.locator(".card .art, .card .nophoto, .card img").count() === 0 && await pg.locator(".card").first().evaluate(c => c.firstElementChild.classList.contains("cardtop")),
+     "photoless cards have no image box and start with the name row");
+  const firstAdd = await pg.locator(".card .addbtn").first().getAttribute("data-add");
+  await pg.evaluate(id => { IMAGES[id] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="; renderResults(); }, firstAdd);
+  await pg.waitForTimeout(250);
   const art = await box(".card .art"), card = await box(".card");
-  ok(art.height <= 64 && art.height < card.height / 4, `placeholder thumb stays modest (${Math.round(art.height)}px of a ${Math.round(card.height)}px card)`);
+  ok(!!art && inView(art) && art.height <= 64 && art.height < card.height / 4, `real-photo thumb stays modest and on screen (${art ? Math.round(art.height) : "-"}px of a ${Math.round(card.height)}px card)`);
+  ok(await over() <= 1, `home with a photo card: no horizontal overflow (${await over()}px)`);
+  await pg.evaluate(id => { delete IMAGES[id]; renderResults(); }, firstAdd);
+  await pg.waitForTimeout(250);
   ok(await pg.locator(".kicker").evaluate(e => e.scrollWidth <= e.clientWidth + 1), "kicker wraps instead of overflowing");
   ok(await pg.locator(".foot").evaluate(e => e.scrollWidth <= e.clientWidth + 1), "footer wraps instead of overflowing");
   await pg.screenshot({ path: path.join(shots, `m${width}-01-home.png`) });
