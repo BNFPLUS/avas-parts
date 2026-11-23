@@ -21374,54 +21374,23 @@ const PARTS = [
 const ZONES = [
  {
   "id": "male",
-  "name": "Malé, Hulhumalé & Villimalé",
-  "eta": "Same day",
-  "fee": 50,
-  "note": "Order before 14:00 for a same-day drop."
+  "name": "Malé",
+  "fee": 0
  },
  {
-  "id": "greater",
-  "name": "Greater Malé link road",
-  "eta": "1 day",
-  "fee": 120
+  "id": "hulhumale",
+  "name": "Hulhumalé",
+  "fee": 0
  },
  {
-  "id": "kaafu",
-  "name": "K. Atoll islands",
-  "eta": "1–2 days",
-  "fee": 150,
-  "note": "Daily ferry and speedboat runs."
- },
- {
-  "id": "north",
-  "name": "North atolls — HA, HDh, Sh, N, R, B, Lh",
-  "eta": "2–4 days",
-  "fee": 250
- },
- {
-  "id": "central",
-  "name": "Central atolls — AA, ADh, V, M, F, Dh",
-  "eta": "2–4 days",
-  "fee": 250
- },
- {
-  "id": "south",
-  "name": "South atolls — Th, L, GA, GDh, Gn, S",
-  "eta": "3–5 days",
-  "fee": 300,
-  "note": "Cargo vessel, or air cargo when you need it faster."
- },
- {
-  "id": "resort",
-  "name": "Resort & liveaboard",
-  "eta": "2–5 days",
-  "fee": 400,
-  "note": "Add your resort logistics contact to the order."
+  "id": "boats",
+  "name": "Boats (harbour drop-off)",
+  "fee": 0
  }
 ];
 const SHOP = {
  "name": "avas.parts",
- "tagline": "Motorcycle parts, delivered to every island.",
+ "tagline": "Bike, marine and machinery parts. Free delivery in Malé, Hulhumalé and to boats.",
  "whatsapp": "9600000",
  "email": "order@avas.parts",
  "hours": "Sat–Thu 09:00–18:00 · Fri 14:00–18:00",

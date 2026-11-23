@@ -246,7 +246,8 @@ function renderHero() {
   $("#lede").textContent =
     `One wrong digit means the wrong part on the next boat. Pick the make and the ${v.pick}, ` +
     `and we will show you the exact number from the maker's catalogue, where it was sourced, ` +
-    `and what to check before you order. Every price is confirmed on WhatsApp.`;
+    `and what to check before you order. ` +
+    (onlineCheckoutOn() ? `We confirm every price before you pay.` : `Every price is confirmed on WhatsApp.`);
   $("#step2Label").textContent = `Step 2 — pick the ${v.pick}`;
 }
 
@@ -510,7 +511,7 @@ function openEqDetail(p) {
     <div class="dsec">
       <h4>Price</h4>
       ${priceHTML(p)}
-      <p class="hint">${["We'll confirm the price on WhatsApp", esc(v ? v.name : ""), esc(CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "")].filter(Boolean).join(" · ")}</p>
+      <p class="hint">${[askPriceHint(), esc(v ? v.name : ""), esc(CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "")].filter(Boolean).join(" · ")}</p>
     </div>
     <button class="gobtn" data-add="${esc(p.id)}">Add to order</button>`;
 
@@ -573,7 +574,7 @@ function openDetail(id) {
     <div class="dsec">
       <h4>Price</h4>
       ${priceHTML(p)}
-      <p class="hint">${[stockLine(p).replace(/<[^>]+>/g, "").trim(), !hasPrice(p) ? "We'll confirm the price on WhatsApp" : "", esc(CAT_BY_ID[p.cat].name)].filter(Boolean).join(" · ")}</p>
+      <p class="hint">${[stockLine(p).replace(/<[^>]+>/g, "").trim(), !hasPrice(p) ? askPriceHint() : "", esc(CAT_BY_ID[p.cat].name)].filter(Boolean).join(" · ")}</p>
     </div>
     <button class="gobtn" data-add="${p.id}">Add to order</button>`;
 
@@ -623,6 +624,11 @@ function setQty(id, q) {
   saveCart(); renderCart();
 }
 
+/* Unpriced parts: online orders are quoted after checkout; the WhatsApp fallback confirms in the chat. */
+function askPriceHint() {
+  return onlineCheckoutOn() ? "We'll confirm the price and send you a quote when you order" : "We'll confirm the price on WhatsApp";
+}
+
 function zoneFee() {
   const z = ZONES.find(z => z.id === $("#zone").value);
   return z ? z.fee : 0;
@@ -638,7 +644,7 @@ function renderCart() {
   if (!lines.length) {
     body.innerHTML = `<div class="empty">
       <h3>No parts yet</h3>
-      <p>Pick your bike or engine, then add the parts you need. ${online ? "Free delivery to Malé, Hulhumalé and boats (harbour drop-off)." : "We deliver to every inhabited island."}</p>
+      <p>Pick your bike or engine, then add the parts you need. Free delivery to Malé, Hulhumalé and boats (harbour drop-off).</p>
     </div>`;
     $("#cartFoot").hidden = true;
     return;
@@ -664,7 +670,7 @@ function renderCart() {
   $("#tSub").textContent = pricedLines.length ? money(sub) : "—";
   $("#tAsk").textContent = askQty ? `${askQty} item${askQty === 1 ? "" : "s"}` : "";
   $("#tAskRow").hidden = !askQty;
-  $("#tDel").textContent = money(del);
+  $("#tDel").textContent = del ? money(del) : "Free";
   $("#tGst").textContent = money(gst);
   $("#tAll").textContent = askQty
     ? "MVR " + money(total) + " + prices to confirm"
@@ -689,7 +695,7 @@ function orderText() {
     "",
     pricedLines.length ? `Subtotal: MVR ${money(sub)}` : "Subtotal: —",
     askQty ? `Price to confirm: ${askQty} item${askQty === 1 ? "" : "s"}` : "",
-    `Delivery (${z.name}): MVR ${money(del)}`,
+    `Delivery (${z.name}): ${del ? "MVR " + money(del) : "Free"}`,
     `GST 8%: MVR ${money(gst)}`,
     askQty
       ? `*Total: MVR ${money(total)} + prices to confirm*`
@@ -697,8 +703,7 @@ function orderText() {
     "",
     `Name: ${$("#custName").value.trim()}`,
     `Phone: ${$("#custPhone").value.trim()}`,
-    `Island: ${$("#custIsland").value.trim() || "—"}`,
-    `Zone: ${z.name} (${z.eta})`,
+    `Address: ${$("#custIsland").value.trim() || "—"}`,
     $("#custNote").value.trim() ? `Note: ${$("#custNote").value.trim()}` : "",
   ].filter(Boolean).join("\n");
 }
@@ -962,11 +967,12 @@ function applySkin() {
 
 /* ---------- Zones in footer + select ---------- */
 function renderZones() {
+  const fee = z => z.fee ? `MVR ${z.fee}` : "Free";
   $("#zone").innerHTML = ZONES.map(z =>
-    `<option value="${z.id}">${esc(z.name)} — MVR ${z.fee} · ${esc(z.eta)}</option>`).join("");
+    `<option value="${z.id}">${esc(z.name)} — ${fee(z)}</option>`).join("");
   $("#zoneList").innerHTML = onlineCheckoutOn()
     ? DESTINATIONS.map(d => `<li class="zline"><span>${esc(d.label)}</span><span>Free</span></li>`).join("")
-    : ZONES.map(z => `<li class="zline"><span>${esc(z.name)}</span><span>${esc(z.eta)}</span></li>`).join("");
+    : ZONES.map(z => `<li class="zline"><span>${esc(z.name)}</span><span>${fee(z)}</span></li>`).join("");
 }
 
 /* ---------- Wire up ---------- */
@@ -1047,6 +1053,9 @@ document.addEventListener("click", (e) => {
     closeDrawers();
   }
 });
+
+/* Phones have no "/" shortcut and less room: keep the search hint short. */
+if (matchMedia("(max-width: 640px)").matches) $("#q").placeholder = "Part number, model or what it does…";
 
 /* Typing a query pulls in the equipment catalogue (debounced) so a part number
    like 6CE-WS24A-00 or an engine code like KTA19 is found from any page. */

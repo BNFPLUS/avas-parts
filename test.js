@@ -164,8 +164,11 @@ for (const id of ["cfmoto-150sc-cf150t-31-2025", "cfmoto-300sr-cf300-3-my22", "k
 }
 
 sec("Delivery zones");
-ok(ZONES.every(z => z.name && z.eta && typeof z.fee === "number"), "zone missing name/eta/fee");
-console.log(`  ${ZONES.length} zones, MVR ${Math.min(...ZONES.map(z=>z.fee))}–${Math.max(...ZONES.map(z=>z.fee))}`);
+ok(JSON.stringify(ZONES.map(z => z.name)) === JSON.stringify(["Malé", "Hulhumalé", "Boats (harbour drop-off)"]),
+   "zones are exactly Malé, Hulhumalé, Boats (harbour drop-off): " + ZONES.map(z => z.name).join(", "));
+ok(ZONES.every(z => z.id && z.fee === 0), "every delivery zone is free and has an id");
+ok(!ZONES.some(z => /Villim|atoll|resort/i.test(z.name)), "no Villimalé, atoll or resort zones");
+console.log(`  ${ZONES.length} zones, all free`);
 
 sec("Front-end wiring");
 const html = fs.readFileSync("index.html", "utf8");
@@ -186,6 +189,31 @@ ok(JSON.stringify(dvals) === JSON.stringify(["Malé=Malé", "Hulhumalé=Hulhumal
 ok(!/quoted manually|quoted later|quote shipping|Bank details will be shared/.test(html + app), "no shipping-quote or old bank wording in the checkout");
 ok(html.includes("Bank transfer details to follow") && html.includes("Cash on delivery is not available"), "checkout notes: bank transfer placeholder and no COD");
 console.log(`  ${dvals.length} destinations`);
+
+sec("Customer-facing copy");
+const css = fs.readFileSync("styles.css", "utf8");
+const art = fs.readFileSync("art.js", "utf8");
+const STALE = /every island|nationwide|inhabited island|across every atoll|cash on delivery (is )?available|pay (by )?cash/i;
+for (const [f, src] of [["index.html", html], ["app.js", app], ["data.js tagline", SHOP.tagline]])
+  ok(!STALE.test(src), `${f}: no every-island / nationwide / cash-on-delivery claims` + (STALE.test(src) ? " → " + src.match(STALE)[0] : ""));
+ok(/Free delivery/.test(SHOP.tagline), "SHOP.tagline advertises the free delivery area");
+
+sec("No stock or schematic images");
+const ictx = { console };
+vm.createContext(ictx);
+vm.runInContext(fs.readFileSync("images.js", "utf8") + "\n" + art + "\n;globalThis.__A = { artHTML, IMAGES };", ictx);
+const A = ictx.__A;
+ok(!/unsplash|picsum|pexels|placeholder\.com|loremflickr/i.test(html + app + art + css), "no stock-photo hosts referenced");
+ok(!/<svg[^>]*role="img"|schematic/i.test(art), "art.js draws no schematic parts");
+const noPhoto = A.artHTML({ id: "zz-none", name: "Drive belt", oem: "23100-K36-J01", cat: "drive" });
+ok(/class="art no-photo"/.test(noPhoto) && /No photo yet/.test(noPhoto) && !/<img/.test(noPhoto), "a part without a photo gets the neutral placeholder");
+const eqNoPhoto = A.artHTML({ id: "zz-eq", name: "Impeller", oem: "6CE-44352-00", cat: "cooling", vertical: "outboards" });
+ok(eqNoPhoto === noPhoto, "every part without a photo gets the same placeholder");
+const withPhoto = A.artHTML({ id: "zz-photo", name: "Belt <x>", img: "img/belt.jpg" });
+ok(/<img src="img\/belt\.jpg"/.test(withPhoto) && /alt="Belt &#60;x&#62;"/.test(withPhoto) && /onerror=/.test(withPhoto) && /No photo yet/.test(withPhoto),
+   "a real photo is shown, escaped, with the placeholder as the 404 fallback");
+const photoN = PARTS.filter(p => p.img || A.IMAGES[p.id]).length;
+console.log(`  ${photoN} part(s) with a real photo; ${PARTS.length - photoN} show the placeholder`);
 
 ["data.js","app.js","styles.css"].forEach(f =>
   ok(html.includes(f), `index.html does not load ${f}`));

@@ -1,5 +1,5 @@
-<title>avas.parts — bike, marine and machinery parts, delivered to every island</title>
-<meta name="description" content="Spare parts for motorcycles, scooters, outboards, marine diesels, jet skis, generators, pumps and heavy machinery. Delivered to every island in the Maldives.">
+<title>avas.parts — bike, marine and machinery parts in the Maldives</title>
+<meta name="description" content="Spare parts for motorcycles, scooters, outboards, marine diesels, jet skis, generators, pumps and heavy machinery. Free delivery in Malé, Hulhumalé and to boats in harbour. Order online, pay by bank transfer.">
 <style>
 /* avas.parts — parts-catalogue interface
    Light skin  = customer browse ("catalogue paper")
@@ -278,36 +278,32 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .card:hover { border-color: var(--ink-2); }
 
-/* Schematic drawing, or the shop's own photo once data.js has an `img`.
-   Drawn in the register of a printed parts catalogue, not a product shot. */
+/* Thumb: the shop's own photo when one exists, otherwise a quiet
+   "no photo yet" panel. Never a stock photo or a drawing standing in for the part. */
 .art {
-  display: grid; place-items: center;
-  height: 108px; margin: -3px -4px 2px;
-  background:
-    repeating-linear-gradient(var(--panel-2) 0 21px, var(--rule-2) 21px 22px),
-    var(--panel-2);
+  position: relative;
+  height: 64px; margin: -3px -4px 2px;
+  background: var(--panel-2);
   border: 1px solid var(--rule-2); border-radius: 2px;
   overflow: hidden;
 }
-.art svg { width: 100%; height: 100%; padding: 6px 0; }
-.art svg :is(path, rect, circle, ellipse) {
-  fill: none; stroke: var(--ink-2);
-  stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;
-}
-.art svg .f { stroke: var(--hot); }
-
-/* Photo covers the drawing. If the image fails, onerror removes the class
-   and the drawing underneath shows through. */
-.art { position: relative; }
-.art img {
+.nophoto {
   position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  color: var(--ink-3);
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+}
+.nophoto-ico {
+  width: 22px; height: 22px; flex-shrink: 0;
+  fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round;
+  opacity: .8;
+}
+/* Photo sits over the placeholder. If it fails, onerror removes it. */
+.art img {
+  position: absolute; inset: 0; z-index: 1;
   width: 100%; height: 100%; object-fit: cover; display: block;
   background: var(--panel-2);
 }
-.art.has-photo { background: var(--panel-2); }
-.art.has-photo svg { visibility: hidden; }
-.card:hover .art svg :is(path, rect, circle, ellipse) { stroke: var(--ink); }
-.card:hover .art svg .f { stroke: var(--hot); }
 
 .cardtop { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
 
@@ -635,20 +631,84 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @media (max-width: 880px) {
   .work { grid-template-columns: 1fr; }
   .rail { position: static; }
-  .rail .catwrap { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 6px; }
-  .catbtn { width: auto; white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; }
+  .rail .catwrap {
+    display: flex; gap: 5px; overflow-x: auto; padding-bottom: 6px;
+    overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+  }
+  .catbtn { width: auto; flex-shrink: 0; white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; }
   .catbtn[aria-pressed="true"] { border-left: 0; border-bottom-color: var(--hot); }
   .catbtn .k { display: none; }
+  /* a tall order form must scroll, never push the send button off-screen */
+  .dfoot { max-height: 70vh; max-height: 70dvh; overflow-y: auto; }
 }
 @media (max-width: 640px) {
-  /* one swipeable row of categories instead of three wrapped rows */
-  .vchips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
-  .vchips .chip { flex-shrink: 0; }
-  .bar { flex-wrap: wrap; gap: 9px; }
+  /* --- command bar: logo · mode · order on one row, search full width below --- */
+  .bar { flex-wrap: wrap; gap: 8px; padding-top: 8px; padding-bottom: 8px; }
+  .logo { font-size: 19px; margin-right: auto; }
   .searchwrap { order: 3; flex-basis: 100%; max-width: none; }
+  .search { min-height: 44px; font-size: 16px; padding-left: 32px; } /* 16px: no iOS zoom on focus */
   .barspacer { display: none; }
-  .grid { grid-template-columns: 1fr; }
-  .mode button { padding: 7px 9px; font-size: 11px; }
+  .mode button { min-height: 40px; padding: 0 9px; font-size: 11px; letter-spacing: .04em; }
+  .cartbtn { min-height: 40px; padding: 0 10px; letter-spacing: .04em; }
+
+  /* --- hero --- */
+  .hero { padding: 18px 0 12px; }
+  .kicker { flex-wrap: wrap; gap: 4px 8px; letter-spacing: .1em; line-height: 1.5; }
+  .kicker::after { display: none; }
+  .hero p.lede { font-size: 15px; margin-bottom: 18px; }
+
+  /* --- pickers: thumb-sized chips; categories scroll in one row --- */
+  .vchips, #brandChips, #modelChips {
+    flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px;
+    overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+  }
+  .vchips .chip, #brandChips .chip, #modelChips .chip { flex-shrink: 0; }
+  .chip { min-height: 44px; padding: 0 13px; display: inline-flex; align-items: center; }
+  .catbtn { min-height: 44px; padding: 0 12px; align-items: center; }
+  .clearbtn { min-height: 36px; padding: 0 12px; }
+
+  /* --- cards --- */
+  .grid { grid-template-columns: 1fr; gap: 10px; }
+  .card { padding: 12px 12px 11px; }
+  .art { height: 56px; }
+  .cardname { font-size: 17px; }
+  .decode { font-size: 12.5px; }
+  .moreb { padding: 8px 0; margin: -6px 0; font-size: 12px; }
+  .cardfoot { align-items: center; flex-wrap: wrap; }
+  .addbtn { min-height: 44px; min-width: 88px; padding: 0 18px; font-size: 14px; }
+
+  /* --- drawers: full width, big fields, reachable actions --- */
+  .drawer { width: 100%; border-left: 0; }
+  .dhead { padding: 8px 8px 8px 16px; min-height: 56px; }
+  .xbtn { width: 44px; height: 44px; font-size: 26px; padding: 0; }
+  .backbtn { min-height: 44px; padding: 0 10px 0 0; font-size: 12px; }
+  .dbody { padding: 14px 16px calc(24px + env(safe-area-inset-bottom)); }
+  .dfoot { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+  .field { margin-bottom: 13px; }
+  .field input, .field select { min-height: 46px; }
+  .field input, .field select, .field textarea { font-size: 16px; padding: 10px 12px; }
+  .gobtn { min-height: 50px; font-size: 16px; }
+  .qty { margin-top: 8px; }
+  .qty button { width: 44px; height: 40px; font-size: 18px; }
+  .qty span { min-width: 36px; font-size: 13px; }
+  .line .nm { font-size: 15px; }
+  .conotes { font-size: 13.5px; }
+  .codone .cono { font-size: 24px; overflow-wrap: anywhere; }
+
+  /* --- footer + toast --- */
+  .foot { padding: 24px 16px calc(32px + env(safe-area-inset-bottom)); }
+  .footin { gap: 20px; }
+  /* top of the screen on phones, so it never covers Checkout / Place order */
+  .toast {
+    top: calc(10px + env(safe-area-inset-top)); bottom: auto; transform: translate(-50%, -20px);
+    max-width: calc(100% - 24px); text-align: center;
+  }
+  .toast.on { transform: translate(-50%, 0); }
+}
+@media (max-width: 370px) {
+  .logo { font-size: 18px; }
+  .mode button { padding: 0 7px; }
+  .cartbtn { padding: 0 8px; gap: 5px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -682,7 +742,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
   <!-- ============ HERO: the finder IS the hero ============ -->
   <section class="hero">
-    <div class="kicker">Maldives · nationwide delivery · <span class="dv">އަވަސް</span></div>
+    <div class="kicker">Maldives · free delivery in Malé, Hulhumalé &amp; to boats · <span class="dv">އަވަސް</span></div>
     <h1>Find the part that<br><em>actually fits</em>.</h1>
     <p class="lede" id="lede">
       Every scooter on these islands runs ASEAN-spec parts, and one wrong digit in a part
@@ -730,7 +790,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   <div class="footin">
     <div>
       <h5>avas.parts</h5>
-      <p>Parts for bikes, scooters, boats, engines and machinery across the Maldives. Order online, we ship to every inhabited island.</p>
+      <p>Parts for bikes, scooters, boats, engines and machinery in the Maldives. Order online and pay by bank transfer. Free delivery in Malé, Hulhumalé and to boats in harbour.</p>
       <p><a href="mailto:order@avas.parts">order@avas.parts</a></p>
       <p>Sat–Thu 09:00–18:00 · Fri 14:00–18:00</p>
     </div>
@@ -778,8 +838,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
       <input id="custPhone" type="tel" autocomplete="tel" placeholder="7xxxxxx">
     </div>
     <div class="field">
-      <label for="custIsland">Island / address</label>
-      <input id="custIsland" type="text" placeholder="Island, house or shop name">
+      <label for="custIsland">Address, or vessel and harbour</label>
+      <input id="custIsland" type="text" placeholder="House or shop name, or vessel and harbour">
     </div>
     <div class="field">
       <label for="custNote">Model and frame or serial number</label>
@@ -22250,54 +22310,23 @@ const PARTS = [
 const ZONES = [
  {
   "id": "male",
-  "name": "Malé, Hulhumalé & Villimalé",
-  "eta": "Same day",
-  "fee": 50,
-  "note": "Order before 14:00 for a same-day drop."
+  "name": "Malé",
+  "fee": 0
  },
  {
-  "id": "greater",
-  "name": "Greater Malé link road",
-  "eta": "1 day",
-  "fee": 120
+  "id": "hulhumale",
+  "name": "Hulhumalé",
+  "fee": 0
  },
  {
-  "id": "kaafu",
-  "name": "K. Atoll islands",
-  "eta": "1–2 days",
-  "fee": 150,
-  "note": "Daily ferry and speedboat runs."
- },
- {
-  "id": "north",
-  "name": "North atolls — HA, HDh, Sh, N, R, B, Lh",
-  "eta": "2–4 days",
-  "fee": 250
- },
- {
-  "id": "central",
-  "name": "Central atolls — AA, ADh, V, M, F, Dh",
-  "eta": "2–4 days",
-  "fee": 250
- },
- {
-  "id": "south",
-  "name": "South atolls — Th, L, GA, GDh, Gn, S",
-  "eta": "3–5 days",
-  "fee": 300,
-  "note": "Cargo vessel, or air cargo when you need it faster."
- },
- {
-  "id": "resort",
-  "name": "Resort & liveaboard",
-  "eta": "2–5 days",
-  "fee": 400,
-  "note": "Add your resort logistics contact to the order."
+  "id": "boats",
+  "name": "Boats (harbour drop-off)",
+  "fee": 0
  }
 ];
 const SHOP = {
  "name": "avas.parts",
- "tagline": "Motorcycle parts, delivered to every island.",
+ "tagline": "Bike, marine and machinery parts. Free delivery in Malé, Hulhumalé and to boats.",
  "whatsapp": "9600000",
  "email": "order@avas.parts",
  "hours": "Sat–Thu 09:00–18:00 · Fri 14:00–18:00",
@@ -22316,254 +22345,36 @@ const IMAGES = {
 
 };
 
-/* Schematic part drawings.
+/* Part thumbnails.
  *
- * Line art in the language of a printed parts catalogue — no manufacturer
- * photography, nothing scraped. A part resolves to a drawing by its group
- * code first (so a drive belt looks like a belt whatever bike it fits),
- * then by category.
- *
- * When a part has `img` set in data.js, the photo is used instead and this
- * is ignored. Photograph your own stock and fill that field in.
+ * A part shows a photo only when the shop has a real one: `img` in data.js,
+ * or an entry in images.js (generated from img/ by import-images.js).
+ * Every other part gets the same quiet "no photo yet" panel. No stock
+ * photography and no illustrative drawings of parts: a picture on a card
+ * must be the part itself.
  */
 
-const ART = {
-  belt: `<path d="M34 26h52a20 20 0 0 1 0 28H34a20 20 0 0 1 0-28z"/>
-    <path d="M34 32h52M34 48h52" class="f"/>
-    <path d="M40 26v6M50 26v6M60 26v6M70 26v6M80 26v6M40 48v6M50 48v6M60 48v6M70 48v6M80 48v6"/>`,
+const NO_PHOTO_ICON = `<svg class="nophoto-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <rect x="3" y="5" width="18" height="14" rx="1.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.5L20 17"/>
+</svg>`;
 
-  roller: `<circle cx="60" cy="40" r="24"/>
-    <circle cx="60" cy="20" r="6" class="f"/><circle cx="77" cy="30" r="6"/>
-    <circle cx="77" cy="50" r="6"/><circle cx="60" cy="60" r="6"/>
-    <circle cx="43" cy="50" r="6"/><circle cx="43" cy="30" r="6"/>`,
+const NO_PHOTO = `<div class="nophoto">${NO_PHOTO_ICON}<span>No photo yet</span></div>`;
 
-  clutch: `<circle cx="60" cy="40" r="26"/><circle cx="60" cy="40" r="9"/>
-    <path d="M60 14a26 26 0 0 1 22 13l-14 8a10 10 0 0 0-8-5z" class="f"/>
-    <path d="M82 53a26 26 0 0 1-44 0l14-8a10 10 0 0 0 16 0z"/>
-    <path d="M38 27a26 26 0 0 1 0 26"/>`,
-
-  pad: `<rect x="26" y="26" width="30" height="30" rx="4"/>
-    <rect x="26" y="26" width="30" height="8" rx="3" class="f"/>
-    <rect x="64" y="26" width="30" height="30" rx="4"/>
-    <rect x="64" y="26" width="30" height="8" rx="3" class="f"/>
-    <path d="M31 40h20M31 46h20M69 40h20M69 46h20"/>`,
-
-  shoe: `<path d="M60 16a24 24 0 0 1 24 24"/><path d="M60 22a18 18 0 0 1 18 18"/>
-    <path d="M60 64a24 24 0 0 1-24-24"/><path d="M60 58a18 18 0 0 1-18-18"/>
-    <circle cx="60" cy="40" r="5" class="f"/>`,
-
-  battery: `<rect x="30" y="24" width="60" height="34" rx="3"/>
-    <rect x="38" y="18" width="9" height="6" class="f"/><rect x="73" y="18" width="9" height="6"/>
-    <path d="M30 34h60" /><path d="M42 44v8M38 48h8" class="f"/><path d="M74 48h8"/>`,
-
-  plug: `<path d="M54 14h12v16H54z"/><path d="M52 30h16v10H52z" class="f"/>
-    <path d="M56 40h8v14h-8z"/><path d="M60 54v10"/>
-    <path d="M64 64h-8a4 4 0 0 1 0-8"/><path d="M50 34h20M50 37h20"/>`,
-
-  airfilter: `<rect x="24" y="24" width="72" height="32" rx="3"/>
-    <path d="M32 24v32M40 24v32M48 24v32M56 24v32M64 24v32M72 24v32M80 24v32M88 24v32"/>
-    <rect x="24" y="24" width="72" height="6" class="f"/>`,
-
-  oilfilter: `<circle cx="60" cy="40" r="22"/><circle cx="60" cy="40" r="9" class="f"/>
-    <path d="M45 25l30 30M75 25L45 55M38 40h44M60 18v44"/>`,
-
-  camchain: `<path d="M28 40h64"/>
-    <circle cx="34" cy="40" r="5"/><circle cx="48" cy="40" r="5"/><circle cx="62" cy="40" r="5" class="f"/>
-    <circle cx="76" cy="40" r="5"/><circle cx="90" cy="40" r="5"/>
-    <path d="M30 34h64M30 46h64"/>`,
-
-  piston: `<rect x="42" y="18" width="36" height="26" rx="3"/>
-    <path d="M42 24h36M42 29h36M42 34h36" class="f"/>
-    <path d="M56 44v8M64 44v8"/><path d="M60 52l-8 20h16z"/>
-    <circle cx="60" cy="66" r="4"/>`,
-
-  tyre: `<circle cx="60" cy="40" r="28"/><circle cx="60" cy="40" r="14" class="f"/>
-    <circle cx="60" cy="40" r="8"/>
-    <path d="M60 12v8M60 60v8M32 40h8M80 40h8M40 20l6 6M80 60l-6-6M40 60l6-6M80 20l-6 6"/>`,
-
-  tube: `<circle cx="60" cy="40" r="24"/><circle cx="60" cy="40" r="16"/>
-    <rect x="56" y="10" width="8" height="10" rx="2" class="f"/>`,
-
-  chain: `<rect x="24" y="34" width="18" height="12" rx="6"/>
-    <rect x="40" y="34" width="18" height="12" rx="6" class="f"/>
-    <rect x="56" y="34" width="18" height="12" rx="6"/>
-    <rect x="72" y="34" width="18" height="12" rx="6"/>
-    <circle cx="33" cy="40" r="2"/><circle cx="49" cy="40" r="2"/>
-    <circle cx="65" cy="40" r="2"/><circle cx="81" cy="40" r="2"/>`,
-
-  sprocket: `<circle cx="60" cy="40" r="22"/><circle cx="60" cy="40" r="8" class="f"/>
-    <path d="M60 14v-6M60 72v-6M38 40h-6M88 40h-6M44 24l-4-4M80 60l-4-4M44 56l-4 4M80 20l-4 4"/>`,
-
-  shock: `<circle cx="60" cy="16" r="5"/><circle cx="60" cy="64" r="5"/>
-    <path d="M60 21v6"/><path d="M60 59v-6"/>
-    <path d="M50 28h20l-20 6h20l-20 6h20l-20 6h20l-20 6h20" class="f"/>`,
-
-  bearing: `<circle cx="60" cy="40" r="24"/><circle cx="60" cy="40" r="10"/>
-    <circle cx="60" cy="23" r="4" class="f"/><circle cx="77" cy="40" r="4"/>
-    <circle cx="60" cy="57" r="4"/><circle cx="43" cy="40" r="4"/>
-    <circle cx="72" cy="28" r="4"/><circle cx="72" cy="52" r="4"/>
-    <circle cx="48" cy="28" r="4"/><circle cx="48" cy="52" r="4"/>`,
-
-  mirror: `<ellipse cx="66" cy="30" rx="20" ry="14"/>
-    <ellipse cx="66" cy="30" rx="14" ry="9" class="f"/>
-    <path d="M52 40l-12 18"/><path d="M34 58h14"/>`,
-
-  cable: `<rect x="22" y="36" width="12" height="8" rx="2" class="f"/>
-    <path d="M34 40c14 0 14-16 28-16s14 16 28 16"/>
-    <rect x="86" y="36" width="12" height="8" rx="2"/>`,
-
-  lever: `<path d="M30 34c22-4 44 0 60 8"/><path d="M30 42c22-4 44 0 60 8"/>
-    <circle cx="30" cy="38" r="7" class="f"/>`,
-
-  oil: `<path d="M52 16h16v8h-16z" class="f"/>
-    <path d="M46 24h28a4 4 0 0 1 4 4v32a4 4 0 0 1-4 4H46a4 4 0 0 1-4-4V28a4 4 0 0 1 4-4z"/>
-    <path d="M48 38h24v14H48z"/>`,
-
-  helmet: `<path d="M60 14c16 0 28 12 28 28v10a8 8 0 0 1-8 8H62l-4 6H42a12 12 0 0 1-10-6c-2-4-3-9-3-14 0-17 13-32 31-32z"/>
-    <path d="M50 32c10-4 22-3 30 4v12c-9 3-20 3-30 0z" class="f"/>
-    <path d="M32 52h26"/>`,
-
-  box: `<path d="M32 30h56v28H32z"/><path d="M32 30l8-8h40l8 8" class="f"/>
-    <path d="M56 30v28M32 44h56"/>`,
-
-  light: `<circle cx="60" cy="38" r="18"/><circle cx="60" cy="38" r="10" class="f"/>
-    <path d="M60 12v-6M60 70v-6M34 38h-6M92 38h-6M42 20l-4-4M82 60l-4-4"/>`,
-
-  panel: `<path d="M34 22h52l-8 36H42z"/><path d="M42 30h36" class="f"/>
-    <path d="M46 58l-4 10h36l-4-10"/>`,
-
-  switch: `<rect x="30" y="28" width="60" height="24" rx="4"/>
-    <circle cx="46" cy="40" r="6" class="f"/><rect x="62" y="34" width="16" height="12" rx="2"/>`,
-
-  screen: `<path d="M40 62c0-26 6-40 20-46 14 6 20 20 20 46z"/>
-    <path d="M46 56c0-20 4-30 14-35 10 5 14 15 14 35z" class="f"/>
-    <path d="M36 62h48"/>`,
-
-  cover: `<path d="M26 56c6-22 16-34 34-34s28 12 34 34z"/>
-    <path d="M26 56h68v8H26z" class="f"/>
-    <path d="M44 26c4 10 4 22 2 30M76 26c-4 10-4 22-2 30"/>`,
-};
-
-/* Marine and equipment drawings — used only for parts from data-equip.js. */
-Object.assign(ART, {
-  impeller: `<circle cx="60" cy="40" r="25"/><circle cx="60" cy="40" r="8" class="f"/>
-    <path d="M60 32c-4-8-2-14 4-17M68 40c8-4 14-2 17 4M60 48c4 8 2 14-4 17M52 40c-8 4-14 2-17-4M65 34c3-8 9-11 15-9M55 46c-3 8-9 11-15 9"/>`,
-
-  prop: `<circle cx="60" cy="40" r="7" class="f"/>
-    <path d="M60 33c-6-10-4-20 6-22 8 2 6 14-1 23"/>
-    <path d="M66 43c11 1 19 8 15 17-7 4-15-4-18-13"/>
-    <path d="M54 43c-6 9-16 13-21 6 0-8 11-11 20-10"/>`,
-
-  anode: `<path d="M34 30h52l-6 22H40z"/><path d="M40 52h40" class="f"/>
-    <circle cx="60" cy="40" r="4"/><path d="M50 30v-6h20v6"/>`,
-
-  gasket: `<ellipse cx="60" cy="40" rx="30" ry="20"/><ellipse cx="60" cy="40" rx="20" ry="12" class="f"/>
-    <circle cx="34" cy="40" r="2.5"/><circle cx="86" cy="40" r="2.5"/>`,
-
-  kit: `<path d="M28 30h64v30H28z"/><path d="M28 30l8-10h48l8 10" class="f"/>
-    <path d="M44 42h32M44 50h20"/>`,
-});
-
-/* group code (first 5 digits) -> drawing */
-const ART_BY_GROUP = {
-  "23100": "belt",     "22123": "roller",   "22535": "clutch",   "22401": "clutch",
-  "06455": "pad",      "06430": "shoe",     "45530": "lever",    "53175": "lever",
-  "15412": "oilfilter","17210": "airfilter","14401": "camchain", "14520": "camchain",
-  "13101": "piston",   "14711": "piston",   "12191": "piston",   "91201": "bearing",
-  "91051": "bearing",  "53210": "bearing",  "31500": "battery",  "31600": "switch",
-  "31200": "switch",   "31120": "switch",   "30510": "plug",     "16700": "switch",
-  "33100": "light",    "37200": "switch",   "38100": "light",    "35100": "switch",
-  "35130": "switch",   "35070": "switch",   "51490": "shock",    "52400": "shock",
-  "52100": "panel",    "50500": "panel",    "17910": "cable",    "43460": "cable",
-  "44830": "cable",    "44711": "tyre",     "42711": "tyre",     "42753": "tube",
-  "40530": "chain",    "06406": "sprocket", "08234": "oil",      "08232": "oil",
-  "64300": "screen",   "64301": "panel",    "88110": "mirror",   "17620": "panel",
-  "53165": "lever",
-};
-
-const ART_BY_CAT = {
-  cvt: "belt", brake: "pad", engine: "piston", elec: "battery", tyre: "tyre",
-  chassis: "shock", body: "panel", control: "cable", drive: "chain",
-  fluid: "oil", acc: "helmet",
-};
-
-/* Keyword rules for parts whose number carries no group code.
-   Word boundaries matter: an unanchored /rain/ matches "drain plug", which
-   put a body panel on the oil strainer. Most specific rules first. */
-const ART_BY_WORD = [
-  [/\bhelmet\b/i, "helmet"],
-  [/\btop box\b/i, "box"],
-  [/\bstrainer\b|\boil filter\b/i, "oilfilter"],
-  [/\bair (filter|cleaner)\b/i, "airfilter"],
-  [/\bspark plug\b/i, "plug"],
-  [/\bwindshield\b|\bvisor\b|\bscreen\b/i, "screen"],
-  [/\brain suit\b|\bcover\b/i, "cover"],
-  [/\btyre\b|\btube\b/i, "tyre"],
-  [/\bvalve\b/i, "tube"],
-  [/\bchain lubricant\b|\bcleaner\b/i, "oil"],
-  [/\boil\b|\bcoolant\b|\bfluid\b/i, "oil"],
-  [/\bled\b|\blight\b|\bsignal\b/i, "light"],
-  [/\bmirror\b/i, "mirror"],
-  [/\bgrip\b|\blever\b/i, "lever"],
-  [/\balarm\b|\btracker\b|\busb\b|\bcharger\b|\bholder\b|\block\b/i, "switch"],
-  [/\bbelt\b/i, "belt"],
-  [/\bchain\b/i, "chain"],
-  [/\bbearing\b/i, "bearing"],
-];
-
-const ART_EQ_BY_CAT = {
-  m_service: "oilfilter", m_pump: "impeller", m_anode: "anode", m_ign: "plug",
-  m_fuel: "oilfilter", m_gasket: "gasket", m_prop: "prop", m_jet: "impeller",
-  m_wear: "piston", m_ctrl: "switch", e_filter: "oilfilter", e_belt: "belt",
-  e_pumpend: "impeller", e_kit: "kit", e_fluid: "oil", e_other: "kit",
-};
-const ART_EQ_BY_WORD = [
-  [/\bimpeller\b/i, "impeller"],
-  [/\banode\b|\bzinc\b/i, "anode"],
-  [/\bpropell?er\b/i, "prop"],
-  [/\bair (filter|cleaner|element)\b/i, "airfilter"],
-  [/\bfilter\b|\bseparator\b/i, "oilfilter"],
-  [/\bspark plug\b|\bplug, spark\b/i, "plug"],
-  [/\bgasket\b|\bo-ring\b|\bseal\b|\bpacking\b/i, "gasket"],
-  [/\bkit\b/i, "kit"],
-  [/\bbelt\b/i, "belt"],
-  [/\boil\b|\bcoolant\b|\bgrease\b/i, "oil"],
-  [/\bbearing\b/i, "bearing"],
-];
-
-function artFor(part) {
-  if (part.vertical) {
-    const hit = ART_EQ_BY_WORD.find(([re]) => re.test(part.name));
-    const key = hit ? hit[1] : ART_EQ_BY_CAT[part.cat] || "kit";
-    return ART[key] ? key : "kit";
-  }
-  const seg = String(part.oem).split("-");
-  const group = seg.length === 3 && /^\d{5}$/.test(seg[0]) ? seg[0] : null;
-  let key = group && ART_BY_GROUP[group];
-  if (!key) {
-    const hit = ART_BY_WORD.find(([re]) => re.test(part.name));
-    key = hit ? hit[1] : ART_BY_CAT[part.cat] || "panel";
-  }
-  return ART[key] ? key : "panel";
+function photoFor(part) {
+  return part.img || (typeof IMAGES !== "undefined" && IMAGES[part.id]) || null;
 }
 
-/* A photo, when one exists, otherwise the drawing.
-   The drawing stays in the DOM underneath: if the photo 404s or fails to
-   decode, onerror drops back to it rather than leaving a blank panel. */
+/* The placeholder sits under the photo: if the file 404s or fails to decode,
+   onerror drops the image and the placeholder shows instead of a broken icon. */
 function artHTML(part) {
-  const key = artFor(part);
-  const label = part.vertical ? String(part.name).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";") : part.name;
-  const svg = `<svg viewBox="0 0 120 80" role="img" aria-label="${label}, schematic">${ART[key]}</svg>`;
-  const photo = part.img || (typeof IMAGES !== "undefined" && IMAGES[part.id]) || null;
-
-  if (photo) {
-    return `<div class="art has-photo" data-art="${key}">
-      <img src="${photo}" alt="${part.name}" loading="lazy" decoding="async"
-           onerror="this.closest('.art').classList.remove('has-photo'); this.remove();">
-      ${svg}
-    </div>`;
-  }
-  return `<div class="art" data-art="${key}">${svg}</div>`;
+  const photo = photoFor(part);
+  if (!photo) return `<div class="art no-photo">${NO_PHOTO}</div>`;
+  const esc = s => String(s).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";");
+  return `<div class="art has-photo">
+    <img src="${esc(photo)}" alt="${esc(part.name)}" loading="lazy" decoding="async"
+         onerror="this.closest('.art').classList.replace('has-photo','no-photo'); this.remove();">
+    ${NO_PHOTO}
+  </div>`;
 }
 
 /* avas.parts — part finder, interchange engine, ordering */
@@ -22814,7 +22625,8 @@ function renderHero() {
   $("#lede").textContent =
     `One wrong digit means the wrong part on the next boat. Pick the make and the ${v.pick}, ` +
     `and we will show you the exact number from the maker's catalogue, where it was sourced, ` +
-    `and what to check before you order. Every price is confirmed on WhatsApp.`;
+    `and what to check before you order. ` +
+    (onlineCheckoutOn() ? `We confirm every price before you pay.` : `Every price is confirmed on WhatsApp.`);
   $("#step2Label").textContent = `Step 2 — pick the ${v.pick}`;
 }
 
@@ -23078,7 +22890,7 @@ function openEqDetail(p) {
     <div class="dsec">
       <h4>Price</h4>
       ${priceHTML(p)}
-      <p class="hint">${["We'll confirm the price on WhatsApp", esc(v ? v.name : ""), esc(CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "")].filter(Boolean).join(" · ")}</p>
+      <p class="hint">${[askPriceHint(), esc(v ? v.name : ""), esc(CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "")].filter(Boolean).join(" · ")}</p>
     </div>
     <button class="gobtn" data-add="${esc(p.id)}">Add to order</button>`;
 
@@ -23141,7 +22953,7 @@ function openDetail(id) {
     <div class="dsec">
       <h4>Price</h4>
       ${priceHTML(p)}
-      <p class="hint">${[stockLine(p).replace(/<[^>]+>/g, "").trim(), !hasPrice(p) ? "We'll confirm the price on WhatsApp" : "", esc(CAT_BY_ID[p.cat].name)].filter(Boolean).join(" · ")}</p>
+      <p class="hint">${[stockLine(p).replace(/<[^>]+>/g, "").trim(), !hasPrice(p) ? askPriceHint() : "", esc(CAT_BY_ID[p.cat].name)].filter(Boolean).join(" · ")}</p>
     </div>
     <button class="gobtn" data-add="${p.id}">Add to order</button>`;
 
@@ -23191,6 +23003,11 @@ function setQty(id, q) {
   saveCart(); renderCart();
 }
 
+/* Unpriced parts: online orders are quoted after checkout; the WhatsApp fallback confirms in the chat. */
+function askPriceHint() {
+  return onlineCheckoutOn() ? "We'll confirm the price and send you a quote when you order" : "We'll confirm the price on WhatsApp";
+}
+
 function zoneFee() {
   const z = ZONES.find(z => z.id === $("#zone").value);
   return z ? z.fee : 0;
@@ -23206,7 +23023,7 @@ function renderCart() {
   if (!lines.length) {
     body.innerHTML = `<div class="empty">
       <h3>No parts yet</h3>
-      <p>Pick your bike or engine, then add the parts you need. ${online ? "Free delivery to Malé, Hulhumalé and boats (harbour drop-off)." : "We deliver to every inhabited island."}</p>
+      <p>Pick your bike or engine, then add the parts you need. Free delivery to Malé, Hulhumalé and boats (harbour drop-off).</p>
     </div>`;
     $("#cartFoot").hidden = true;
     return;
@@ -23232,7 +23049,7 @@ function renderCart() {
   $("#tSub").textContent = pricedLines.length ? money(sub) : "—";
   $("#tAsk").textContent = askQty ? `${askQty} item${askQty === 1 ? "" : "s"}` : "";
   $("#tAskRow").hidden = !askQty;
-  $("#tDel").textContent = money(del);
+  $("#tDel").textContent = del ? money(del) : "Free";
   $("#tGst").textContent = money(gst);
   $("#tAll").textContent = askQty
     ? "MVR " + money(total) + " + prices to confirm"
@@ -23257,7 +23074,7 @@ function orderText() {
     "",
     pricedLines.length ? `Subtotal: MVR ${money(sub)}` : "Subtotal: —",
     askQty ? `Price to confirm: ${askQty} item${askQty === 1 ? "" : "s"}` : "",
-    `Delivery (${z.name}): MVR ${money(del)}`,
+    `Delivery (${z.name}): ${del ? "MVR " + money(del) : "Free"}`,
     `GST 8%: MVR ${money(gst)}`,
     askQty
       ? `*Total: MVR ${money(total)} + prices to confirm*`
@@ -23265,8 +23082,7 @@ function orderText() {
     "",
     `Name: ${$("#custName").value.trim()}`,
     `Phone: ${$("#custPhone").value.trim()}`,
-    `Island: ${$("#custIsland").value.trim() || "—"}`,
-    `Zone: ${z.name} (${z.eta})`,
+    `Address: ${$("#custIsland").value.trim() || "—"}`,
     $("#custNote").value.trim() ? `Note: ${$("#custNote").value.trim()}` : "",
   ].filter(Boolean).join("\n");
 }
@@ -23530,11 +23346,12 @@ function applySkin() {
 
 /* ---------- Zones in footer + select ---------- */
 function renderZones() {
+  const fee = z => z.fee ? `MVR ${z.fee}` : "Free";
   $("#zone").innerHTML = ZONES.map(z =>
-    `<option value="${z.id}">${esc(z.name)} — MVR ${z.fee} · ${esc(z.eta)}</option>`).join("");
+    `<option value="${z.id}">${esc(z.name)} — ${fee(z)}</option>`).join("");
   $("#zoneList").innerHTML = onlineCheckoutOn()
     ? DESTINATIONS.map(d => `<li class="zline"><span>${esc(d.label)}</span><span>Free</span></li>`).join("")
-    : ZONES.map(z => `<li class="zline"><span>${esc(z.name)}</span><span>${esc(z.eta)}</span></li>`).join("");
+    : ZONES.map(z => `<li class="zline"><span>${esc(z.name)}</span><span>${fee(z)}</span></li>`).join("");
 }
 
 /* ---------- Wire up ---------- */
@@ -23615,6 +23432,9 @@ document.addEventListener("click", (e) => {
     closeDrawers();
   }
 });
+
+/* Phones have no "/" shortcut and less room: keep the search hint short. */
+if (matchMedia("(max-width: 640px)").matches) $("#q").placeholder = "Part number, model or what it does…";
 
 /* Typing a query pulls in the equipment catalogue (debounced) so a part number
    like 6CE-WS24A-00 or an engine code like KTA19 is found from any page. */

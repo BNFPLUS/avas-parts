@@ -64,6 +64,11 @@ ok(equipReqs.length === 0, "data-equip.js is not requested on the default bike p
 ok(await page.locator('#vertChips [data-vertical="bikes"][aria-pressed="true"]').count() === 1, "category picker shows Bikes selected by default");
 ok(await page.locator("#vertChips [data-vertical]").count() === 7, "category picker lists 7 categories");
 ok(await page.locator(".eqcard").count() === 0 && !(await page.locator("#rNote").isVisible()), "no equipment cards or model note on the bike default");
+ok(await page.locator(".card .art.no-photo .nophoto").count() === total, "every card shows the neutral no-photo placeholder");
+ok(await page.locator(".card .art svg[role=img], .card .art img").count() === 0, "no schematic drawings or stock images on cards");
+ok(JSON.stringify(await page.locator("#zoneList li").allTextContents()) === JSON.stringify(["MaléFree", "HulhumaléFree", "Boats (harbour drop-off)Free"]),
+   "flag off: footer delivery list is the three free destinations too");
+ok(!/every island|nationwide|inhabited island/i.test(await page.locator("body").textContent()), "no every-island / nationwide delivery claims on the page");
 await page.screenshot({ path: path.join(shots, "01-home.png"), fullPage: false });
 
 console.log("\nBike picker");
@@ -156,8 +161,10 @@ ok(await page.locator("#cartBody .lp.ask").count() === 1 &&
 
 await page.fill("#custName", "Ahmed Nadheem");
 await page.fill("#custPhone", "7712345");
-await page.fill("#custIsland", "Hithadhoo, Addu City");
-await page.selectOption("#zone", "south");
+await page.fill("#custIsland", "MV Sea Star, North Harbour");
+ok(JSON.stringify(await page.locator("#zone option").allTextContents()) === JSON.stringify(["Malé — Free", "Hulhumalé — Free", "Boats (harbour drop-off) — Free"]),
+   "flag off: delivery select offers only the three free destinations");
+await page.selectOption("#zone", "boats");
 await page.waitForTimeout(300);
 ok(!(await page.locator("#goBtn").isDisabled()), "send unlocks once contact details are filled");
 
@@ -167,7 +174,7 @@ const gst = await page.locator("#tGst").textContent();
 const all = await page.locator("#tAll").textContent();
 const num = s => +String(s).replace(/[^0-9]/g, "");
 ok(num(sub) === pricedPart.price, `subtotal counts only the priced line (MVR ${sub} = ${pricedPart.price})`);
-ok(num(del) === 300, `south-atoll delivery fee applied (MVR ${del})`);
+ok(del.trim() === "Free", `delivery to boats is free (${del})`);
 ok(num(gst) === Math.round((num(sub) + num(del)) * 0.08), "GST computed on priced goods plus delivery");
 ok(all.includes("+ prices to confirm"), `total flags prices to confirm (${all})`);
 ok(num(all) === num(sub) + num(del) + num(gst), "total adds up, excluding the unpriced line");
@@ -186,6 +193,7 @@ ok(waText.includes("— price to confirm"), "WhatsApp text marks the unpriced li
 ok(waText.includes(`MVR ${pricedPart.price.toLocaleString("en-US")}`) || waText.includes(`MVR ${pricedPart.price}`), "WhatsApp text prices the priced line");
 ok(/\*Total: MVR [0-9,.]+ \+ prices to confirm\*/.test(waText), "WhatsApp total notes \"+ prices to confirm\"");
 ok(waText.includes("Price to confirm: 1 item"), "WhatsApp text counts the items to confirm");
+ok(waText.includes("Delivery (Boats (harbour drop-off)): Free") && waText.includes("Address: MV Sea Star, North Harbour"), "WhatsApp text: free delivery to boats and the vessel address");
 
 console.log("\nQuantity control");
 await page.click(`#cartBody [data-q="${pricedId}|2"]`);
@@ -519,6 +527,13 @@ console.log("\nOnline checkout (flag on)");
 {
   const { pg, net } = await checkoutPage();
   ok(net.turnstile === 0, "Turnstile script not loaded before checkout opens");
+  const askDetail = await pg.locator(".card:has(.price .asklab) [data-detail]").first().getAttribute("data-detail");
+  await pg.click(`[data-detail="${askDetail}"]`);
+  await pg.waitForTimeout(400);
+  const askText = await pg.locator("#detailBody").textContent();
+  ok(/confirm the price and send you a quote/.test(askText) && !/WhatsApp/.test(askText), "flag on: ask-for-price detail says we quote it, not \"order on WhatsApp\"");
+  await pg.click("#detail [data-close]");
+  await pg.waitForTimeout(300);
   const pricedAdd = await pg.locator(".card:has(.price .amt) [data-add]").first().getAttribute("data-add");
   const askAdd = await pg.locator(".card:has(.price .asklab) [data-add]").first().getAttribute("data-add");
   const pricedP = await pg.evaluate(id => PART_BY_ID[id], pricedAdd);
@@ -681,6 +696,112 @@ console.log("\nCheckout: pending payment, machine context, ?checkout=online and 
   ok(net.turnstile === 0 && net.api.length === 0, "flag off: no Turnstile or API requests");
   await pg.close();
 }
+
+/* ================= Phones: 360px and 390px ================= */
+async function mobileRun(width) {
+  console.log(`\nPhone ${width}px`);
+  const pg = await browser.newPage({ viewport: { width, height: 780 }, isMobile: true, hasTouch: true });
+  const net = await guard(pg);
+  pg.on("pageerror", e => errors.push(`pageerror(${width}): ` + e.message));
+  pg.on("console", m => { if (m.type() === "error" && !isApiNoise(m.text())) errors.push(`console(${width}): ` + m.text()); });
+  await pg.goto(url);
+  await pg.evaluate(() => { localStorage.clear(); });
+  await pg.reload();
+  await pg.waitForTimeout(700);
+  const over = () => pg.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - document.documentElement.clientWidth);
+  const box = sel => pg.locator(sel).first().boundingBox();
+  const inView = b => b && b.x >= -0.5 && b.x + b.width <= width + 0.5 && b.height > 0;
+  const tall = async (sel, min = 40) => { const b = await box(sel); return !!b && b.height >= min; };
+
+  ok(await over() <= 1, `home: no horizontal overflow (${await over()}px)`);
+  const [logo, q, mode, cart] = await Promise.all([".logo", "#q", "#modeSwitch", "#cartOpen"].map(box));
+  ok([logo, q, mode, cart].every(inView), "header: logo, search, Shop/Counter and Order all on screen");
+  ok(Math.abs(logo.y - cart.y) < 12 && Math.abs(mode.y - cart.y) < 12 && q.y > cart.y, "header: logo, mode and Order share the first row; search below");
+  ok(q.width >= width - 40 && q.height >= 44, `search is full width and 44px tall (${Math.round(q.width)}×${Math.round(q.height)})`);
+  ok(await pg.locator("#q").evaluate(e => parseFloat(getComputedStyle(e).fontSize)) >= 16, "search text is 16px (no iOS zoom on focus)");
+  ok(await tall("#cartOpen") && await tall("#modeSwitch button") && await tall("#vertChips .chip", 44) && await tall("#brandChips .chip", 44), "Order, Shop/Counter and picker chips are tappable (≥40/44px)");
+  ok(await tall(".card .addbtn", 44), "Add button is 44px tall");
+  const art = await box(".card .art"), card = await box(".card");
+  ok(art.height <= 64 && art.height < card.height / 4, `placeholder thumb stays modest (${Math.round(art.height)}px of a ${Math.round(card.height)}px card)`);
+  ok(await pg.locator(".kicker").evaluate(e => e.scrollWidth <= e.clientWidth + 1), "kicker wraps instead of overflowing");
+  ok(await pg.locator(".foot").evaluate(e => e.scrollWidth <= e.clientWidth + 1), "footer wraps instead of overflowing");
+  await pg.screenshot({ path: path.join(shots, `m${width}-01-home.png`) });
+
+  /* model page */
+  await pg.click('[data-brand="Honda"]');
+  await pg.waitForTimeout(250);
+  await pg.click(`[data-model="${WAVE}"]`);
+  await pg.waitForTimeout(300);
+  ok((await pg.locator("#rTitle").textContent()).includes("Wave 125i"), "model chip selectable by tap");
+  ok(await over() <= 1, `model page: no horizontal overflow (${await over()}px)`);
+  ok(await tall("#catWrap .catbtn", 44), "category rail buttons are 44px tall");
+  const railScrolls = await pg.locator("#catWrap").evaluate(e => e.scrollWidth > e.clientWidth);
+  await pg.locator('#catWrap [data-cat="brake"]').click();
+  await pg.waitForTimeout(250);
+  ok(railScrolls && await pg.locator('#catWrap [data-cat="brake"][aria-pressed="true"]').count() === 1, "category rail scrolls sideways and a category can be picked");
+  const askPrice = pg.locator(".card .price .asklab").first();
+  if (await askPrice.count()) ok(await askPrice.evaluate(e => e.scrollWidth <= e.clientWidth + 1 && e.getBoundingClientRect().right <= innerWidth), "\"Ask for price\" not clipped");
+  await pg.screenshot({ path: path.join(shots, `m${width}-02-model.png`) });
+  await pg.click('#catWrap [data-cat=""]');
+  await pg.waitForTimeout(200);
+
+  /* search (from the whole catalogue) */
+  await pg.click("#clearBtn");
+  await pg.waitForTimeout(250);
+  await pg.fill("#q", "brake pad pcx");
+  await pg.waitForTimeout(400);
+  ok(await pg.locator(".card").count() > 0 && await over() <= 1, `search: results and no horizontal overflow (${await over()}px)`);
+  await pg.fill("#q", "");
+  await pg.waitForTimeout(300);
+
+  /* cart */
+  const add = pg.locator(".card:has(.price .amt) .addbtn").first();
+  await add.scrollIntoViewIfNeeded();
+  await add.tap();
+  await pg.waitForTimeout(250);
+  ok((await pg.locator("#cartN").textContent()).trim() === "1", "Add works by tap");
+  const cart2 = await box("#cartOpen");
+  ok(inView(cart2) && inView(await box("#modeSwitch")), "header still fits with the cart count showing");
+  await pg.locator("#cartOpen").tap();
+  await pg.waitForTimeout(450);
+  const drawer = await box("#cart");
+  ok(drawer && Math.round(drawer.width) === width && drawer.x === 0, "order drawer is full width");
+  ok(await tall("#cart .xbtn", 44) && await tall("#cartBody .qty button", 40), "close and quantity buttons are tappable");
+  const coOpen = await box("#coOpen");
+  ok(coOpen && coOpen.y + coOpen.height <= 780 && coOpen.height >= 48, "Checkout button visible without scrolling");
+  ok(await over() <= 1, `cart: no horizontal overflow (${await over()}px)`);
+  await pg.screenshot({ path: path.join(shots, `m${width}-03-cart.png`) });
+
+  /* checkout form */
+  await pg.locator("#coOpen").tap();
+  await pg.waitForTimeout(450);
+  ok(await pg.locator("#checkout.on").isVisible(), "checkout opens");
+  for (const id of ["#coName", "#coPhone", "#coEmail", "#coDestination", "#coAddress"]) {
+    const b = await box(id);
+    ok(inView(b) && b.height >= 44 && await pg.locator(id).evaluate(e => parseFloat(getComputedStyle(e).fontSize)) >= 16, `${id} is full-size (${Math.round(b.width)}×${Math.round(b.height)}, 16px text)`);
+  }
+  await fillCheckout(pg, "7712345", "Boats", "MV Sea Star, North Harbour");
+  ok(await pg.locator("#coAddress").inputValue() === "MV Sea Star, North Harbour" && await pg.locator("#coDestination").inputValue() === "Boats", "fields fillable on a phone");
+  await pg.locator("#coSubmit").scrollIntoViewIfNeeded();
+  const sub = await box("#coSubmit");
+  ok(sub && sub.y >= 0 && sub.y + sub.height <= 780 && sub.height >= 48 && inView(sub), "Place order button reachable and full-size");
+  ok(await over() <= 1, `checkout: no horizontal overflow (${await over()}px)`);
+  await pg.screenshot({ path: path.join(shots, `m${width}-04-checkout.png`) });
+  await pg.waitForTimeout(150);
+  net.replies.push({ status: 201, body: { orderNo: "AV-2611-0009", trackUrl: "https://api.avas.parts/track/tok9", status: "pending_payment",
+    totals: { currency: "MVR", subtotal: 100, gst: 8, shipping: 0, shippingPending: false, total: 108, hasAskLines: false } } });
+  await pg.locator("#coSubmit").tap();
+  await pg.waitForTimeout(500);
+  ok(await pg.locator("#coDone").isVisible() && /Bank transfer details to follow/.test(await pg.locator("#coDone").textContent()), "confirmation shows, with the bank-transfer placeholder");
+  const track = await box("#coDone a.cotrack");
+  ok(inView(track) && await over() <= 1, "confirmation fits the screen");
+  await pg.screenshot({ path: path.join(shots, `m${width}-05-done.png`) });
+  ok(net.unexpected.length === 0, "no unmocked API calls");
+  await pg.close();
+}
+await mobileRun(360);
+await mobileRun(390);
+
 ok(net1.turnstile === 0 && net1.api.length === 0, "WhatsApp run made no Turnstile or API requests");
 
 ok(errors.length === 0, "still no JS errors after the full run" + (errors.length ? " → " + errors.join(" | ") : ""));

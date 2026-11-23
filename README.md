@@ -215,12 +215,12 @@ gross margin, stock on hand, re-order point and bin location on every card. The 
 is deliberate: a customer glancing at the screen can tell instantly whether they are looking
 at a customer view, so cost prices never leak by accident.
 
-**Orders** are collected in the browser and handed off to WhatsApp with a formatted order
-including the line items, part numbers, delivery zone, GST and total. The order text is also
-copied to the clipboard as a fallback.
+**Orders** go through the online checkout (`SHOP.onlineCheckout: true`), which posts to
+`SHOP.ordersApi`. Payment is by bank transfer only; cash on delivery is not offered. With the
+flag off, the cart falls back to a formatted WhatsApp order (also copied to the clipboard).
 
-**Delivery zones** and fees are defined in `data.js` → `ZONES`, from same-day in Malé
-(MVR 50) to south atolls (MVR 300) and resorts (MVR 400).
+**Delivery** is free to Malé, Hulhumalé and Boats (harbour drop-off) only, and nowhere else.
+`data.js` → `ZONES` and `DESTINATIONS` in `app.js` hold those three.
 
 ---
 
@@ -231,7 +231,7 @@ copied to the clipboard as a fallback.
 2. **Prices and stock** in `data.js` are researched estimates, not your actual buy prices.
    Replace `price`, `cost`, `stock`, `bin` and `rop` with real figures once you have
    supplier quotes.
-3. **Payment.** The site currently hands off to WhatsApp. For card payment, BML runs the
+3. **Payment.** The site takes bank transfer only (details to follow). For card payment, BML runs the
    only 3D-secure gateway in the country; Ooredoo m-Faisaa and Dhiraagu Pay cover mobile
    wallets. There is an open-source PHP library (`aharen/Pay`) that wraps BML MPG, MIB and
    m-Faisaa if you want to take payment on-site later.
@@ -242,14 +242,9 @@ copied to the clipboard as a fallback.
 
 ## 8. Images — read this before you trust them
 
-Every part shows a **schematic line drawing**, not a photograph. There are 28 drawings
-in `art.js`, matched to a part by its group code first (so a drive belt looks like a belt
-whatever bike it fits), then by keyword, then by category.
-
-**These are category illustrations, not pictures of the actual item.** Two different
-brake pads get the same drawing. That is honest for a catalogue — it says "this is a
-brake pad", not "this is what you will receive" — but it is not a substitute for real
-photography.
+The shop has no real part photos yet, so every part shows the same neutral
+**"No photo yet"** panel (`art.js`). There are no stock photos and no illustrative
+drawings: a picture on a card must be the actual part, or nothing.
 
 **No manufacturer photography is used.** Supplier and OEM catalogue images are
 copyrighted, so none were taken.
@@ -267,12 +262,12 @@ node import-images.js
 ```
 
 That writes `images.js`, a plain `id -> path` map the page reads. `data.js` is never
-touched, so re-running is safe and deleting an image brings its drawing back. Files that
+touched, so re-running is safe and deleting an image brings the placeholder back. Files that
 match no part are listed so you can rename them.
 
-A photo that 404s or fails to decode falls back to the schematic automatically — the
-drawing stays in the DOM underneath and an `onerror` handler reveals it, so a bad path
-never leaves an empty panel.
+A photo that 404s or fails to decode falls back to the placeholder automatically: the
+placeholder stays in the DOM underneath and an `onerror` handler removes the broken image,
+so a bad path never leaves an empty panel.
 
 **On rights.** Only publish images you may publish. Selling into one country does not by
 itself license manufacturer photography — the Maldives is a Berne Convention signatory, so
