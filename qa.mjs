@@ -11,6 +11,14 @@ const shots = path.join(dir, "shots");
 let fail = 0;
 const ok = (c, m) => { console.log(`  ${c ? "ok  " : "FAIL"} ${m}`); if (!c) fail++; };
 
+/* Links the site may render: the shop WhatsApp, the order mailbox, bearing.wiki,
+   same-origin / relative links. Anything else (amanifishing, fiche, dealer and
+   maker catalogues) is an outside source link and must never appear. */
+const ALLOWED_HREF = /^(https:\/\/(wa\.me|bearing\.wiki)\/|mailto:order@avas\.parts$|#|\.\/|\?|data-equip\.js$)/;
+const outsideLinks = (pg, sel) => pg.locator(`${sel} a[href]`).evaluateAll(
+  (els, re) => els.map(a => a.getAttribute("href")).filter(h => !new RegExp(re).test(h)), ALLOWED_HREF.source);
+const SOURCE_TEXT = /\bSource\b|No source link recorded|amanifishing|bike-parts-honda|https?:\/\//;
+
 /* The API and Turnstile are always mocked: nothing in this run may reach the real network for them. */
 const TURNSTILE_STUB = `window.__ts = { render: 0, reset: 0, remove: 0 };
 window.turnstile = {
@@ -236,20 +244,22 @@ ok((await page.locator("#tAsk").textContent()).trim() === "2 items", "price-to-c
 await page.click('#cart [data-close]');
 await page.waitForTimeout(300);
 
-console.log("\nStaff mode");
-await page.click('[data-skin="staff"]');
-await page.waitForTimeout(400);
-ok(await page.locator(".staffbox").first().isVisible(), "cost, margin, stock and bin appear at the counter");
-const askStaff = await page.locator(".card:has(.price .asklab) .staffbox").first().textContent();
-ok(askStaff.includes("—") && !/NaN|undefined|null/.test(askStaff), "unpriced parts show — for cost, margin and stock");
-const skin = await page.getAttribute("html", "data-skin");
-ok(skin === "staff", "dark counter skin applied");
-await page.screenshot({ path: path.join(shots, "05-staff-mode.png") });
-
-// cost must never be visible in shop mode
-await page.click('[data-skin="public"]');
-await page.waitForTimeout(400);
-ok(!(await page.locator(".staffbox").first().isVisible()), "cost price hidden again in shop mode");
+console.log("\nShop view only");
+ok(await page.locator("#modeSwitch, [data-skin]").count() === 0, "no #modeSwitch and no data-skin buttons");
+ok(await page.locator("header.bar button", { hasText: /^\s*(Shop|Counter)\s*$/ }).count() === 0, "no Shop or Counter button in the header");
+ok(await page.getAttribute("html", "data-skin") === null, "no skin attribute on <html>");
+ok(await page.locator(".staffbox").count() === 0, "no staffbox in the DOM");
+ok(!/\b(Cost|Margin|Re-order|Bin)\b/.test(await page.locator("#grid").innerText()), "cards show no cost, margin, re-order or bin");
+{
+  const ps = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
+  await guard(ps);
+  await ps.goto(url);
+  await ps.evaluate(() => localStorage.setItem("avas.skin", "staff"));
+  await ps.reload();
+  await ps.waitForTimeout(700);
+  ok(await ps.getAttribute("html", "data-skin") === null && await ps.locator(".staffbox").count() === 0, "a stored avas.skin=staff turns nothing on");
+  await ps.close();
+}
 
 console.log("\nSearch");
 await page.click("#clearBtn");
@@ -367,7 +377,8 @@ const eqBody = await page.locator("#detailBody").textContent();
 ok(eqBody.includes(eqPart.oem), `detail shows the number as printed (${eqPart.oem})`);
 ok(eqBody.includes("Fits these engines") && eqBody.includes("F250 / F300"), "detail lists the engines it fits by name");
 ok(eqBody.includes("Ask for price") && eqBody.includes("confirm the price on WhatsApp"), "detail: ask for price, confirmed on WhatsApp");
-ok(await page.locator("#detailBody a.srclink[href^='http']").count() > 0, "detail links the source catalogue");
+ok(await page.locator("#detailBody .srclink, #detailBody .srclist").count() === 0 && (await outsideLinks(page, "#detail")).length === 0 &&
+   !SOURCE_TEXT.test(eqBody), "detail has no Source section and no outside link");
 ok(!/undefined|NaN|\bnull\b|an unlisted/.test(eqBody), "detail shows no garbage (undefined / NaN / null / bike decoder)");
 await page.screenshot({ path: path.join(shots, "08-equipment-detail.png") });
 
@@ -400,13 +411,9 @@ ok(waEq.includes("For: Yamaha F250 / F300 V6 4.2L 250–300 hp (2010+)"), "Whats
 await page.click('#cart [data-close]');
 await page.waitForTimeout(300);
 
-console.log("\nCounter skin on equipment");
-await page.click('[data-skin="staff"]');
-await page.waitForTimeout(300);
-const eqStaff = await page.locator(".eqcard .staffbox").first().textContent();
-ok(await page.locator(".eqcard .staffbox").first().isVisible() && eqStaff.includes("—") && !/NaN|undefined|null/.test(eqStaff), "counter skin shows — for cost, stock and bin");
-await page.click('[data-skin="public"]');
-await page.waitForTimeout(300);
+console.log("\nNo counter view on equipment");
+ok(await page.locator(".eqcard").count() > 0 && await page.locator(".eqcard .staffbox").count() === 0, "equipment cards have no staffbox");
+ok(await page.locator(".eqcard .moreb").first().textContent() === "Fitment & notes →", "equipment card button reads \"Fitment & notes →\"");
 
 console.log("\nBack to bikes");
 await page.click('[data-vertical="bikes"]');
@@ -517,14 +524,36 @@ ok(await page.locator("#rNote").isVisible() && /2B095049/.test(m115Note) && awai
 ok(await page.locator(".eqcard .stockline").count() === 58 &&
    (await page.locator(".eqcard .stockline").evaluateAll(els => els.every(e => e.textContent.trim().endsWith("In stock")))),
    "every 115 card shows In stock");
-ok(await page.locator(".eqcard .staffbox").evaluateAll(els => els.every(e => !/\d/.test(e.textContent))),
-   "no stock quantity in the 115 card staff box");
+ok(await page.locator(".eqcard .staffbox").count() === 0, "no staffbox on the 115 cards");
 ok(await page.locator(".eqcard .unver").count() === 13, `13 of the 115 numbers are marked to be confirmed (${await page.locator(".eqcard .unver").count()})`);
 const k01 = await page.evaluate(() => EQ.parts.find(p => p.oem === "35-877769K01").id);
 await page.click(`[data-detail="${k01}"]`);
 await page.waitForTimeout(400);
-ok(await page.locator("#detailBody .srclink").count() === 0 && (await page.locator("#detailBody").textContent()).includes("No source link recorded."),
-   "35-877769K01 drawer has no source link");
+const k01Body = await page.locator("#detailBody").textContent();
+ok(await page.locator("#detailBody .srclink, #detailBody .srclist").count() === 0 && (await outsideLinks(page, "#detail")).length === 0 &&
+   !/<h4>Source/.test(await page.locator("#detailBody").innerHTML()) && !SOURCE_TEXT.test(k01Body),
+   "35-877769K01 drawer has no Source section, no source link and no \"No source link recorded.\"");
+await page.keyboard.press("Escape");
+await page.waitForTimeout(250);
+
+console.log("\nYamaha 9.9FMH / 15FMH (parts sourced from amanifishing.com): no Source box");
+const YFMH = "yamaha-15fmh-2stroke";
+ok(await page.evaluate(id => EQ.parts.some(p => p.fits.includes(id) && (p.src || []).some(i => /amanifishing\.com/.test(EQUIP.urls[i]))), YFMH),
+   "data still records amanifishing.com sources for this engine (internal only)");
+await pickModel("outboards", "Yamaha", YFMH);
+ok((await page.locator("#rTitle").textContent()).includes("2-stroke 9.9FMH / 15FMH 9.9–15 hp"), "model page opens");
+const yPage = await page.locator("main").innerText();
+ok((await outsideLinks(page, "main")).length === 0 && !/amanifishing/i.test(await page.locator("main").innerHTML()),
+   "model page has no amanifishing or other outside link");
+ok(!/\bSource\b|Product page|amanifishing/i.test(yPage) && await page.locator(".mnote-src, .srclink").count() === 0,
+   "model page and model note show no Source box or product-page link");
+const yPart = await page.evaluate(id => EQ.parts.find(p => p.fits.includes(id) && (p.src || []).length).id, YFMH);
+await page.click(`[data-detail="${yPart}"]`);
+await page.waitForTimeout(400);
+const yBody = await page.locator("#detailBody").textContent();
+ok(await page.locator("#detailBody .srclink, #detailBody .srclist").count() === 0 && (await outsideLinks(page, "#detail")).length === 0 &&
+   !SOURCE_TEXT.test(yBody) && !/amanifishing/i.test(await page.locator("#detail").innerHTML()),
+   `part drawer (${yPart}) has no Source section and no amanifishing link`);
 await page.keyboard.press("Escape");
 await page.waitForTimeout(250);
 await page.click('[data-vertical="bikes"]');
@@ -807,12 +836,14 @@ async function mobileRun(width) {
   const tall = async (sel, min = 40) => { const b = await box(sel); return !!b && b.height >= min; };
 
   ok(await over() <= 1, `home: no horizontal overflow (${await over()}px)`);
-  const [logo, q, mode, cart] = await Promise.all([".logo", "#q", "#modeSwitch", "#cartOpen"].map(box));
-  ok([logo, q, mode, cart].every(inView), "header: logo, search, Shop/Counter and Order all on screen");
-  ok(Math.abs(logo.y - cart.y) < 12 && Math.abs(mode.y - cart.y) < 12 && q.y > cart.y, "header: logo, mode and Order share the first row; search below");
+  const [logo, q, cart] = await Promise.all([".logo", "#q", "#cartOpen"].map(box));
+  ok([logo, q, cart].every(inView), "header: logo, search and Order all on screen");
+  ok(await pg.locator("#modeSwitch, [data-skin], header.bar .mode").count() === 0 &&
+     await pg.locator("header.bar button", { hasText: /^\s*(Shop|Counter)\s*$/ }).count() === 0, "header: no Shop / Counter switch");
+  ok(Math.abs(logo.y - cart.y) < 12 && q.y > cart.y, "header: logo and Order share the first row; search below");
   ok(q.width >= width - 40 && q.height >= 44, `search is full width and 44px tall (${Math.round(q.width)}×${Math.round(q.height)})`);
   ok(await pg.locator("#q").evaluate(e => parseFloat(getComputedStyle(e).fontSize)) >= 16, "search text is 16px (no iOS zoom on focus)");
-  ok(await tall("#cartOpen") && await tall("#modeSwitch button") && await tall("#vertChips .chip", 44) && await tall("#brandChips .chip", 44), "Order, Shop/Counter and picker chips are tappable (≥40/44px)");
+  ok(await tall("#cartOpen") && await tall("#vertChips .chip", 44) && await tall("#brandChips .chip", 44), "Order and picker chips are tappable (≥40/44px)");
   ok(await tall(".card .addbtn", 44), "Add button is 44px tall");
   ok(await pg.locator(".card .art, .card .nophoto, .card img").count() === 0 && await pg.locator(".card").first().evaluate(c => c.firstElementChild.classList.contains("cardtop")),
      "photoless cards have no image box and start with the name row");
@@ -862,7 +893,7 @@ async function mobileRun(width) {
   await pg.waitForTimeout(250);
   ok((await pg.locator("#cartN").textContent()).trim() === "1", "Add works by tap");
   const cart2 = await box("#cartOpen");
-  ok(inView(cart2) && inView(await box("#modeSwitch")), "header still fits with the cart count showing");
+  ok(inView(cart2) && inView(await box(".logo")) && inView(await box("#q")), "header still fits with the cart count showing");
   await pg.locator("#cartOpen").tap();
   await pg.waitForTimeout(450);
   const drawer = await box("#cart");

@@ -38,7 +38,8 @@ console.log(`  ${badFit.length + badCat.length + dup.length === 0 ? "all referen
 
 sec("Required fields");
 // Every part is either priced (numeric price > 0) or explicitly ask-for-price
-// (price null + askPrice true). Priced parts carry the full staff fields.
+// (price null + askPrice true). Priced parts carry the full staff fields in the
+// internal sidecar src-data/bike-staff.json (never in the public data.js).
 const isPriced = p => typeof p.price === "number" && p.price > 0 && !p.askPrice;
 const isAsk    = p => p.price == null && p.askPrice === true;
 const PRICED = PARTS.filter(isPriced), ASK = PARTS.filter(isAsk);
@@ -46,18 +47,33 @@ const badPrice = PARTS.filter(p => !isPriced(p) && !isAsk(p)).map(p => p.id);
 ok(!badPrice.length, "neither priced nor askPrice: " + badPrice.join(", "));
 const miss = PARTS.filter(p => !p.name || !p.oem || !p.cat).map(p => p.id);
 ok(!miss.length, "missing name/oem/cat: " + miss.join(", "));
-const missStaff = PRICED.filter(p =>
-  typeof p.cost !== "number" || p.stock == null || p.rop == null || !p.bin).map(p => p.id);
+const STAFF = JSON.parse(fs.readFileSync("src-data/bike-staff.json", "utf8"));
+const staffOf = (p) => STAFF[p.id] || {};
+const missStaff = PRICED.filter(p => { const s = staffOf(p);
+  return typeof s.cost !== "number" || s.stock == null || s.rop == null || !s.bin; }).map(p => p.id);
 ok(!missStaff.length, "priced parts missing cost/stock/rop/bin: " + missStaff.join(", "));
 console.log(`  ${PRICED.length} priced · ${ASK.length} ask-for-price · ${miss.length + missStaff.length + badPrice.length ? "problems found" : "every part complete"}`);
 
 sec("Commercial sanity");
-const badMargin = PRICED.filter(p => p.cost >= p.price).map(p => p.id);
+const badMargin = PRICED.filter(p => staffOf(p).cost >= p.price).map(p => p.id);
 ok(!badMargin.length, "cost >= price: " + badMargin.join(", "));
-const margins = PRICED.map(p => (p.price - p.cost) / p.price);
+const margins = PRICED.map(p => (p.price - staffOf(p).cost) / p.price);
 const avg = margins.reduce((a, b) => a + b, 0) / margins.length;
 console.log(`  average gross margin (priced parts) ${(avg * 100).toFixed(1)}%`);
 ok(avg > 0.3 && avg < 0.65, "average margin outside a plausible 30–65% band");
+
+sec("No staff data in the public data.js");
+const staffKeys = PARTS.filter(p => ["cost", "bin", "rop"].some(k => k in p)).map(p => p.id);
+ok(!staffKeys.length, "data.js parts ship cost / bin / rop: " + staffKeys.slice(0, 20).join(", "));
+const qtyParts = PARTS.filter(p => "stock" in p && p.stock !== 0 && p.stock !== 1).map(p => p.id);
+ok(!qtyParts.length, "data.js parts ship an exact stock quantity (must be a 0/1 flag): " + qtyParts.slice(0, 20).join(", "));
+const flagged = PARTS.filter(p => "stock" in p);
+ok(flagged.length > 0 && flagged.every(p => STAFF[p.id] && typeof STAFF[p.id].stock === "number"),
+   "every public stock flag comes from a sidecar quantity");
+ok(flagged.every(p => p.stock === (STAFF[p.id].stock > 0 ? 1 : 0)), "public stock flags match the sidecar quantities");
+ok(PARTS.every(p => !p.lowStock || (STAFF[p.id].stock > 0 && STAFF[p.id].stock <= STAFF[p.id].rop)), "lowStock only where qty <= re-order point");
+ok(Object.keys(STAFF).every(id => seen[id]), "every sidecar entry names a part in data.js");
+console.log(`  ${flagged.length} parts ship a stock flag; ${Object.keys(STAFF).length} sidecar entries hold cost / bin / rop / qty`);
 
 sec("Part-number decoding");
 // Priced parts (the previous catalogue) must fully decode. Ask-for-price parts
@@ -176,10 +192,21 @@ const app  = fs.readFileSync("app.js", "utf8");
 const needed = ["q","grid","catWrap","brandChips","modelChips","modelRow","cartOpen","cartN",
   "cartBody","cartFoot","zone","zoneList","custName","custPhone","custIsland","custNote",
   "tSub","tDel","tGst","tAll","tAskRow","tAsk","goBtn","scrim","toast","detailBody","detailTitle","rTitle",
-  "rCount","clearBtn","modeSwitch"];
+  "rCount","clearBtn"];
 const missingIds = needed.filter(id => !html.includes(`id="${id}"`));
 ok(!missingIds.length, "app.js references ids missing from index.html: " + missingIds.join(", "));
 console.log(`  ${needed.length - missingIds.length}/${needed.length} element ids present`);
+
+sec("Shop view only: no Counter view, no source links");
+ok(!/modeSwitch|data-skin|>\s*(Shop|Counter)\s*</.test(html), "index.html has no Shop / Counter switch");
+ok(!/applySkin|state\.skin|avas\.skin|data-skin|staffbox/.test(app), "app.js has no skin switch or staffbox");
+const cssSrc = fs.readFileSync("styles.css", "utf8");
+ok(!/data-skin|staffbox|\.mode\b/.test(cssSrc), "styles.css has no staff skin, staffbox or mode switch");
+ok(!/\bp\.(cost|bin|rop)\b|>(Cost|Margin|Bin|Re-order)</.test(app), "app.js reads or labels no cost / margin / bin / re-order");
+ok(!/sourceLinks|srclink|srclist|mnote-src|<h4>Source|No source link recorded/.test(app + cssSrc), "no Source box or source-link markup");
+ok(!/\.(source_url|sources|catalogue_url|manual_url|urls)\b/.test(app), "app.js never reads source_url / sources / catalogue_url / manual_url / EQUIP.urls");
+ok(!/Counter note/.test(app) && app.includes("<h4>Note</h4>"), "bike drawer note heading is \"Note\"");
+ok(app.includes("Fitment &amp; notes →") && !/Fitment, source/.test(app), "equipment card button reads \"Fitment & notes\"");
 sec("Online checkout destinations");
 ok(html.includes('id="coDestination"') && html.includes('id="coAddressLabel"'), "checkout has the destination select and address label");
 ok(!/id="coAtoll"|id="coIsland"/.test(html) && !/\bATOLLS\b|coAtoll|coIsland/.test(app), "atoll dropdown / island field removed");

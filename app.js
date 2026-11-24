@@ -31,7 +31,6 @@ const state = {
   model: null,
   cat: null,
   q: "",
-  skin: localStorage.getItem("avas.skin") || "public",
   cart: JSON.parse(localStorage.getItem("avas.cart") || "{}"),
   /* which machine an equipment line was added for, so the WhatsApp order says it */
   ctx: JSON.parse(localStorage.getItem("avas.cartctx") || "{}"),
@@ -39,7 +38,6 @@ const state = {
 
 const money = (n) => n.toLocaleString("en-US", { maximumFractionDigits: 0 });
 const hasPrice = (p) => !p.askPrice && typeof p.price === "number";
-const dash = (v, asMoney) => (v == null || v === "") ? "—" : (asMoney ? money(v) : esc(String(v)));
 
 function priceHTML(p) {
   if (!hasPrice(p)) return `<div class="price ask"><span class="asklab">Ask for price</span></div>`;
@@ -192,10 +190,6 @@ function integrateEquip() {
   E.verticals.forEach(v => { if (VERT_BY_ID[v.id]) Object.assign(VERT_BY_ID[v.id], { name: v.name, unit: v.unit }); });
   E.models.forEach(m => { MODEL_BY_ID[m.id] = m; });
   E.cats.forEach(c => { CAT_BY_ID[c.id] = c; });
-  E.parts.forEach(p => {
-    p.sources = (p.src || []).map(i => E.urls[i]).filter(Boolean);
-    p.source_url = p.sources[0] || null;
-  });
   E.parts.forEach(p => { p._h = eqHaystack(p); PART_BY_ID[p.id] = p; });
   EQ.parts = E.parts; EQ.models = E.models; EQ.cats = E.cats;
   EQ.loaded = true; EQ.failed = false;
@@ -245,7 +239,7 @@ function renderHero() {
   }
   $("#lede").textContent =
     `One wrong digit means the wrong part on the next boat. Pick the make and the ${v.pick}, ` +
-    `and we will show you the exact number from the maker's catalogue, where it was sourced, ` +
+    `and we will show you the exact number from the maker's catalogue ` +
     `and what to check before you order. ` +
     (onlineCheckoutOn() ? `We confirm every price before you pay.` : `Every price is confirmed on WhatsApp.`);
   $("#step2Label").textContent = `Step 2 — pick the ${v.pick}`;
@@ -322,7 +316,7 @@ function renderRail() {
 function stockLine(p) {
   if (p.stock == null)   return "";
   if (p.stock <= 0)      return `<span class="stockline"><span class="dotr">●</span> On order</span>`;
-  if (p.stock <= p.rop)  return `<span class="stockline"><span class="doty">●</span> Low stock</span>`;
+  if (p.lowStock)       return `<span class="stockline"><span class="doty">●</span> Low stock</span>`;
   return `<span class="stockline"><span class="dotg">●</span> In stock</span>`;
 }
 
@@ -361,14 +355,7 @@ function eqCardHTML(p) {
     ${eqPlateHTML(p.oem)}
     ${eqFlagsHTML(p)}
     <div class="ribbon">${fitNames}</div>
-    <div class="staffbox">
-      <div><span class="l">Cost</span><span class="v">—</span></div>
-      <div><span class="l">Margin</span><span class="v marg">—</span></div>
-      <div><span class="l">Stock</span><span class="v">—</span></div>
-      <div><span class="l">Re-order</span><span class="v">—</span></div>
-      <div><span class="l">Bin</span><span class="v">—</span></div>
-    </div>
-    <button class="moreb" data-detail="${esc(p.id)}">Fitment, source &amp; notes →</button>
+    <button class="moreb" data-detail="${esc(p.id)}">Fitment &amp; notes →</button>
     <div class="cardfoot">
       <div>
         ${priceHTML(p)}
@@ -389,11 +376,6 @@ function cardHTML(p) {
         return `<span class="fitchip${state.model === id ? " on" : ""}">${esc(m.name)}</span>`;
       }).join("") + (p.fits.length > 5 ? `<span class="fitchip">+${p.fits.length - 5} more</span>` : "");
 
-  const margin = hasPrice(p) && typeof p.cost === "number"
-    ? Math.round(((p.price - p.cost) / p.price) * 100) + "%"
-    : "—";
-  const stockLow = typeof p.stock === "number" && typeof p.rop === "number" && p.stock <= p.rop;
-
   return `<article class="card">
     ${artHTML(p)}
     <div class="cardtop">
@@ -404,13 +386,6 @@ function cardHTML(p) {
     ${decodeHTML(p.oem)}
     ${needsCheck(p) ? `<span class="unver">Verify number before ordering</span>` : ""}
     <div class="ribbon">${fitNames}</div>
-    <div class="staffbox">
-      <div><span class="l">Cost</span><span class="v">${dash(p.cost, true)}</span></div>
-      <div><span class="l">Margin</span><span class="v marg">${margin}</span></div>
-      <div><span class="l">Stock</span><span class="v ${stockLow ? "low" : ""}">${dash(p.stock)}</span></div>
-      <div><span class="l">Re-order</span><span class="v">${dash(p.rop)}</span></div>
-      <div><span class="l">Bin</span><span class="v">${dash(p.bin)}</span></div>
-    </div>
     <button class="moreb" data-detail="${p.id}">Fitment, alternates &amp; interchange →</button>
     <div class="cardfoot">
       <div>
@@ -420,14 +395,6 @@ function cardHTML(p) {
       <button class="addbtn" data-add="${p.id}">Add</button>
     </div>
   </article>`;
-}
-
-function sourceLinks(urls) {
-  return (urls || []).filter(u => /^https?:\/\//.test(u)).map(u => {
-    let label = u;
-    try { const x = new URL(u); label = x.hostname.replace(/^www\./, "") + (x.pathname.length > 1 ? x.pathname.replace(/\/$/, "").slice(0, 38) + (x.pathname.length > 39 ? "…" : "") : ""); } catch {}
-    return `<a class="srclink" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
-  }).join("");
 }
 
 function renderModelNote() {
@@ -447,11 +414,8 @@ function renderModelNote() {
   if (typeof m.size === "string") bits.push(`<span><b>Size</b> ${esc(m.size)}</span>`);
   if (m.catalogue) bits.push(`<span><b>Catalogue</b> ${esc(m.catalogue)}</span>`);
   const note = m.note ? `<div class="mnote-note">${SERIAL_HINT.test(m.note) || /unverified|nearest/i.test(m.note) ? `<span class="serialnote">Check frame/serial number</span> ` : ""}${esc(m.note)}</div>` : "";
-  /* Power products link their honda.mv page. A marine model's catalogue_url is
-     just the first page scraped (often one part's product page), so it is not
-     shown as "the" catalogue; each part's drawer links its own sources. */
-  const src = m.model_number && m.catalogue_url ? `<div class="mnote-src"><b>Product page</b> ${sourceLinks([m.catalogue_url])}</div>` : "";
-  box.innerHTML = `${bits.length ? `<div class="mnote-bits">${bits.join("")}</div>` : ""}${note}${src}`;
+  /* Plain text only: no catalogue, product-page or source links. */
+  box.innerHTML = `${bits.length ? `<div class="mnote-bits">${bits.join("")}</div>` : ""}${note}`;
   box.hidden = !box.innerHTML;
 }
 
@@ -519,8 +483,6 @@ function openEqDetail(p) {
     ? `<div class="altlist">${p.alts.map(a => `<div class="altrow"><span>${esc(a)}</span><span class="tag">cross-reference</span></div>`).join("")}</div>`
     : `<p style="margin:0;font-size:13px;color:var(--ink-3)">No alternate numbers recorded.</p>`;
 
-  const links = sourceLinks(p.sources && p.sources.length ? p.sources : [p.source_url]);
-
   $("#detailBody").innerHTML = `
     <div class="dsec">
       <h4>Part number</h4>
@@ -534,7 +496,6 @@ function openEqDetail(p) {
     <div class="dsec"><h4>Fits these ${esc(v ? v.unit : "machine")}s</h4>${fitBlock}</div>
     <div class="dsec"><h4>Also sold as</h4>${altBlock}</div>
     ${p.note ? `<div class="dsec"><h4>Catalogue note</h4><div class="notebox">${esc(p.note)}</div></div>` : ""}
-    <div class="dsec"><h4>Source</h4>${links ? `<div class="srclist">${links}</div>` : `<p class="hint">No source link recorded.</p>`}</div>
     <div class="dsec">
       <h4>Price</h4>
       ${priceHTML(p)}
@@ -596,7 +557,7 @@ function openDetail(id) {
     <div class="dsec"><h4>Fits these bikes</h4>${fitBlock}</div>
     <div class="dsec"><h4>Also sold as</h4>${altBlock}</div>
     <div class="dsec"><h4>Same job, other model families</h4>${jobBlock}</div>
-    ${p.note ? `<div class="dsec"><h4>Counter note</h4><div class="notebox">${esc(p.note)}</div></div>` : ""}
+    ${p.note ? `<div class="dsec"><h4>Note</h4><div class="notebox">${esc(p.note)}</div></div>` : ""}
 
     <div class="dsec">
       <h4>Price</h4>
@@ -971,7 +932,7 @@ function showConfirmation(d) {
   state.cart = {}; saveCart(); renderCart();
 }
 
-/* ---------- Drawers, toast, skin ---------- */
+/* ---------- Drawers, toast ---------- */
 function openDrawer(sel) { $(sel).classList.add("on"); $("#scrim").classList.add("on"); }
 function closeDrawers() {
   $$(".drawer").forEach(d => d.classList.remove("on"));
@@ -984,13 +945,6 @@ function toast(msg) {
   t.textContent = msg; t.classList.add("on");
   clearTimeout(toastT);
   toastT = setTimeout(() => t.classList.remove("on"), 1900);
-}
-
-function applySkin() {
-  document.documentElement.dataset.skin = state.skin;
-  $$("#modeSwitch button").forEach(b =>
-    b.setAttribute("aria-pressed", b.dataset.skin === state.skin));
-  localStorage.setItem("avas.skin", state.skin);
 }
 
 /* ---------- Zones in footer + select ---------- */
@@ -1054,7 +1008,7 @@ function chooseVertical(v) {
 }
 
 document.addEventListener("click", (e) => {
-  const t = e.target.closest("[data-vertical],[data-brand],[data-model],[data-cat],[data-add],[data-detail],[data-q],[data-clear],[data-skin],[data-close]");
+  const t = e.target.closest("[data-vertical],[data-brand],[data-model],[data-cat],[data-add],[data-detail],[data-q],[data-clear],[data-close]");
   if (!t) return;
 
   if (t.dataset.vertical !== undefined) {
@@ -1075,8 +1029,6 @@ document.addEventListener("click", (e) => {
     const [id, q] = t.dataset.q.split("|"); setQty(id, +q);
   } else if (t.dataset.clear) {
     state.brand = state.model = state.cat = null; state.q = ""; $("#q").value = ""; render();
-  } else if (t.dataset.skin) {
-    state.skin = t.dataset.skin; applySkin();
   } else if (t.dataset.close !== undefined) {
     closeDrawers();
   }
@@ -1120,7 +1072,6 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "/" && document.activeElement !== $("#q")) { e.preventDefault(); $("#q").focus(); }
 });
 
-applySkin();
 renderZones();
 render();
 saveCart();

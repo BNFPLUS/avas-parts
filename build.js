@@ -6,9 +6,16 @@ const path = require("path");
 
 const read = (f) => fs.readFileSync(path.join(__dirname, f), "utf8");
 
+const { loadData, writeData, stripStaff } = require("./tools/staff-fields");
+
 let html = read("index.html");
 let css  = read("styles.css");
-const data = read("data.js");
+/* Cost, bin, re-order point and held quantity are counter data. data.js should
+   already be clean (tools/split-staff.js); strip again so dist never ships them. */
+const parsed = loadData(read("data.js"));
+const leaked = Object.keys(stripStaff(parsed.D.PARTS));
+if (leaked.length) console.warn(`data.js still had staff fields on ${leaked.length} parts — stripped from dist; run node tools/split-staff.js`);
+const data = writeData(parsed);
 const art  = read("art.js");
 const app  = read("app.js");
 /* The live site lazy-loads data-equip.js with a <script> tag. The bundle is for
@@ -52,6 +59,58 @@ if (external.length) {
   console.error("External references still present:\n  " + external.join("\n  "));
   process.exit(1);
 }
+/* Links the UI renders at runtime never show up as static attributes, so the UI
+   code itself is checked. Source / fiche / catalogue URLs may stay in the data
+   files as strings; the UI must never read them. Allowed when rendered:
+   bearing.wiki, BNF PLUS references, the shop WhatsApp (wa.me), mailto:order@avas.parts,
+   same-origin / relative links and Cloudflare Turnstile. */
+const fail = (msg) => { console.error(msg); process.exit(1); };
+const ui = { "index.html": read("index.html"), "app.js": app, "art.js": art };
+const ALLOWED_URL = /^(https:\/\/(bearing\.wiki|wa\.me|challenges\.cloudflare\.com)\/|mailto:order@avas\.parts$)/;
+const SOURCE_UI = [
+  [/\bsourceLinks\b/, "sourceLinks()"],
+  [/\bsrclink\b|\bsrclist\b|\bmnote-src\b/, "source-link markup (srclink / srclist / mnote-src)"],
+  [/<h4>\s*Source/i, "a Source heading"],
+  [/No source link recorded/, "the 'No source link recorded' line"],
+  [/\.(source_url|sources|catalogue_url|manual_url|urls)\b|\[["'](source_url|sources|catalogue_url|manual_url|urls)["']\]/,
+   "a read of source_url / sources / catalogue_url / manual_url / EQUIP.urls"],
+];
+for (const [file, code] of Object.entries(ui)) {
+  for (const [re, what] of SOURCE_UI) {
+    const m = code.match(re);
+    if (m) fail(`${file} renders outside source links: ${what} (near "${m[0]}")`);
+  }
+  for (const m of code.matchAll(/(?:href|src)\s*=\s*["'`]?((?:https?:|mailto:)[^"'`\s>]*)/gi)) {
+    if (m[1].startsWith("https://fonts.") && file === "index.html") continue; // stripped above
+    if (!ALLOWED_URL.test(m[1])) fail(`${file} renders an outside link: ${m[1]}`);
+  }
+  for (const m of code.matchAll(/["'`](https?:\/\/[^"'`\s$]+)/g)) {
+    if (m[1].startsWith("https://fonts.") && file === "index.html") continue;
+    if (!ALLOWED_URL.test(m[1]) && !m[1].startsWith("http://www.w3.org/")) fail(`${file} carries an outside URL: ${m[1]}`);
+  }
+}
+/* Interpolated hrefs: only the WhatsApp builder and the order-tracking link the
+   orders API returns may feed an href. */
+for (const m of app.matchAll(/href="\$\{([^}]*)\}"/g)) {
+  if (!/^esc\((waURL\(|track\))/.test(m[1].trim())) fail(`app.js interpolates an unexpected href: ${m[1]}`);
+}
+
+/* No counter view and no staff data in dist. */
+const COUNTER = [
+  [/modeSwitch|data-skin|avas\.skin|applySkin|\bstate\.skin\b/, "the Shop/Counter view switch"],
+  [/>\s*Counter\s*</, "a Counter button"],
+  [/staffbox/, "the staffbox"],
+  [/>\s*(Margin|Cost|Bin|Re-order)\s*</, "a Margin / Cost / Bin / Re-order label"],
+  [/["']?\b(cost|bin|rop)\b["']?\s*:\s*(-?\d|"|null)/, "a cost / bin / rop data field"],
+  [/\bp\.(cost|bin|rop)\b/, "a read of p.cost / p.bin / p.rop"],
+];
+for (const [re, what] of COUNTER) {
+  const m = html.match(re);
+  if (m) fail(`dist contains ${what} (near "${m[0]}")`);
+}
+const qty = [...html.matchAll(/"stock":\s*(-?\d+(?:\.\d+)?)/g)].map(m => +m[1]).filter(n => n !== 0 && n !== 1);
+if (qty.length) fail(`dist ships exact stock quantities (${qty.slice(0, 5).join(", ")}); stock must be a 0/1 flag`);
+
 for (const marker of ["styles.css", "data.js", "images.js", "art.js", "app.js"]) {
   if (html.includes(`"${marker}"`)) { console.error("Un-inlined asset: " + marker); process.exit(1); }
 }

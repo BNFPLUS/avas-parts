@@ -1,8 +1,8 @@
 # avas.parts
 
 Spare parts catalogue and ordering site for the Maldives, covering motorcycles, scooters,
-outboards, marine diesels, jet skis, generators, pumps and heavy machinery. Public browse for
-customers, a counter mode for staff, and a part-number decoder that shows what
+outboards, marine diesels, jet skis, generators, pumps and heavy machinery. Public browse and
+ordering for customers, and a part-number decoder that shows what
 interchanges with what.
 
 Static site — no build step, no server. `index.html`, `styles.css`, `app.js`, `data.js`.
@@ -210,10 +210,13 @@ before you pick and pack. Set `v: 1` in `data.js` as you confirm each one.
 
 ## 6. Running the shop from the site
 
-**Counter mode** (the `Counter` toggle) switches to a dark skin and reveals landed cost,
-gross margin, stock on hand, re-order point and bin location on every card. The skin change
-is deliberate: a customer glancing at the screen can tell instantly whether they are looking
-at a customer view, so cost prices never leak by accident.
+**Shop view only.** The site has no counter or staff view. Landed cost, bin location,
+re-order point and the held quantity of bike parts live in `src-data/bike-staff.json`, which
+the site never loads; `data.js` ships only a stock flag (`stock: 1` in stock, `0` on order,
+`lowStock: true`). `node tools/split-staff.js` moves those fields out of a regenerated
+`data.js`, and `node build.js` strips them again and fails if any reach `dist/`. Source and
+catalogue URLs stay in the data for research but are never rendered; the build fails if the
+UI code would link them.
 
 **Orders** go through the online checkout (`SHOP.onlineCheckout: true`), which posts to
 `SHOP.ordersApi`. Payment is by bank transfer only; cash on delivery is not offered. With the
@@ -229,8 +232,8 @@ flag off, the cart falls back to a formatted WhatsApp order (also copied to the 
 1. **`SHOP.whatsapp` in `data.js`** is a placeholder (`9600000`). Put your real number in.
    Orders will not reach you until you do.
 2. **Prices and stock** in `data.js` are researched estimates, not your actual buy prices.
-   Replace `price`, `cost`, `stock`, `bin` and `rop` with real figures once you have
-   supplier quotes.
+   Replace `price` in `data.js`, and `cost`, `stock`, `bin` and `rop` in
+   `src-data/bike-staff.json`, with real figures once you have supplier quotes.
 3. **Payment.** The site takes bank transfer only (details to follow). For card payment, BML runs the
    only 3D-secure gateway in the country; Ooredoo m-Faisaa and Dhiraagu Pay cover mobile
    wallets. There is an open-source PHP library (`aharen/Pay`) that wraps BML MPG, MIB and
