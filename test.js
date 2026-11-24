@@ -280,19 +280,23 @@ ok(unv > 0 && E.parts.every(p => p.tier === "genuine" || p.tier === "genuine-unv
 console.log(`  ${unv} numbers marked "to be confirmed"; ${E.urls.length} distinct source urls`);
 ok(app.includes('"data-equip.js"') && !html.includes('src="data-equip.js"'), "data-equip.js is lazy-loaded by app.js, not by index.html");
 const parsun = E.models.filter(m => m.brand === "Parsun");
-ok(parsun.length === 4 && parsun.every(m => m.vertical === "outboards"), `Parsun has 4 outboard models (${parsun.length})`);
+ok(parsun.length === 6 && parsun.every(m => m.vertical === "outboards"), `Parsun has 6 outboard models (${parsun.length})`);
+const parsunDealerIds = DL.DEALER_MARINE_MODELS.map(m => m.id);
+ok(parsunDealerIds.length === 4 && parsunDealerIds.every(id => E.models.some(m => m.id === id)), "the 4 MotoX Parsun models with parts are all in the picker");
 const pids = new Set(parsun.map(m => m.id));
 const parsunParts = E.parts.filter(p => p.fits.some(f => pids.has(f)));
 ok(parsunParts.length === DL.DEALER_MARINE_PARTS.length, `all ${DL.DEALER_MARINE_PARTS.length} Parsun rows are in data-equip.js (${parsunParts.length})`);
 ok(parsunParts.every(p => p.price === null && p.askPrice === true && p.src.length), "Parsun parts are ask-for-price with sources");
 ok(parsunParts.every(p => p.fits.every(f => pids.has(f))), "Parsun parts fit only Parsun engines");
+ok(parsunDealerIds.every(id => parsunParts.some(p => p.fits.includes(id))), "every MotoX Parsun model with a parts list has parts");
+ok(["parsun-f130", "parsun-f300"].every(id => pids.has(id) && !parsunParts.some(p => p.fits.includes(id))), "Parsun F130 and F300 are empty engine entries");
 console.log(`  Parsun: ${parsun.length} models, ${parsunParts.length} parts`);
 ok(html.includes('id="vertChips"'), "index.html has the category picker");
 
 sec("Mercury 115 FourStroke EFI (stock list)");
 const m115 = E.models.find(m => m.id === M115);
-ok(m115 && m115.vertical === "outboards" && m115.brand === "Mercury" && m115.name === "115 FourStroke EFI (2.1L)",
-   "model mercury-115-fourstroke-efi is an outboard named Mercury 115 FourStroke EFI (2.1L)");
+ok(m115 && m115.vertical === "outboards" && m115.brand === "Mercury" && m115.name === "FourStroke 2.1L 115 hp",
+   "model mercury-115-fourstroke-efi is an outboard named Mercury FourStroke 2.1L 115 hp");
 ok(m115 && !m115.catalogue_url && !/https?:|www\./i.test(m115.note || ""), "Mercury 115 model has no outside link");
 ok(m115 && /2B095049/.test(m115.note) && /serial/i.test(m115.note), "Mercury 115 model note asks for the engine serial");
 const m115Parts = E.parts.filter(p => p.fits.includes(M115));
@@ -326,6 +330,62 @@ if (squashSrc) {
   ok(hit.length === 1 && hit[0].oem === "35-877769K01", "search for 35-877769K01 finds exactly that part, not Q01");
 }
 console.log(`  ${m115Parts.length} parts: ${m115Parts.length - m115Unv} confirmed, ${m115Unv} to be confirmed`);
+
+sec("Engine range: empty models, names, Step 2 sort");
+const ENGINE_V = ["outboards", "marine_diesel", "jetski", "generators"];
+const RG = {};
+vm.createContext(RG);
+vm.runInContext(fs.readFileSync("src-data/data-engine-range.js", "utf8") + "\n;globalThis.__R = {MODEL_META, RANGE_MODELS};", RG);
+const rangeIds = new Set(RG.__R.RANGE_MODELS.map(r => r[0]));
+const fitCount = {};
+E.parts.forEach(p => p.fits.forEach(f => { fitCount[f] = (fitCount[f] || 0) + 1; }));
+const emptyModels = E.models.filter(m => !fitCount[m.id]);
+ok(emptyModels.length === rangeIds.size && emptyModels.every(m => rangeIds.has(m.id)),
+   `only the engine-range entries are empty (${emptyModels.length} empty, ${rangeIds.size} range entries)`);
+ok(emptyModels.every(m => !m.catalogue_url && !m.source_url && !m.sources && !m.note && !m.src),
+   "empty engine entries ship no catalogue / source link and no note");
+ok(!/https?:|www\./i.test(fs.readFileSync("src-data/data-engine-range.js", "utf8")), "src-data/data-engine-range.js holds no URLs");
+ok(E.models.every(m => !("src_title" in m)), "no scraped page titles shipped as model text");
+const ODD = /PartsVu|Yanmar Shop|spec book|Service Kit|\bproduct\b/i;
+ok(!E.models.some(m => ODD.test(m.name) || ODD.test((m.aka || []).join(" "))), "no page-title or kit-title model names: " +
+   E.models.filter(m => ODD.test(m.name)).map(m => m.name).join(", "));
+ok(E.models.filter(m => ENGINE_V.includes(m.vertical)).every(m => typeof m.size === "number" && m.size > 0 && m.unit),
+   "every outboard, marine diesel, jet ski and generator has a numeric size and unit");
+const nameDup = E.models.filter((m, i, a) => a.findIndex(o => o.vertical === m.vertical && o.brand === m.brand && o.name === m.name) !== i);
+ok(!nameDup.length, "duplicate Step 2 names within a make: " + nameDup.map(m => m.id).join(", "));
+const HM = ["SeaPro 15 hp", "SeaPro 25 hp", "SeaPro 60 hp", "SeaPro 90 hp", "SeaPro 2.1L 115 hp", "SeaPro 3.0L 150 hp",
+  "SeaPro V6 3.4L 200 hp", "SeaPro V8 4.6L 250 hp", "SeaPro V8 4.6L 300 hp", "SeaPro V10 5.7L 350 hp", "SeaPro V12 7.6L 500 hp",
+  "Verado V10 5.7L 400 hp", "Avator 7.5e", "Avator 20e", "Avator 35e",
+  "FourStroke 2.1L 115 hp", "FourStroke V8 4.6L 250–300 hp", "Verado L6 200–350 hp"];
+const merc = E.models.filter(m => m.vertical === "outboards" && m.brand === "Mercury");
+ok(HM.every(n => merc.some(m => m.name === n)) && merc.length === HM.length, `Mercury lists the Hassan Marine range + existing engines (${merc.length})`);
+ok(!fitCount["mercury-seapro-115"], "SeaPro 115 does not carry the FourStroke 115 stock list");
+ok(E.models.some(m => m.id === "yamaha-15fmh-2stroke") && E.models.some(m => m.id === "yamaha-e15dmh-enduro-2stroke"), "Yamaha 15FMH and E15DMH stay separate engines");
+// The picker's sort, run from app.js on the shipped models.
+const sortSrc = app.match(/function byEngineSize[\s\S]*?\n}\n/);
+ok(sortSrc, "app.js defines byEngineSize()");
+if (sortSrc) {
+  const sctx = {};
+  vm.createContext(sctx);
+  vm.runInContext(sortSrc[0] + ";globalThis.__s = byEngineSize;", sctx);
+  const step2 = (v, b) => E.models.filter(m => m.vertical === v && m.brand === b).sort(sctx.__s).map(m => m.name);
+  const before = (list, a, b) => list.indexOf(a) >= 0 && list.indexOf(b) >= 0 && list.indexOf(a) < list.indexOf(b);
+  const mList = step2("outboards", "Mercury"), yList = step2("outboards", "Yamaha");
+  ok(before(mList, "SeaPro 15 hp", "SeaPro V12 7.6L 500 hp"), "Mercury: SeaPro 15 before SeaPro 500");
+  ok(mList[0] === "Avator 7.5e" && before(mList, "FourStroke 2.1L 115 hp", "SeaPro 2.1L 115 hp"), "Mercury: 7.5 hp first; FourStroke 115 before SeaPro 115");
+  ok(yList[0] === "2-stroke 4 hp" && before(yList, "2-stroke 4 hp", "F350 350 hp") && yList[yList.length - 1] === "XTO 450 hp", "Yamaha: 2-stroke 4 hp first, XTO 450 last");
+  ok(before(yList, "2-stroke 15 hp (2000–2009)", "F15 15 hp") && before(yList, "F15 15 hp", "Enduro 2-stroke E15DMH 15 hp"), "Yamaha 15 hp: 2-stroke, then F, then Enduro");
+  ok(step2("generators", "Honda").join("|") === "EU22i inverter generator|EU30is inverter generator|EU70is inverter generator", "Honda generators by kVA");
+  ok(step2("jetski", "Sea-Doo")[0].startsWith("Spark"), "Sea-Doo: Spark first");
+  for (const v of ENGINE_V) for (const b of [...new Set(E.models.filter(m => m.vertical === v).map(m => m.brand))]) {
+    const sizes = E.models.filter(m => m.vertical === v && m.brand === b).sort(sctx.__s).map(m => m.size);
+    ok(sizes.every((x, i) => !i || sizes[i - 1] <= x), `${v} / ${b}: Step 2 sizes ascend`);
+  }
+}
+for (const v of ENGINE_V) {
+  const ms = E.models.filter(m => m.vertical === v);
+  console.log(`  ${v.padEnd(14)} ${ms.length} models (${ms.filter(m => !fitCount[m.id]).length} empty)`);
+}
 
 sec("No reference prices in customer notes");
 // Dealer research (overseas ref prices, competitor stock on a date) must not reach the site.

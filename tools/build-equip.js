@@ -8,6 +8,9 @@
      src-data/data-power-next.js   POWER_MODELS, POWER_PARTS (Honda power products, honda.mv)
      src-data/data-dealers-next.js DEALER_MARINE_MODELS, DEALER_MARINE_PARTS (Parsun outboards;
                                    its bike half is merged into data.js by tools/merge-dealers.js)
+     src-data/data-engine-range.js MODEL_META (Step 2 names + numeric sort size for outboards,
+                                   marine diesel, jet skis, generators), RANGE_MODELS (engines
+                                   sold in the Maldives with no public parts list; zero parts)
 
    Output: data-equip.js — one global, `var EQUIP = {verticals, cats, models, parts}`.
    The site loads it lazily; data.js (bikes) is untouched.
@@ -19,6 +22,8 @@
      replace the older marine WB20XT / WB30XT / WT30X models. Marine-only rows for
      those models are kept, re-pointed to the honda.mv model and noted.
    - Rows sharing an OEM number within one vertical merge into one part.
+   - Models with no parts are kept (RANGE_MODELS are empty by design); the site
+     shows "0 parts" and asks for a price and the engine serial.
    - `stock` passes through only as a public flag (Mercury 115 rows: 1 = In stock);
      the held quantity stays out of the site. */
 const fs = require("fs");
@@ -32,11 +37,13 @@ vm.createContext(ctx);
 vm.runInContext(
   fs.readFileSync(path.join(root, "src-data/data-marine.js"), "utf8") + "\n" +
   fs.readFileSync(path.join(root, "src-data/data-power-next.js"), "utf8") + "\n" +
-  fs.readFileSync(path.join(root, "src-data/data-dealers-next.js"), "utf8") +
+  fs.readFileSync(path.join(root, "src-data/data-dealers-next.js"), "utf8") + "\n" +
+  fs.readFileSync(path.join(root, "src-data/data-engine-range.js"), "utf8") +
   "\n;globalThis.__X = {VERTICALS, MARINE_CATS, MARINE_MODELS, MARINE_PARTS, POWER_MODELS, POWER_PARTS," +
-  " DEALER_MARINE_MODELS, DEALER_MARINE_PARTS};",
+  " DEALER_MARINE_MODELS, DEALER_MARINE_PARTS, MODEL_META, RANGE_MODELS};",
   ctx);
-const { VERTICALS, MARINE_CATS, POWER_MODELS, POWER_PARTS, DEALER_MARINE_MODELS, DEALER_MARINE_PARTS } = ctx.__X;
+const { VERTICALS, MARINE_CATS, POWER_MODELS, POWER_PARTS, DEALER_MARINE_MODELS, DEALER_MARINE_PARTS,
+  MODEL_META, RANGE_MODELS } = ctx.__X;
 /* Dealer marine rows (Parsun) share the marine schema, so they go through the
    same path as the scraped marine catalogue. Their notes lose reference prices
    and dated stock remarks first (tools/dealer-notes.js). */
@@ -66,32 +73,20 @@ const cats = MARINE_CATS.map(c => ({ id: c.id, name: c.name }));
 const CAT_IDS = new Set(cats.map(c => c.id));
 
 /* ---------- Models ---------- */
-/* Several scraped model names are page titles ("PartsVu product", "Yanmar Shop
-   (official ...) 6HYM-WET", a kit title). The display name for those is taken
-   from the model id; the original title is kept as `src_title` for search. */
-const NAME_FIX = {
-  "mercury-fourstroke-v8-4.6l-250-300": "FourStroke V8 4.6L 250–300 hp",
-  "mercury-verado-l6-200-350":          "Verado L6 200–350 hp",
-  "seadoo-gti-130-170-1630ace-2020":    "GTI 130 / 170 (1630 ACE, 2020+)",
-  "seadoo-gtx-rxpx-300-1630ace-sc-2016":"GTX / RXP-X 300 (1630 ACE SC, 2016+)",
-  "seadoo-spark-900ace-2014":           "Spark (900 ACE, 2014+)",
-  "suzuki-df100a-df140a":               "DF100A – DF140A",
-  "suzuki-df200-df250-v6-3.6l":         "DF200 / DF250 V6 3.6L",
-  "suzuki-df250a-df300a-v6-4.0l":       "DF250A / DF300A V6 4.0L",
-  "suzuki-df40a-df60a":                 "DF40A – DF60A",
-  "suzuki-df70a-df90a":                 "DF70A – DF90A",
-  "yamaha-15hp-2stroke":                "15 hp 2-stroke",
-  "yamaha-f115-2014":                   "F115 (2014+)",
-  "yamaha-f150-f175-2.7-2.8l":          "F150 / F175 2.7–2.8L",
-  "yamaha-f200-f225-v6-3.3l":           "F200 / F225 V6 3.3L",
-  "yamaha-f250-f300-v6-4.2l-2010":      "F250 / F300 V6 4.2L (2010+)",
-  "yamaha-f250-v6-3.3l":                "F225 / F250 V6 3.3L",
-  "yamaha-f40a-2008":                   "F40A (2008+)",
-  "yamaha-f50-2006":                    "F50 (2006+)",
-  "yamaha-waverunner-fx-1.8l-ho-svho-2009": "WaveRunner FX 1.8L HO / SVHO",
-  "yamaha-waverunner-jetblaster-2022":  "WaveRunner JetBlaster (2022+)",
-  "yamaha-waverunner-vx-1.8l-ho-2016":  "WaveRunner VX 1.8L HO (2016–2020)",
-  "yamaha-waverunner-vx-1050-tr1-2015": "WaveRunner VX 1050 TR-1 (2015)",
+/* Outboards, marine diesel, jet skis and generators take their display name and
+   numeric sort size from MODEL_META (src-data/data-engine-range.js). Scraped page
+   titles ("PartsVu product", kit titles, "Yanmar Shop (official ...)", "BRP
+   Sea-Doo MY26 ... spec book") are not shipped; codes a name drops are kept as
+   `aka` for search. */
+const META_VERTICALS = new Set(["outboards", "marine_diesel", "jetski", "generators"]);
+const applyMeta = (out) => {
+  if (!META_VERTICALS.has(out.vertical)) return out;
+  const meta = MODEL_META[out.id];
+  if (!meta) throw new Error("no MODEL_META entry for " + out.id + " (src-data/data-engine-range.js)");
+  const [name, size, unit, fam, aka] = meta;
+  Object.assign(out, { name, size, unit, fam });
+  if (aka && aka.length) out.aka = aka;
+  return out;
 };
 const stripBrand = (brand, name) => {
   let n = name.replace(/^Yanmar Shop \(official Yanmar parts catalogue\)\s*/, "");
@@ -128,18 +123,22 @@ let droppedModels = [];
 for (const m of MARINE_MODELS) {
   if (PUMP_REPLACE[m.id]) { droppedModels.push(m.id); continue; }
   if (powerIds.has(m.id)) throw new Error("unexpected model id collision " + m.id);
-  const name = NAME_FIX[m.id] || stripBrand(m.brand, m.name);
-  const out = {
-    id: m.id, vertical: m.vertical, brand: m.brand, name,
+  models.push(applyMeta({
+    id: m.id, vertical: m.vertical, brand: m.brand, name: stripBrand(m.brand, m.name),
     size: m.size || null,
     catalogue_url: m.catalogue_url,
     /* "generated from x.csv" is build provenance, not a customer note. Dealer
        model notes are research (a competitor's retail price), never shown. */
     note: DEALER_MARINE_MODELS.includes(m) || /^generated from /.test(m.note) ? null : m.note,
-  };
-  if (name !== m.name && !m.name.endsWith(name)) out.src_title = m.name;
-  models.push(out);
+  }));
 }
+/* Empty engine entries: no parts, no catalogue or source link, no note. */
+for (const [id, vertical, brand, name, size, unit, fam] of RANGE_MODELS) {
+  if (models.some(m => m.id === id)) throw new Error("range model id collision " + id);
+  models.push({ id, vertical, brand, name, size, unit, fam, empty: true });
+}
+const unusedMeta = Object.keys(MODEL_META).filter(id => !models.some(m => m.id === id));
+if (unusedMeta.length) throw new Error("MODEL_META entries with no model: " + unusedMeta.join(", "));
 const MODEL = Object.fromEntries(models.map(m => [m.id, m]));
 
 /* ---------- Parts ---------- */
@@ -246,11 +245,17 @@ const parts = [...byKey.values()].map(r => {
   return out;
 });
 
-/* Drop models that ended up with no parts (none expected). */
+/* Models with no parts stay in the picker. Only RANGE_MODELS are expected to be
+   empty; a scraped model losing all its parts is a build error. */
 const used = new Set(parts.flatMap(p => p.fits));
-const emptyModels = models.filter(m => !used.has(m.id)).map(m => m.id);
+const emptyModels = models.filter(m => !used.has(m.id));
+const lostParts = emptyModels.filter(m => !m.empty).map(m => m.id);
+if (lostParts.length) throw new Error("models that lost all their parts: " + lostParts.join(", "));
+const rangeWithParts = models.filter(m => m.empty && used.has(m.id)).map(m => m.id);
+if (rangeWithParts.length) throw new Error("RANGE_MODELS entries that picked up parts: " + rangeWithParts.join(", "));
+for (const m of models) delete m.empty;
 
-const EQUIP = { verticals, cats, models: models.filter(m => used.has(m.id)), urls, parts };
+const EQUIP = { verticals, cats, models, urls, parts };
 const banner = "/* avas.parts marine + equipment catalogue. GENERATED by tools/build-equip.js from src-data/ — do not edit.\n" +
   "   Every part is ask-for-price (price:null, askPrice:true). Part numbers as printed. */\n";
 fs.writeFileSync(path.join(root, "data-equip.js"), banner + "var EQUIP=" + JSON.stringify(EQUIP) + ";\n");
@@ -265,11 +270,12 @@ console.log(`marine pump rows re-pointed to honda.mv models: ${repointed} (${rep
 console.log(`plug rows with only a maker code (code used as part number): ${makerCode}`);
 console.log(`rows dropped with no part number at all: ${noNumber.length}${noNumber.length ? " (" + noNumber.join(", ") + ")" : ""}`);
 console.log(`rows merged by OEM within a vertical: ${merged} (pumps: ${mergedPumps})`);
-if (emptyModels.length) console.log(`models with no parts, omitted: ${emptyModels.join(", ")}`);
+console.log(`empty engine entries kept (0 parts): ${emptyModels.length}`);
 console.log(`output: ${EQUIP.models.length} models, ${parts.length} parts`);
 console.log(`dealer marine (Parsun): ${parsun.length} models, ${parts.filter(p => p.fits.some(f => parsun.some(m => m.id === f))).length} parts`);
 for (const v of verticals.filter(v => v.id !== "bikes")) {
   const nm = EQUIP.models.filter(m => m.vertical === v.id).length;
+  const ne = emptyModels.filter(m => m.vertical === v.id).length;
   const np = parts.filter(p => p.vertical === v.id).length;
-  console.log(`  ${v.name.padEnd(24)} ${String(nm).padStart(3)} models  ${String(np).padStart(4)} parts`);
+  console.log(`  ${v.name.padEnd(24)} ${String(nm).padStart(3)} models (${ne} empty)  ${String(np).padStart(4)} parts`);
 }

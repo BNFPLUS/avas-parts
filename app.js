@@ -123,7 +123,7 @@ PARTS.forEach(p => { p._h = haystack(p); });
    engine code — buyers search by "KTA19", "6HYM", "PC200-8", "WB30XT3". */
 const squash = (s) => String(s).replace(/[-\/.\s]/g, "");
 function eqModelText(m) {
-  return [m.brand, m.name, m.model_number, m.engine, m.kind, m.catalogue, m.src_title, m.size].filter(Boolean).join(" ");
+  return [m.brand, m.name, m.model_number, m.engine, m.kind, m.catalogue, (m.aka || []).join(" ")].filter(Boolean).join(" ");
 }
 function eqHaystack(p) {
   const v = VERT_BY_ID[p.vertical];
@@ -272,9 +272,17 @@ function renderEqPickers() {
   const count = {};
   EQ.parts.forEach(p => { if (p.vertical === state.vertical) p.fits.forEach(id => { count[id] = (count[id] || 0) + 1; }); });
   $("#modelChips").innerHTML = list
-    .sort((a, b) => a.name.localeCompare(b.name, "en", { numeric: true }))
+    .sort(byEngineSize)
     .map(m => `<button class="chip" data-model="${esc(m.id)}" aria-pressed="${state.model === m.id}">${esc(m.name)}<span class="cc">${count[m.id] || 0} parts</span></button>`)
     .join("");
+}
+
+/* Step 2 engines: smallest first (hp, litres, kVA or cc from m.size), then
+   family (2-stroke, 4-stroke, SeaPro / Enduro / Verado, electric), then name.
+   Models without a numeric size (pumps, machinery) sort by name after them. */
+function byEngineSize(a, b) {
+  const n = (m) => typeof m.size === "number" ? m.size : Infinity;
+  return (n(a) - n(b)) || ((a.fam || 0) - (b.fam || 0)) || a.name.localeCompare(b.name, "en", { numeric: true });
 }
 
 /* ---------- Render: brand + model pickers ---------- */
@@ -435,7 +443,8 @@ function renderModelNote() {
   const bits = [];
   if (m.model_number) bits.push(`<span><b>Model</b> ${esc(m.model_number)}</span>`);
   if (m.engine) bits.push(`<span><b>Engine</b> ${esc(m.engine)}</span>`);
-  if (m.size) bits.push(`<span><b>Size</b> ${esc(m.size)}</span>`);
+  /* Engines carry hp / litres in the name; size there is only a sort key. */
+  if (typeof m.size === "string") bits.push(`<span><b>Size</b> ${esc(m.size)}</span>`);
   if (m.catalogue) bits.push(`<span><b>Catalogue</b> ${esc(m.catalogue)}</span>`);
   const note = m.note ? `<div class="mnote-note">${SERIAL_HINT.test(m.note) || /unverified|nearest/i.test(m.note) ? `<span class="serialnote">Check frame/serial number</span> ` : ""}${esc(m.note)}</div>` : "";
   /* Power products link their honda.mv page. A marine model's catalogue_url is
@@ -471,6 +480,10 @@ function renderResults() {
   $("#clearBtn").hidden = !(state.brand || state.model || state.cat || state.q.trim());
   renderModelNote();
 
+  if (!r.length && m && state.vertical !== "bikes" && !state.q.trim() && !EQ.parts.some(p => p.fits.includes(m.id))) {
+    $("#grid").innerHTML = emptyModelHTML(m);
+    return;
+  }
   if (!r.length) {
     $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1">
       <h3>Nothing matches that yet</h3>
@@ -480,6 +493,17 @@ function renderResults() {
     return;
   }
   $("#grid").innerHTML = r.map(cardHTML).join("");
+}
+
+/* An engine we sell for but have no confirmed parts list for: no invented
+   numbers, just ask for a price with the serial. */
+function emptyModelHTML(m) {
+  const txt = `Hi, I need parts for a ${eqModelName(m)}. Engine serial number: `;
+  return `<div class="empty emptymodel" style="grid-column:1/-1">
+      <h3>Ask for a price</h3>
+      <p>We have no confirmed part numbers for the ${esc(eqModelName(m))} on the site yet. Send us the engine serial number and the part you need, and we will find the right part and price it.</p>
+      <a class="clearbtn" id="askEngine" href="${esc(waURL(txt))}" target="_blank" rel="noopener">Send the engine serial on WhatsApp</a>
+    </div>`;
 }
 
 /* ---------- Detail drawer: equipment part ---------- */
@@ -711,10 +735,11 @@ function orderText() {
   ].filter(Boolean).join("\n");
 }
 
+const waURL = (txt) => `https://wa.me/960${SHOP.whatsapp}?text=${encodeURIComponent(txt)}`;
+
 function sendOrder() {
   const txt = orderText();
-  const url = `https://wa.me/960${SHOP.whatsapp}?text=${encodeURIComponent(txt)}`;
-  window.open(url, "_blank", "noopener");
+  window.open(waURL(txt), "_blank", "noopener");
   navigator.clipboard?.writeText(txt).catch(() => {});
   toast("Order opened in WhatsApp — also copied");
 }

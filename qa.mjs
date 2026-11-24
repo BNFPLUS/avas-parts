@@ -296,10 +296,16 @@ for (const v of VERTS) {
   await page.waitForSelector("#brandChips [data-brand]", { timeout: 10000 });
   await page.waitForTimeout(150);
   const brands = await page.locator("#brandChips [data-brand]").count();
-  await page.locator("#brandChips [data-brand]").first().click();
+  /* first make that has a model with parts (Caterpillar marine is empty entries only) */
+  const firstBrand = await page.evaluate((v) => [...document.querySelectorAll("#brandChips [data-brand]")]
+    .findIndex(b => EQ.models.some(m => m.vertical === v && m.brand === b.dataset.brand && EQ.parts.some(p => p.fits.includes(m.id)))), v);
+  await page.locator("#brandChips [data-brand]").nth(firstBrand).click();
   await page.waitForTimeout(200);
   const models = await page.locator("#modelChips [data-model]").count();
-  await page.locator("#modelChips [data-model]").first().click();
+  /* empty engine entries (0 parts) are checked separately below */
+  const firstFull = await page.locator("#modelChips [data-model]").evaluateAll(els =>
+    els.findIndex(e => e.querySelector(".cc").textContent !== "0 parts"));
+  await page.locator("#modelChips [data-model]").nth(firstFull).click();
   await page.waitForTimeout(200);
   const cards = await page.locator(".card").count();
   const ask = await page.locator(".card:has(.price .asklab)").count();
@@ -390,7 +396,7 @@ await page.click("#goBtn");
 await page.waitForTimeout(300);
 const waEq = decodeURIComponent((await page.evaluate(() => window.__wa || "")).split("?text=")[1] || "");
 ok(waEq.includes(`${eqPart.oem} — price to confirm`), "WhatsApp text has the OEM number marked \"price to confirm\"");
-ok(waEq.includes("For: Yamaha F250 / F300 V6 4.2L (2010+)"), "WhatsApp text names the engine the part is for");
+ok(waEq.includes("For: Yamaha F250 / F300 V6 4.2L 250–300 hp (2010+)"), "WhatsApp text names the engine the part is for");
 await page.click('#cart [data-close]');
 await page.waitForTimeout(300);
 
@@ -470,14 +476,41 @@ const parsunIds = await cardIds();
 const parsunMisfit = await page.evaluate((ids) => ids.filter(id => !PART_BY_ID[id].fits.includes("parsun-f60-efi")), parsunIds);
 ok(parsunIds.length > 0 && parsunMisfit.length === 0 && (await page.locator("#rTitle").textContent()).includes("Parsun F60"),
    `Outboards > Parsun > F60 loads its parts (${parsunIds.length})`);
-ok(await page.locator("#modelChips [data-model]").count() === 4, "Parsun lists 4 engines");
+ok(await page.locator("#modelChips [data-model]").count() === 6, "Parsun lists 6 engines (4 with parts, F130 and F300 empty)");
+
+console.log("\nStep 2 engine order and empty engines");
+await page.click('[data-vertical="outboards"]');
+await page.waitForTimeout(150);
+await page.click('#brandChips [data-brand="Mercury"]');
+await page.waitForTimeout(150);
+const mChips = await page.locator("#modelChips [data-model]").evaluateAll(els => els.map(e => e.dataset.model));
+ok(mChips.length === 18 && mChips[0] === "mercury-avator-7-5e" && mChips.indexOf("mercury-seapro-15") < mChips.indexOf("mercury-seapro-500") &&
+   mChips.indexOf("mercury-115-fourstroke-efi") === mChips.indexOf("mercury-seapro-115") - 1,
+   `Mercury Step 2 is smallest first, FourStroke 115 just before SeaPro 115 (${mChips.length} engines)`);
+await page.click('#modelChips [data-model="mercury-seapro-15"]');
+await page.waitForTimeout(250);
+ok(await page.locator('#modelChips [data-model="mercury-seapro-15"] .cc').textContent() === "0 parts", "SeaPro 15 chip shows 0 parts");
+ok(await page.locator(".card").count() === 0 && await page.locator(".emptymodel h3").textContent() === "Ask for a price" &&
+   /engine serial/.test(await page.locator(".emptymodel").textContent()), "empty engine asks for a price and the engine serial");
+const askHref = await page.locator("#askEngine").getAttribute("href");
+ok(askHref.startsWith("https://wa.me/9609600000?text=") && decodeURIComponent(askHref).includes("Mercury SeaPro 15 hp") &&
+   await page.locator("#grid a, #rNote a").count() === 1 && await page.locator("#rNote").isHidden(),
+   "the only link is the shop's WhatsApp, prefilled with the engine; no source link");
+await page.click('[data-vertical="outboards"]');
+await page.waitForTimeout(150);
+await page.click('#brandChips [data-brand="Yamaha"]');
+await page.waitForTimeout(150);
+const yChips = await page.locator("#modelChips [data-model]").evaluateAll(els => els.map(e => e.dataset.model));
+ok(yChips[0] === "yamaha-4hp-2stroke" && yChips.indexOf("yamaha-4hp-2stroke") < yChips.indexOf("yamaha-f350"), "Yamaha: 2-stroke 4 hp before F350");
 
 console.log("\nMercury 115 FourStroke EFI (stock list)");
 await pickModel("outboards", "Mercury", "mercury-115-fourstroke-efi");
 const m115Ids = await cardIds();
 const m115Misfit = await page.evaluate((ids) => ids.filter(id => !PART_BY_ID[id].fits.includes("mercury-115-fourstroke-efi")), m115Ids);
-ok(m115Ids.length === 58 && m115Misfit.length === 0 && (await page.locator("#rTitle").textContent()).includes("115 FourStroke EFI (2.1L)"),
-   `Outboards > Mercury > 115 FourStroke EFI (2.1L) lists its 58 parts (${m115Ids.length})`);
+ok(m115Ids.length === 58 && m115Misfit.length === 0 && (await page.locator("#rTitle").textContent()) === "Mercury FourStroke 2.1L 115 hp",
+   `Outboards > Mercury > FourStroke 2.1L 115 hp lists its 58 parts (${m115Ids.length})`);
+ok(await page.locator('#modelChips [data-model="mercury-115-fourstroke-efi"]').textContent() === "FourStroke 2.1L 115 hp58 parts",
+   "Step 2 button reads FourStroke 2.1L 115 hp · 58 parts");
 const m115Note = await page.locator("#rNote").textContent();
 ok(await page.locator("#rNote").isVisible() && /2B095049/.test(m115Note) && await page.locator("#rNote a").count() === 0,
    "115 model note names the serial range and has no link");

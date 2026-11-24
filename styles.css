@@ -438,6 +438,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .empty h3 { font-family: var(--f-disp); font-size: 19px; margin: 0 0 6px; color: var(--ink); }
 .empty p { margin: 0 0 14px; font-size: 14px; }
+.emptymodel p { max-width: 60ch; margin-left: auto; margin-right: auto; }
+.emptymodel a.clearbtn { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; text-decoration: none; font-size: 12px; }
 
 /* ============ DRAWER (cart + detail) ============ */
 .scrim {
