@@ -212,7 +212,9 @@ before you pick and pack. Set `v: 1` in `data.js` as you confirm each one.
 
 **Shop view only.** The site has no counter or staff view. Landed cost, bin location,
 re-order point and the held quantity of bike parts live in `src-data/bike-staff.json`, which
-the site never loads; `data.js` ships only a stock flag (`stock: 1` in stock, `0` on order,
+is gitignored (kept on the shop machine only, with a private copy outside the repo) and
+which the site never loads; `node test.js` runs the cost and stock checks when the file is
+present and skips them when it is not; `data.js` ships only a stock flag (`stock: 1` in stock, `0` on order,
 `lowStock: true`). `node tools/split-staff.js` moves those fields out of a regenerated
 `data.js`, and `node build.js` strips them again and fails if any reach `dist/`. Source and
 catalogue URLs stay in the data for research but are never rendered; the build fails if the

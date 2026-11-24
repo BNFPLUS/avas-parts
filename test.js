@@ -47,20 +47,30 @@ const badPrice = PARTS.filter(p => !isPriced(p) && !isAsk(p)).map(p => p.id);
 ok(!badPrice.length, "neither priced nor askPrice: " + badPrice.join(", "));
 const miss = PARTS.filter(p => !p.name || !p.oem || !p.cat).map(p => p.id);
 ok(!miss.length, "missing name/oem/cat: " + miss.join(", "));
-const STAFF = JSON.parse(fs.readFileSync("src-data/bike-staff.json", "utf8"));
-const staffOf = (p) => STAFF[p.id] || {};
-const missStaff = PRICED.filter(p => { const s = staffOf(p);
-  return typeof s.cost !== "number" || s.stock == null || s.rop == null || !s.bin; }).map(p => p.id);
-ok(!missStaff.length, "priced parts missing cost/stock/rop/bin: " + missStaff.join(", "));
+// The sidecar is private (gitignored): present on the shop machine, absent in CI
+// or a fresh clone. Its checks run when it is there and are skipped otherwise.
+const STAFF_PATH = "src-data/bike-staff.json";
+const STAFF = fs.existsSync(STAFF_PATH) ? JSON.parse(fs.readFileSync(STAFF_PATH, "utf8")) : null;
+if (!STAFF) console.log("  skipping staff/cost checks: " + STAFF_PATH + " not present");
+let missStaff = [];
+if (STAFF) {
+  const staffOf = (p) => STAFF[p.id] || {};
+  missStaff = PRICED.filter(p => { const s = staffOf(p);
+    return typeof s.cost !== "number" || s.stock == null || s.rop == null || !s.bin; }).map(p => p.id);
+  ok(!missStaff.length, "priced parts missing cost/stock/rop/bin: " + missStaff.join(", "));
+}
 console.log(`  ${PRICED.length} priced · ${ASK.length} ask-for-price · ${miss.length + missStaff.length + badPrice.length ? "problems found" : "every part complete"}`);
 
 sec("Commercial sanity");
-const badMargin = PRICED.filter(p => staffOf(p).cost >= p.price).map(p => p.id);
-ok(!badMargin.length, "cost >= price: " + badMargin.join(", "));
-const margins = PRICED.map(p => (p.price - staffOf(p).cost) / p.price);
-const avg = margins.reduce((a, b) => a + b, 0) / margins.length;
-console.log(`  average gross margin (priced parts) ${(avg * 100).toFixed(1)}%`);
-ok(avg > 0.3 && avg < 0.65, "average margin outside a plausible 30–65% band");
+if (STAFF) {
+  const staffOf = (p) => STAFF[p.id] || {};
+  const badMargin = PRICED.filter(p => staffOf(p).cost >= p.price).map(p => p.id);
+  ok(!badMargin.length, "cost >= price: " + badMargin.join(", "));
+  const margins = PRICED.map(p => (p.price - staffOf(p).cost) / p.price);
+  const avg = margins.reduce((a, b) => a + b, 0) / margins.length;
+  console.log(`  average gross margin (priced parts) ${(avg * 100).toFixed(1)}%`);
+  ok(avg > 0.3 && avg < 0.65, "average margin outside a plausible 30–65% band");
+} else console.log("  skipping staff/cost checks: " + STAFF_PATH + " not present");
 
 sec("No staff data in the public data.js");
 const staffKeys = PARTS.filter(p => ["cost", "bin", "rop"].some(k => k in p)).map(p => p.id);
@@ -68,12 +78,15 @@ ok(!staffKeys.length, "data.js parts ship cost / bin / rop: " + staffKeys.slice(
 const qtyParts = PARTS.filter(p => "stock" in p && p.stock !== 0 && p.stock !== 1).map(p => p.id);
 ok(!qtyParts.length, "data.js parts ship an exact stock quantity (must be a 0/1 flag): " + qtyParts.slice(0, 20).join(", "));
 const flagged = PARTS.filter(p => "stock" in p);
-ok(flagged.length > 0 && flagged.every(p => STAFF[p.id] && typeof STAFF[p.id].stock === "number"),
-   "every public stock flag comes from a sidecar quantity");
-ok(flagged.every(p => p.stock === (STAFF[p.id].stock > 0 ? 1 : 0)), "public stock flags match the sidecar quantities");
-ok(PARTS.every(p => !p.lowStock || (STAFF[p.id].stock > 0 && STAFF[p.id].stock <= STAFF[p.id].rop)), "lowStock only where qty <= re-order point");
-ok(Object.keys(STAFF).every(id => seen[id]), "every sidecar entry names a part in data.js");
-console.log(`  ${flagged.length} parts ship a stock flag; ${Object.keys(STAFF).length} sidecar entries hold cost / bin / rop / qty`);
+ok(flagged.length > 0, "some parts ship a public stock flag");
+if (STAFF) {
+  ok(flagged.every(p => STAFF[p.id] && typeof STAFF[p.id].stock === "number"),
+     "every public stock flag comes from a sidecar quantity");
+  ok(flagged.every(p => p.stock === (STAFF[p.id].stock > 0 ? 1 : 0)), "public stock flags match the sidecar quantities");
+  ok(PARTS.every(p => !p.lowStock || (STAFF[p.id].stock > 0 && STAFF[p.id].stock <= STAFF[p.id].rop)), "lowStock only where qty <= re-order point");
+  ok(Object.keys(STAFF).every(id => seen[id]), "every sidecar entry names a part in data.js");
+  console.log(`  ${flagged.length} parts ship a stock flag; ${Object.keys(STAFF).length} sidecar entries hold cost / bin / rop / qty`);
+} else console.log(`  ${flagged.length} parts ship a stock flag; skipping staff/cost checks: ${STAFF_PATH} not present`);
 
 sec("Part-number decoding");
 // Priced parts (the previous catalogue) must fully decode. Ask-for-price parts
