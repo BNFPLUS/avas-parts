@@ -18,7 +18,9 @@
    - Honda pumps: the honda.mv exact-model lists (WB20XT3, WB30XT3, WT30XK4)
      replace the older marine WB20XT / WB30XT / WT30X models. Marine-only rows for
      those models are kept, re-pointed to the honda.mv model and noted.
-   - Rows sharing an OEM number within one vertical merge into one part. */
+   - Rows sharing an OEM number within one vertical merge into one part.
+   - `stock` passes through only as a public flag (Mercury 115 rows: 1 = In stock);
+     the held quantity stays out of the site. */
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
@@ -197,6 +199,7 @@ for (const p of MARINE_PARTS) {
     alts, fits: [...fits], tier: p.confirmed === "verify" ? "genuine-unverified" : p.tier, note,
     catalogue_name: p.catalogue_name, priority: p.priority,
     sources: [...new Set([p.source_url, ...(p.sources || [])].filter(Boolean))],
+    stock: typeof p.stock === "number" ? p.stock : null,
   });
 }
 
@@ -214,6 +217,7 @@ for (const r of rows) {
   prev.sources = uniq([...prev.sources, ...r.sources]);
   prev.note = uniq([...prev.note.split("; "), ...r.note.split("; ")]).join("; ");
   if (r.tier === "genuine") prev.tier = "genuine";
+  if (typeof r.stock === "number") prev.stock = Math.max(prev.stock ?? 0, r.stock);
   prev.v = Math.max(prev.v, r.v);
 }
 
@@ -229,6 +233,9 @@ const parts = [...byKey.values()].map(r => {
   if (r.note) out.note = r.note;
   if (r.catalogue_name && r.catalogue_name.toLowerCase() !== r.name.toLowerCase()) out.catalogue_name = r.catalogue_name;
   if (r.priority) out.priority = r.priority;
+  /* A stock flag only (1 = in stock), never the held quantity; the app shows it
+     as In stock / On order. Cost, bin and re-order point are never shipped. */
+  if (typeof r.stock === "number") out.stock = r.stock;
   /* Source URLs repeat across hundreds of rows, so they are stored once in
      EQUIP.urls and referenced by index; the app expands p.src back into
      p.sources / p.source_url when it loads the file. */

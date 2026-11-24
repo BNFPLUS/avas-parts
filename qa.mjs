@@ -471,6 +471,29 @@ const parsunMisfit = await page.evaluate((ids) => ids.filter(id => !PART_BY_ID[i
 ok(parsunIds.length > 0 && parsunMisfit.length === 0 && (await page.locator("#rTitle").textContent()).includes("Parsun F60"),
    `Outboards > Parsun > F60 loads its parts (${parsunIds.length})`);
 ok(await page.locator("#modelChips [data-model]").count() === 4, "Parsun lists 4 engines");
+
+console.log("\nMercury 115 FourStroke EFI (stock list)");
+await pickModel("outboards", "Mercury", "mercury-115-fourstroke-efi");
+const m115Ids = await cardIds();
+const m115Misfit = await page.evaluate((ids) => ids.filter(id => !PART_BY_ID[id].fits.includes("mercury-115-fourstroke-efi")), m115Ids);
+ok(m115Ids.length === 58 && m115Misfit.length === 0 && (await page.locator("#rTitle").textContent()).includes("115 FourStroke EFI (2.1L)"),
+   `Outboards > Mercury > 115 FourStroke EFI (2.1L) lists its 58 parts (${m115Ids.length})`);
+const m115Note = await page.locator("#rNote").textContent();
+ok(await page.locator("#rNote").isVisible() && /2B095049/.test(m115Note) && await page.locator("#rNote a").count() === 0,
+   "115 model note names the serial range and has no link");
+ok(await page.locator(".eqcard .stockline").count() === 58 &&
+   (await page.locator(".eqcard .stockline").evaluateAll(els => els.every(e => e.textContent.trim().endsWith("In stock")))),
+   "every 115 card shows In stock");
+ok(await page.locator(".eqcard .staffbox").evaluateAll(els => els.every(e => !/\d/.test(e.textContent))),
+   "no stock quantity in the 115 card staff box");
+ok(await page.locator(".eqcard .unver").count() === 13, `13 of the 115 numbers are marked to be confirmed (${await page.locator(".eqcard .unver").count()})`);
+const k01 = await page.evaluate(() => EQ.parts.find(p => p.oem === "35-877769K01").id);
+await page.click(`[data-detail="${k01}"]`);
+await page.waitForTimeout(400);
+ok(await page.locator("#detailBody .srclink").count() === 0 && (await page.locator("#detailBody").textContent()).includes("No source link recorded."),
+   "35-877769K01 drawer has no source link");
+await page.keyboard.press("Escape");
+await page.waitForTimeout(250);
 await page.click('[data-vertical="bikes"]');
 await page.waitForTimeout(250);
 await page.click("#clearBtn").catch(() => {});
@@ -503,6 +526,14 @@ await searchFinds("6HYM", `p.vertical && p.fits.includes("yanmar-6hym-wet")`, "Y
 await searchFinds("PC200-8", `p.vertical && p.fits.includes("komatsu-pc200-8")`, "Komatsu PC200-8 parts");
 await searchFinds("F250 oil filter", `p.vertical === "outboards"`, "F250 oil filter");
 await searchFinds("WB30XT3", `p.vertical && p.fits.includes("honda-wb30xt-water-pump")`, "Honda WB30XT3 parts");
+await searchFinds("35-877769K01", `p.oem === "35-877769K01"`, "the Mercury 115 oil filter by number");
+{
+  const oems = await page2.locator(".card [data-detail]").evaluateAll(els => els.map(e => PART_BY_ID[e.dataset.detail].oem));
+  /* Q01 may also show (its note names K01), but always as its own card. */
+  ok(oems.filter(o => o === "35-877769K01").length === 1 && oems.every(o => o === "35-877769K01" || o === "35-877769Q01"),
+     `search 35-877769K01 shows one K01 card; Q01 stays a separate part (${oems.join(", ")})`);
+  ok(await page2.locator(".eqcard .stockline", { hasText: "In stock" }).count() > 0, "the 35-877769K01 result shows In stock");
+}
 ok(await page2.locator(".eqcard .eqtag").first().isVisible(), "equipment results are labelled with category and part type");
 for (const q of ["B65-E7641-00", "B8R-E7641-00", "06455-KVB-912", "40530-KPH-901"]) {
   await page2.fill("#q", q);

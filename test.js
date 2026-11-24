@@ -268,7 +268,11 @@ ok(emids.has("honda-wx10-water-pump"), "Honda WX10 (not in honda.mv) should be k
 const oemSeen = {}, oemDup = [];
 E.parts.forEach(p => { const k = p.vertical + "|" + p.oem; if (oemSeen[k]) oemDup.push(k); oemSeen[k] = 1; });
 ok(!oemDup.length, "duplicate OEM within a vertical: " + oemDup.slice(0, 20).join(", "));
-const eBadSrc = E.parts.filter(p => !(p.src || []).length || p.src.some(i => !/^https?:\/\//.test(E.urls[i] || ""))).map(p => p.id);
+/* Mercury 115 stock-list parts deliberately ship with no source link (research
+   URLs stay in src-data/mercury-115-sources.md); every other part needs one. */
+const M115 = "mercury-115-fourstroke-efi";
+const isM115 = (p) => p.fits.length === 1 && p.fits[0] === M115;
+const eBadSrc = E.parts.filter(p => !isM115(p)).filter(p => !(p.src || []).length || p.src.some(i => !/^https?:\/\//.test(E.urls[i] || ""))).map(p => p.id);
 ok(!eBadSrc.length, "equipment parts without a resolvable source url: " + eBadSrc.slice(0, 20).join(", "));
 ok(E.parts.some(p => /\//.test(p.oem)), "slash part numbers (e.g. JCB 320/B4420) kept as printed");
 const unv = E.parts.filter(p => p.tier === "genuine-unverified").length;
@@ -284,6 +288,44 @@ ok(parsunParts.every(p => p.price === null && p.askPrice === true && p.src.lengt
 ok(parsunParts.every(p => p.fits.every(f => pids.has(f))), "Parsun parts fit only Parsun engines");
 console.log(`  Parsun: ${parsun.length} models, ${parsunParts.length} parts`);
 ok(html.includes('id="vertChips"'), "index.html has the category picker");
+
+sec("Mercury 115 FourStroke EFI (stock list)");
+const m115 = E.models.find(m => m.id === M115);
+ok(m115 && m115.vertical === "outboards" && m115.brand === "Mercury" && m115.name === "115 FourStroke EFI (2.1L)",
+   "model mercury-115-fourstroke-efi is an outboard named Mercury 115 FourStroke EFI (2.1L)");
+ok(m115 && !m115.catalogue_url && !/https?:|www\./i.test(m115.note || ""), "Mercury 115 model has no outside link");
+ok(m115 && /2B095049/.test(m115.note) && /serial/i.test(m115.note), "Mercury 115 model note asks for the engine serial");
+const m115Parts = E.parts.filter(p => p.fits.includes(M115));
+ok(m115Parts.length === 58 && m115Parts.every(isM115), `Mercury 115 has 58 parts fitting only that engine (${m115Parts.length})`);
+ok(m115Parts.every(p => p.price === null && p.askPrice === true), "Mercury 115 parts are ask-for-price");
+ok(m115Parts.every(p => p.stock === 1 && !("rop" in p) && !("bin" in p) && !("cost" in p)), "Mercury 115 parts ship a stock flag of 1 only (no qty, rop, bin, cost)");
+ok(m115Parts.every(p => Array.isArray(p.src) && p.src.length === 0 && !p.source_url && !p.sources), "Mercury 115 parts ship no source urls");
+ok(m115Parts.every(p => !/https?:|www\./i.test(p.note || "")), "Mercury 115 notes carry no links");
+ok(E.parts.filter(p => "stock" in p).every(isM115), "only Mercury 115 parts ship a stock flag");
+const m115By = Object.fromEntries(m115Parts.map(p => [p.oem, p]));
+for (const pn of ["35-877769K01", "35-877769Q01", "35-877761K01", "35-877761Q01"])
+  ok(m115By[pn], `${pn} is its own Mercury 115 part`);
+ok(m115By["35-877761K01"] && m115By["35-877761K01"].tier === "genuine", "35-877761K01 is confirmed (genuine)");
+ok(m115By["35-877769K01"] && m115By["35-877769K01"].tier === "genuine-unverified", "35-877769K01 is to be confirmed (genuine-unverified)");
+const m115Unv = m115Parts.filter(p => p.tier === "genuine-unverified").length;
+ok(m115Unv === 13 && m115Parts.length - m115Unv === 45, `Mercury 115: 45 confirmed + 13 to be confirmed (${m115Parts.length - m115Unv} + ${m115Unv})`);
+ok(m115By["8M0133370"] && m115By["8M0133370"].alts.includes("8M0-0133370"), "list spelling 8M0-0133370 kept as an alternate");
+// The blank-PN Clamp must not appear; the clamps that are listed all carry a 54- number.
+const noPN = m115Parts.filter(p => !p.oem.trim() || (/^clamp\b/i.test(p.name) && !/^54-/.test(p.oem)) ||
+  /end fitting|gear oil|gear lube|80W-?40|SAE ?90/i.test(p.oem + " " + p.name)).map(p => p.id);
+ok(!noPN.length, "no needs-a-part-number rows (blank Clamp, FF End Fitting, 80W-40, SAE 90) in the catalogue: " + noPN.join(", "));
+// The site search haystack (app.js eqHaystack) finds 35-877769K01.
+const appCtx = { console };
+vm.createContext(appCtx);
+const squashSrc = app.match(/const squash = [^\n]+/);
+ok(squashSrc, "app.js defines squash()");
+if (squashSrc) {
+  vm.runInContext(squashSrc[0] + ";globalThis.__sq = squash;", appCtx);
+  const sq = appCtx.__sq;
+  const hit = m115Parts.filter(p => [p.oem, sq(p.oem), ...p.alts, ...p.alts.map(sq)].join(" ").toLowerCase().includes(sq("35-877769K01").toLowerCase()));
+  ok(hit.length === 1 && hit[0].oem === "35-877769K01", "search for 35-877769K01 finds exactly that part, not Q01");
+}
+console.log(`  ${m115Parts.length} parts: ${m115Parts.length - m115Unv} confirmed, ${m115Unv} to be confirmed`);
 
 sec("No reference prices in customer notes");
 // Dealer research (overseas ref prices, competitor stock on a date) must not reach the site.

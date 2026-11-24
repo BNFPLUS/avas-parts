@@ -362,7 +362,10 @@ function eqCardHTML(p) {
     </div>
     <button class="moreb" data-detail="${esc(p.id)}">Fitment, source &amp; notes →</button>
     <div class="cardfoot">
-      <div>${priceHTML(p)}</div>
+      <div>
+        ${priceHTML(p)}
+        ${stockLine(p)}
+      </div>
       <button class="addbtn" data-add="${esc(p.id)}">Add</button>
     </div>
   </article>`;
