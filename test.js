@@ -439,5 +439,14 @@ const mvrModels = [...MODELS, ...E.models].filter(m => dealerModelIds.has(m.id) 
 ok(!mvrModels.length, "dealer model notes with an MVR price: " + mvrModels.join(", "));
 console.log(`  ${PARTS.length + E.parts.length} part notes checked`);
 
+sec("No outside site or domain in rendered text");
+// Notes, names, notices, catalogue labels and UI copy must not name an outside
+// website (tools/rendered-text.js). Internal URL fields are not scanned.
+const { renderedDomainHits } = require("./tools/rendered-text");
+const domHits = renderedDomainHits(__dirname);
+ok(!domHits.length, "rendered text names an outside site: " +
+  domHits.slice(0, 10).map(h => `${h.where} (${h.found.join(", ")})`).join("; "));
+console.log(`  ${domHits.length ? domHits.length + " hits" : "none"} (allowed: avas.parts, bearing.wiki, wa.me)`);
+
 console.log("\n" + (fail ? `${fail} check(s) FAILED` : "All checks passed"));
 process.exit(fail ? 1 : 0);

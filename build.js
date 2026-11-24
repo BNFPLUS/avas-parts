@@ -95,6 +95,12 @@ for (const m of app.matchAll(/href="\$\{([^}]*)\}"/g)) {
   if (!/^esc\((waURL\(|track\))/.test(m[1].trim())) fail(`app.js interpolates an unexpected href: ${m[1]}`);
 }
 
+/* Rendered text (notes, names, notices, catalogue labels, UI copy) must not
+   name an outside site or domain; internal URL fields may. */
+const domHits = require("./tools/rendered-text").renderedDomainHits(__dirname);
+if (domHits.length) fail("rendered text names an outside site:\n  " +
+  domHits.slice(0, 20).map(h => `${h.where}: ${h.found.join(", ")}`).join("\n  "));
+
 /* No counter view and no staff data in dist. */
 const COUNTER = [
   [/modeSwitch|data-skin|avas\.skin|applySkin|\bstate\.skin\b/, "the Shop/Counter view switch"],

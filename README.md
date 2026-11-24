@@ -218,7 +218,9 @@ present and skips them when it is not; `data.js` ships only a stock flag (`stock
 `lowStock: true`). `node tools/split-staff.js` moves those fields out of a regenerated
 `data.js`, and `node build.js` strips them again and fails if any reach `dist/`. Source and
 catalogue URLs stay in the data for research but are never rendered; the build fails if the
-UI code would link them.
+UI code would link them, or if any rendered note, name, notice, catalogue label or UI copy
+names an outside site or domain (`node tools/rendered-text.js`; notes are rewritten by
+`publicNote` in `tools/dealer-notes.js`).
 
 **Orders** go through the online checkout (`SHOP.onlineCheckout: true`), which posts to
 `SHOP.ordersApi`. Payment is by bank transfer only; cash on delivery is not offered. With the
