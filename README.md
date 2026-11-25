@@ -28,6 +28,20 @@ Aerox Alpha, Auto Care Honda numbers, Parsun outboards) is split two ways:
 `node tools/merge-dealers.js` merges the bike half into `data.js` (idempotent), and
 `tools/build-equip.js` reads the Parsun half into `data-equip.js`.
 
+### Belts and impellers from BNF PLUS stock (preview)
+
+Two more chips, **Belts** (550) and **Impellers** (63), list BNF PLUS stock from the
+price-free CSVs in `src-data/bnf/`. `node tools/build-bnf.js` (run after
+`tools/build-equip.js`) writes `data-bnf.js`. The builder refuses any price or cost column.
+The page lazy-loads that file when someone picks Belts or Impellers or types a search.
+Belts group by rib count (4PK, 6PK, 8PK, …) and section (A, B, M); deep links:
+`?v=belts&m=belts-8pk`, `?v=impellers&m=yanmar-6hym-wet`. Impeller cross-reference
+numbers are matched to engine parts by `tools/match-impeller-xref.js`, which compares
+whole numbers only and folds Cummins' trailing `00`. A matched engine part shows a
+BNF PLUS stock tag that links to the impeller. Ported BNF stock tags (22 equipment
+filters, 2 bike bearings) come from `src-data/bnf/bnf-tags.json`. Every belt and
+impeller is ask-for-price, with no photo and no source link.
+
 ---
 
 ## 1. The market

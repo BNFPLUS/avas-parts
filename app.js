@@ -11,7 +11,8 @@ const PART_BY_ID  = Object.fromEntries(PARTS.map(p => [p.id, p]));
 
 /* ---------- Verticals: bikes live in data.js; everything else (outboards,
    marine diesel, jet skis, generators, pumps, machinery) is in data-equip.js,
-   which is only fetched when someone asks for it. ---------- */
+   which is only fetched when someone asks for it. Belts and impellers (BNF PLUS
+   stock, bnf: true) are in data-bnf.js, fetched the same way. ---------- */
 const VERTICALS_UI = [
   { id: "bikes",         name: "Bikes",                  unit: "bike",    pick: "model" },
   { id: "outboards",     name: "Outboards",              unit: "engine",  pick: "engine" },
@@ -20,10 +21,19 @@ const VERTICALS_UI = [
   { id: "generators",    name: "Generators",             unit: "set",     pick: "generator set" },
   { id: "pumps",         name: "Pumps & power products", unit: "machine", pick: "pump or engine" },
   { id: "machinery",     name: "Heavy machinery",        unit: "machine", pick: "machine" },
+  { id: "belts",         name: "Belts",                  unit: "belt",    pick: "size", bnf: true },
+  { id: "impellers",     name: "Impellers",              unit: "impeller", pick: "engine", bnf: true },
 ];
 const VERT_BY_ID = Object.fromEntries(VERTICALS_UI.map(v => [v.id, v]));
 const EQ = { loaded: false, loading: null, failed: false, parts: [], models: [], cats: [] };
+const BN = { loaded: false, loading: null, failed: false, parts: [], groups: [], cats: [] };
 const isEq = (p) => !!p.vertical;
+const isBnfV = (v) => !!(VERT_BY_ID[v] && VERT_BY_ID[v].bnf);
+const isBnf = (p) => !!p.sku;                 // a belt or impeller row from BNF PLUS stock
+/* What a part is listed under: a belt group (8PK, A section) or the machines it fits. */
+const partModels = (p) => p.grp ? [p.grp] : p.fits;
+const store = (v) => isBnfV(v) ? BN : EQ;
+const vertReady = (v) => v === "bikes" || store(v).loaded;
 
 const state = {
   vertical: "bikes",
@@ -101,6 +111,7 @@ const isConfirmed = (p) => !!p.v && p.confirmed !== "verify";
 const needsCheck = (p) => !isConfirmed(p) && !isOwnSku(p);
 
 /* ---------- Search ---------- */
+const squash = (s) => String(s).replace(/[-\/.\s]/g, "");
 function haystack(p) {
   const models = p.fits.map(id => MODEL_BY_ID[id] ? MODEL_BY_ID[id].brand + " " + MODEL_BY_ID[id].name : "").join(" ");
   const pn = parsePN(p.oem);
@@ -112,14 +123,22 @@ function haystack(p) {
     pn.family ? FAMILY[pn.family] || "" : "",
     p.universal ? "universal fits all any bike" : "",
     p.note || "",
+    bnfText(p.bnf),
   ].join(" ").toLowerCase();
+}
+
+/* BNF PLUS stock tag numbers, so a BNF SKU, their number or a bearing
+   designation ("6201") finds the part. Never a price. */
+function bnfText(b) {
+  if (!b) return "";
+  return [b.sku, b.brand, b.pn, b.pn ? squash(b.pn) : "", b.designation,
+    ...(b.matches || []).map(m => `${m.sku} ${m.brand} ${m.pn}`), "bnf plus stock"].filter(Boolean).join(" ");
 }
 PARTS.forEach(p => { p._h = haystack(p); });
 
 /* Equipment parts: number as printed and with dashes/slashes/spaces removed,
    alternates, catalogue name, and every fitted machine's name, model number and
    engine code — buyers search by "KTA19", "6HYM", "PC200-8", "WB30XT3". */
-const squash = (s) => String(s).replace(/[-\/.\s]/g, "");
 function eqModelText(m) {
   return [m.brand, m.name, m.model_number, m.engine, m.kind, m.catalogue, (m.aka || []).join(" ")].filter(Boolean).join(" ");
 }
@@ -131,6 +150,22 @@ function eqHaystack(p) {
     p.fits.map(id => MODEL_BY_ID[id] ? eqModelText(MODEL_BY_ID[id]) : "").join(" "),
     CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "", v ? v.name : "",
     p.note || "",
+    bnfText(p.bnf),
+  ].join(" ").toLowerCase();
+}
+
+/* Belts and impellers: the number as printed and squashed ("8PK 1440" and
+   "8PK1440"), stock number, brand, size, cross-reference numbers, the belt
+   group and any engine an impeller cross-references to. */
+function bnfHaystack(p) {
+  const v = VERT_BY_ID[p.vertical], g = p.grp && MODEL_BY_ID[p.grp];
+  return [
+    p.name, p.oem, squash(p.oem), p.sku, p.alt_sku || "", p.brand, p.size || "",
+    (p.alts || []).join(" "), (p.alts || []).map(squash).join(" "),
+    g ? `${g.name} ${g.title || ""}` : "",
+    p.fits.map(id => MODEL_BY_ID[id] ? eqModelText(MODEL_BY_ID[id]) : "").join(" "),
+    CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "", v ? v.name : "",
+    "bnf plus stock",
   ].join(" ").toLowerCase();
 }
 
@@ -153,17 +188,18 @@ function inScope(p, terms) {
   }
   if (global) return true;
   if (p.vertical !== state.vertical) return false;
-  if (state.model) return p.fits.includes(state.model);
-  if (state.brand) return p.fits.some(id => MODEL_BY_ID[id] && MODEL_BY_ID[id].brand === state.brand);
+  if (state.model) return partModels(p).includes(state.model);
+  if (state.brand) return partModels(p).some(id => MODEL_BY_ID[id] && MODEL_BY_ID[id].brand === state.brand);
   return true;
 }
 
 function pool() {
-  if (!EQ.loaded) return PARTS;
-  if (state.vertical === "bikes") return PARTS.concat(EQ.parts);
+  const extra = (EQ.loaded ? EQ.parts : []).concat(BN.loaded ? BN.parts : []);
+  if (!extra.length) return PARTS;
+  if (state.vertical === "bikes") return PARTS.concat(extra);
   /* current vertical first, then the rest of the equipment, then bikes */
-  const here = EQ.parts.filter(p => p.vertical === state.vertical);
-  return here.concat(EQ.parts.filter(p => p.vertical !== state.vertical), PARTS);
+  const here = extra.filter(p => p.vertical === state.vertical);
+  return here.concat(extra.filter(p => p.vertical !== state.vertical), PARTS);
 }
 
 function results() {
@@ -193,36 +229,79 @@ function integrateEquip() {
   E.parts.forEach(p => { p._h = eqHaystack(p); PART_BY_ID[p.id] = p; });
   EQ.parts = E.parts; EQ.models = E.models; EQ.cats = E.cats;
   EQ.loaded = true; EQ.failed = false;
+  linkBnf();
 }
 
-function loadEquip() {
-  if (EQ.loaded) return Promise.resolve();
-  if (typeof EQUIP !== "undefined") { integrateEquip(); return Promise.resolve(); } // single-file bundle
-  if (EQ.loading) return EQ.loading;
-  EQ.loading = new Promise((resolve, reject) => {
+/* Belt groups act as Step 2 "models"; impeller fitment engines come with
+   their names so the Impellers page works without data-equip.js. */
+function integrateBnf() {
+  const B = BNF;
+  B.verticals.forEach(v => { if (VERT_BY_ID[v.id]) Object.assign(VERT_BY_ID[v.id], { name: v.name, unit: v.unit }); });
+  B.groups.forEach(g => { MODEL_BY_ID[g.id] = g; });
+  Object.values(B.models).forEach(m => { if (!MODEL_BY_ID[m.id]) MODEL_BY_ID[m.id] = m; });
+  B.cats.forEach(c => { CAT_BY_ID[c.id] = c; });
+  B.parts.forEach(p => { p._h = bnfHaystack(p); PART_BY_ID[p.id] = p; });
+  BN.parts = B.parts; BN.groups = B.groups; BN.cats = B.cats;
+  BN.loaded = true; BN.failed = false;
+  linkBnf();
+}
+
+/* Engine parts whose number a BNF impeller cross-references get the impeller
+   SKUs (p.bnfImp), shown as a stock tag linking to the Impellers listing. */
+function linkBnf() {
+  if (!BN.loaded) return;
+  for (const [id, skus] of Object.entries(BNF.links)) {
+    const p = PART_BY_ID[id];
+    if (!p || p.bnfImp) continue;
+    p.bnfImp = skus;
+    p._h += " " + skus.join(" ").toLowerCase() + " bnf plus stock impeller";
+  }
+}
+
+/* A <script> tag, not fetch(): it has to work from file:// too. */
+function lazyScript(st, file, has, integrate) {
+  if (st.loaded) return Promise.resolve();
+  if (has()) { integrate(); return Promise.resolve(); } // single-file bundle
+  if (st.loading) return st.loading;
+  st.loading = new Promise((resolve, reject) => {
     const s = document.createElement("script");
-    s.src = "data-equip.js";
+    s.src = file;
     s.async = true;
-    s.onload = () => { try { integrateEquip(); resolve(); } catch (e) { reject(e); } };
-    s.onerror = () => { s.remove(); reject(new Error("data-equip.js failed to load")); };
+    s.onload = () => { try { integrate(); resolve(); } catch (e) { reject(e); } };
+    s.onerror = () => { s.remove(); reject(new Error(file + " failed to load")); };
     document.head.appendChild(s);
   }).catch(err => {
-    EQ.loading = null; EQ.failed = true;
+    st.loading = null; st.failed = true;
     throw err;
   });
-  return EQ.loading;
+  return st.loading;
 }
+const loadEquip = () => lazyScript(EQ, "data-equip.js", () => typeof EQUIP !== "undefined", integrateEquip);
+const loadBnf = () => lazyScript(BN, "data-bnf.js", () => typeof BNF !== "undefined", integrateBnf);
+const loadFor = (v) => isBnfV(v) ? loadBnf() : loadEquip();
+/* A search looks everywhere: equipment, belts and impellers. */
+const loadAll = () => Promise.allSettled([loadEquip(), loadBnf()]);
 
-function ensureEquip() {
-  if (EQ.loaded) return;
-  const p = loadEquip();
-  if (EQ.loaded) return;                 // bundle: available synchronously
+function ensureFor(v) {
+  if (vertReady(v)) return;
+  const p = loadFor(v);
+  if (vertReady(v)) return;              // bundle: available synchronously
   render();                              // shows the loading state
-  p.then(render, () => { render(); toast("Could not load the marine & equipment catalogue"); });
+  p.then(render, () => { render(); toast(`Could not load the ${VERT_BY_ID[v].name.toLowerCase()} catalogue`); });
 }
 
 /* ---------- Render: vertical picker + hero copy ---------- */
-const BIKE_COPY = { lede: $("#lede").innerHTML, step2: $("#step2Label").innerHTML };
+const BIKE_COPY = { lede: $("#lede").innerHTML, step1: $("#step1Label").innerHTML, step2: $("#step2Label").innerHTML };
+const BNF_COPY = {
+  belts: {
+    lede: "Belts from BNF PLUS stock, by section and length. Pick the type and the size, or type the number printed on the old belt: 8PK1440, 6PK 1230, A68, B87.",
+    step1: "Step 1 — pick the belt type", step2: "Step 2 — pick the size",
+  },
+  impellers: {
+    lede: "Flexible impellers from BNF PLUS stock. Type the impeller number or the engine maker's number from the old part, such as 125613-42762 or 3897337. Where that number matches an engine part we list, the engine is shown.",
+    step1: "Step 1 — pick the engine make (matched impellers)", step2: "Step 2 — pick the engine",
+  },
+};
 
 function renderVerticals() {
   $("#vertChips").innerHTML = VERTICALS_UI.map(v =>
@@ -234,9 +313,18 @@ function renderHero() {
   const v = VERT_BY_ID[state.vertical];
   if (state.vertical === "bikes") {
     if ($("#lede").innerHTML !== BIKE_COPY.lede) $("#lede").innerHTML = BIKE_COPY.lede;
+    if ($("#step1Label").innerHTML !== BIKE_COPY.step1) $("#step1Label").innerHTML = BIKE_COPY.step1;
     if ($("#step2Label").innerHTML !== BIKE_COPY.step2) $("#step2Label").innerHTML = BIKE_COPY.step2;
     return;
   }
+  const copy = BNF_COPY[state.vertical];
+  if (copy) {
+    $("#lede").textContent = copy.lede + " " + (onlineCheckoutOn() ? "We confirm every price before you pay." : "Every price is confirmed on WhatsApp.");
+    $("#step1Label").textContent = copy.step1;
+    $("#step2Label").textContent = copy.step2;
+    return;
+  }
+  if ($("#step1Label").innerHTML !== BIKE_COPY.step1) $("#step1Label").innerHTML = BIKE_COPY.step1;
   $("#lede").textContent =
     `One wrong digit means the wrong part on the next boat. Pick the make and the ${v.pick}, ` +
     `and we will show you the exact number from the maker's catalogue ` +
@@ -245,17 +333,28 @@ function renderHero() {
   $("#step2Label").textContent = `Step 2 — pick the ${v.pick}`;
 }
 
+/* Step 2 entries for a vertical: engines / machines, belt groups, or the
+   engines BNF impellers cross-reference to. */
+function pickerModels(v) {
+  if (!isBnfV(v)) return EQ.models.filter(m => m.vertical === v);
+  const ids = new Set(BN.parts.filter(p => p.vertical === v).flatMap(partModels));
+  return [...ids].map(id => MODEL_BY_ID[id]).filter(Boolean);
+}
+
 function renderEqPickers() {
   const wrap = $("#modelRow");
-  if (!EQ.loaded) {
-    $("#brandChips").innerHTML = EQ.failed
+  const st = store(state.vertical), bnf = isBnfV(state.vertical);
+  if (!st.loaded) {
+    $("#brandChips").innerHTML = st.failed
       ? `<span class="loading">Could not load this catalogue. <button class="clearbtn" data-vertical="${state.vertical}">Try again</button></span>`
       : `<span class="loading" role="status">Loading the ${esc(VERT_BY_ID[state.vertical].name.toLowerCase())} catalogue…</span>`;
     wrap.hidden = true; $("#modelChips").innerHTML = "";
     return;
   }
-  const models = EQ.models.filter(m => m.vertical === state.vertical);
-  const brands = [...new Set(models.map(m => m.brand))].sort();
+  const models = pickerModels(state.vertical).sort(byEngineSize);
+  /* belt types keep their own order (ribbed first); makes go A–Z */
+  const brands = [...new Set(models.map(m => m.brand))];
+  if (!bnf || state.vertical === "impellers") brands.sort();
   $("#brandChips").innerHTML = brands.map(b =>
     `<button class="chip" data-brand="${esc(b)}" aria-pressed="${state.brand === b}">${esc(b)}</button>`
   ).join("");
@@ -264,10 +363,11 @@ function renderEqPickers() {
   if (!list.length) { wrap.hidden = true; $("#modelChips").innerHTML = ""; return; }
   wrap.hidden = false;
   const count = {};
-  EQ.parts.forEach(p => { if (p.vertical === state.vertical) p.fits.forEach(id => { count[id] = (count[id] || 0) + 1; }); });
+  st.parts.forEach(p => { if (p.vertical === state.vertical) partModels(p).forEach(id => { count[id] = (count[id] || 0) + 1; }); });
+  const noun = (n) => bnf ? (n === 1 ? VERT_BY_ID[state.vertical].unit : VERT_BY_ID[state.vertical].unit + "s") : "parts";
   $("#modelChips").innerHTML = list
     .sort(byEngineSize)
-    .map(m => `<button class="chip" data-model="${esc(m.id)}" aria-pressed="${state.model === m.id}">${esc(m.name)}<span class="cc">${count[m.id] || 0} parts</span></button>`)
+    .map(m => `<button class="chip" data-model="${esc(m.id)}" aria-pressed="${state.model === m.id}">${esc(m.name)}<span class="cc">${count[m.id] || 0} ${noun(count[m.id] || 0)}</span></button>`)
     .join("");
 }
 
@@ -306,7 +406,7 @@ function renderRail() {
   $("#catWrap").innerHTML =
     `<button class="catbtn" data-cat="" aria-pressed="${!state.cat}">
        <span>All parts</span><span class="k">${base.length}</span></button>` +
-    CATS.concat(EQ.cats).filter(c => counts[c.id]).map(c =>
+    CATS.concat(EQ.cats, BN.cats).filter(c => counts[c.id]).map(c =>
       `<button class="catbtn" data-cat="${c.id}" aria-pressed="${state.cat === c.id}">
          <span>${esc(c.name)}</span><span class="k">${counts[c.id]}</span></button>`
     ).join("");
@@ -315,7 +415,7 @@ function renderRail() {
 /* ---------- Render: part cards ---------- */
 function stockLine(p) {
   if (p.stock == null)   return "";
-  if (p.stock <= 0)      return `<span class="stockline"><span class="dotr">●</span> On order</span>`;
+  if (p.stock <= 0)      return `<span class="stockline"><span class="dotr">●</span> ${p.orderIn ? "Order in" : "On order"}</span>`;
   if (p.lowStock)       return `<span class="stockline"><span class="doty">●</span> Low stock</span>`;
   return `<span class="stockline"><span class="dotg">●</span> In stock</span>`;
 }
@@ -333,6 +433,82 @@ function eqPlateHTML(oem) {
 function eqFlagsHTML(p) {
   return (unverified(p) ? `<span class="unver">Number to be confirmed — verify</span>` : "") +
     (needsSerial(p) ? `<span class="serialnote">Check frame/serial number</span>` : "");
+}
+
+/* ---------- BNF PLUS stock references ----------
+   BNF PLUS prices are not public, so only the SKU, brand, their number and
+   availability are shown; the part itself stays "Ask for price". */
+const AVAIL = { stock: "in stock", low: "in stock", indent: "order in" };
+const availLabel = (a) => AVAIL[a] || "";
+const partAvail = (p) => p.stock == null ? "" : p.stock > 0 ? "in stock" : p.orderIn ? "order in" : "on order";
+
+function bnfSummary(b) {
+  if (b.sku) return `${esc(b.sku)} · ${esc(b.brand)} ${esc(b.pn)}${b.avail ? " · " + esc(availLabel(b.avail)) : ""}`;
+  const ms = b.matches || [];
+  const brands = [...new Set(ms.map(m => m.brand))];
+  const inStock = ms.filter(m => m.avail === "stock" || m.avail === "low").length;
+  return `${b.designation ? esc(b.designation) + " · " : ""}${ms.length} match${ms.length === 1 ? "" : "es"} · ${esc(brands.slice(0, 3).join(", "))}${brands.length > 3 ? ` +${brands.length - 3}` : ""}` +
+    (inStock ? ` · ${inStock} in stock` : "");
+}
+
+/* An impeller SKU linking to its card on the Impellers page (same site). */
+function impRef(sku) {
+  const i = PART_BY_ID[sku.toLowerCase()];
+  return `<a class="implink" href="?v=impellers&amp;q=${encodeURIComponent(sku)}" data-imp="${esc(sku)}">${esc(sku)}</a>` +
+    (i ? ` · ${esc(partAvail(i))}` : "");
+}
+
+function refsHTML(p) {
+  const lines = [];
+  if (p.bnf) lines.push(`<div class="bnfline"><b>BNF PLUS stock</b> ${bnfSummary(p.bnf)}</div>`);
+  if (p.bnfImp) lines.push(`<div class="bnfline"><b>BNF PLUS stock</b> Impeller ${p.bnfImp.map(impRef).join(", ")}</div>`);
+  return lines.length ? `<div class="refs">${lines.join("")}</div>` : "";
+}
+
+function refsDetailHTML(p) {
+  if (!p.bnf && !p.bnfImp) return "";
+  const ms = p.bnf ? (p.bnf.matches || []) : [];
+  const rows = ms.slice(0, 8).map(m =>
+    `<div class="altrow"><span>${esc(m.sku)} · ${esc(m.brand)} ${esc(m.pn)}</span><span class="tag">${esc(availLabel(m.avail))}</span></div>`).join("");
+  const imps = (p.bnfImp || []).map(sku => {
+    const i = PART_BY_ID[sku.toLowerCase()];
+    return `<div class="altrow"><span>${impRef(sku).replace(/ · [^<]*$/, "")}${i ? ` · ${esc(i.brand)} ${esc(i.oem)}` : ""}</span><span class="tag">${i ? esc(partAvail(i)) : ""}</span></div>`;
+  }).join("");
+  return `<div class="dsec"><h4>BNF PLUS stock</h4>
+    ${p.bnf ? `<p class="hint"><b>${p.bnf.sku ? "Same number:" : `For ${esc(p.bnf.designation || "")}:`}</b> ${p.bnf.sku ? bnfSummary(p.bnf) : `${ms.length} matching item${ms.length === 1 ? "" : "s"}`}</p>
+      ${p.bnf.sku ? "" : `<div class="altlist">${rows}</div>${ms.length > 8 ? `<p class="hint">+${ms.length - 8} more matching items</p>` : ""}`}` : ""}
+    ${imps ? `<p class="hint"><b>Impellers that cross-reference this number:</b></p><div class="altlist">${imps}</div>` : ""}
+    <p class="hint">BNF PLUS prices are not public. ${askPriceHint()}.</p>
+  </div>`;
+}
+
+/* Belts and impellers: brand instead of "genuine", the size, the stock number. */
+function bnfCardHTML(p) {
+  const v = VERT_BY_ID[p.vertical], g = p.grp && MODEL_BY_ID[p.grp];
+  const fitNames = p.fits.slice(0, 4).map(id => {
+    const m = MODEL_BY_ID[id];
+    return m ? `<span class="fitchip${state.model === id ? " on" : ""}">${esc(eqModelName(m))}</span>` : "";
+  }).join("") + (p.fits.length > 4 ? `<span class="fitchip">+${p.fits.length - 4} more</span>` : "");
+  return `<article class="card eqcard bnfcard" data-vert="${esc(p.vertical)}">
+    ${artHTML(p)}
+    <div class="eqtag">${esc(v ? v.name : "")} · ${esc(g ? g.name : CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "")}</div>
+    <div class="cardtop">
+      <h3 class="cardname">${esc(p.name)}</h3>
+      <span class="tier brand">${esc(p.brand)}</span>
+    </div>
+    ${eqPlateHTML(p.oem)}
+    ${p.size ? `<div class="sizeline">${esc(p.size)}</div>` : ""}
+    ${fitNames ? `<div class="ribbon">${fitNames}</div>` : ""}
+    <div class="refs"><div class="bnfline"><b>BNF PLUS stock</b> ${esc(p.sku)}</div></div>
+    <button class="moreb" data-detail="${esc(p.id)}">${p.vertical === "impellers" ? "Cross-reference &amp; fitment →" : "Size &amp; details →"}</button>
+    <div class="cardfoot">
+      <div>
+        ${priceHTML(p)}
+        ${stockLine(p)}
+      </div>
+      <button class="addbtn" data-add="${esc(p.id)}">Add</button>
+    </div>
+  </article>`;
 }
 
 function eqCardHTML(p) {
@@ -355,6 +531,7 @@ function eqCardHTML(p) {
     ${eqPlateHTML(p.oem)}
     ${eqFlagsHTML(p)}
     <div class="ribbon">${fitNames}</div>
+    ${refsHTML(p)}
     <button class="moreb" data-detail="${esc(p.id)}">Fitment &amp; notes →</button>
     <div class="cardfoot">
       <div>
@@ -367,6 +544,7 @@ function eqCardHTML(p) {
 }
 
 function cardHTML(p) {
+  if (isBnf(p)) return bnfCardHTML(p);
   if (isEq(p)) return eqCardHTML(p);
   const fitNames = p.universal
     ? `<span class="fitchip uni">Fits any bike</span>`
@@ -386,6 +564,7 @@ function cardHTML(p) {
     ${decodeHTML(p.oem)}
     ${needsCheck(p) ? `<span class="unver">Verify number before ordering</span>` : ""}
     <div class="ribbon">${fitNames}</div>
+    ${refsHTML(p)}
     <button class="moreb" data-detail="${p.id}">Fitment, alternates &amp; interchange →</button>
     <div class="cardfoot">
       <div>
@@ -420,31 +599,34 @@ function renderModelNote() {
 }
 
 function renderResults() {
-  if (state.vertical !== "bikes" && !EQ.loaded) {
+  if (!vertReady(state.vertical)) {
+    const failed = store(state.vertical).failed;
     $("#rTitle").textContent = VERT_BY_ID[state.vertical].name;
     $("#rCount").textContent = "";
     $("#clearBtn").hidden = true;
     $("#rNote").hidden = true;
     $("#catWrap").innerHTML = "";
-    $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1"><h3>${EQ.failed ? "Could not load this catalogue" : "Loading the catalogue…"}</h3>
-      <p>${EQ.failed ? "Check your connection and pick the category again." : "Part numbers for every engine and machine we cover."}</p></div>`;
+    $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1"><h3>${failed ? "Could not load this catalogue" : "Loading the catalogue…"}</h3>
+      <p>${failed ? "Check your connection and pick the category again." : isBnfV(state.vertical) ? "Every belt and impeller in BNF PLUS stock." : "Part numbers for every engine and machine we cover."}</p></div>`;
     return;
   }
   const r = results();
   const m = state.model ? MODEL_BY_ID[state.model] : null;
+  const vu = VERT_BY_ID[state.vertical], bnfV = isBnfV(state.vertical);
   let title = "All parts";
-  if (state.vertical !== "bikes") title = `${VERT_BY_ID[state.vertical].name} · all parts`;
-  if (m) title = `${m.brand} ${m.name}`;
+  if (state.vertical !== "bikes") title = bnfV ? `All ${vu.name.toLowerCase()}` : `${vu.name} · all parts`;
+  if (m) title = m.title || (bnfV ? `${m.brand} ${m.name} · ${vu.name.toLowerCase()}` : `${m.brand} ${m.name}`);
   else if (state.brand) title = state.vertical === "bikes" ? state.brand : `${state.brand} ${VERT_BY_ID[state.vertical].name.toLowerCase()}`;
   if (state.cat && CAT_BY_ID[state.cat]) title += ` · ${CAT_BY_ID[state.cat].name}`;
   if (state.q.trim()) title = `“${state.q.trim()}”`;
 
   $("#rTitle").textContent = title;
-  $("#rCount").textContent = `${r.length} ${r.length === 1 ? "part" : "parts"}`;
+  const unit = bnfV && !state.q.trim() ? vu.unit : "part";
+  $("#rCount").textContent = `${r.length} ${r.length === 1 ? unit : unit + "s"}`;
   $("#clearBtn").hidden = !(state.brand || state.model || state.cat || state.q.trim());
   renderModelNote();
 
-  if (!r.length && m && state.vertical !== "bikes" && !state.q.trim() && !EQ.parts.some(p => p.fits.includes(m.id))) {
+  if (!r.length && m && state.vertical !== "bikes" && !bnfV && !state.q.trim() && !EQ.parts.some(p => p.fits.includes(m.id))) {
     $("#grid").innerHTML = emptyModelHTML(m);
     return;
   }
@@ -496,6 +678,7 @@ function openEqDetail(p) {
     <div class="dsec"><h4>Fits these ${esc(v ? v.unit : "machine")}s</h4>${fitBlock}</div>
     <div class="dsec"><h4>Also sold as</h4>${altBlock}</div>
     ${p.note ? `<div class="dsec"><h4>Catalogue note</h4><div class="notebox">${esc(p.note)}</div></div>` : ""}
+    ${refsDetailHTML(p)}
     <div class="dsec">
       <h4>Price</h4>
       ${priceHTML(p)}
@@ -507,10 +690,53 @@ function openEqDetail(p) {
   openDrawer("#detail");
 }
 
+/* ---------- Detail drawer: belt or impeller ---------- */
+function openBnfDetail(p) {
+  const v = VERT_BY_ID[p.vertical], g = p.grp && MODEL_BY_ID[p.grp];
+  const row = (k, val) => val ? `<div class="altrow"><span>${esc(val)}</span><span class="tag">${esc(k)}</span></div>` : "";
+  const facts = [
+    row("size", p.size),
+    row("type", g ? g.title || g.name : CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : ""),
+    row("brand", p.brand),
+    row("BNF PLUS stock no.", p.sku + (p.alt_sku ? " / " + p.alt_sku : "")),
+  ].join("");
+  let fitSec = "";
+  if (p.vertical === "impellers") {
+    const fitModels = p.fits.map(id => MODEL_BY_ID[id]).filter(Boolean);
+    const xs = (p.xparts || []).map(id => BNF.xparts[id]).filter(Boolean);
+    fitSec = `<div class="dsec"><h4>Fits these engines</h4>${fitModels.length
+      ? `<div class="fitfull">${fitModels.map(m => `<span class="m"><b>${esc(eqModelName(m))}</b>${m.model_number ? " · " + esc(m.model_number) : ""}</span>`).join("")}</div>
+         <div class="altlist">${xs.map(x => `<div class="altrow"><span>${esc(x.oem)} · ${esc(x.name)}</span><span class="tag">engine part, same number</span></div>`).join("")}</div>
+         <p class="hint">This impeller's cross-reference list includes the engine part's number. Compare the size with the old impeller before you order.</p>`
+      : `<p class="hint" style="margin:0">No engine we list carries one of these numbers yet. Send us the number on the old impeller, or the engine model and serial, and we will check the fit.</p>`}</div>`;
+  }
+  const altBlock = (p.alts && p.alts.length)
+    ? `<div class="altlist">${p.alts.map(a => `<div class="altrow"><span>${esc(a)}</span><span class="tag">cross-reference</span></div>`).join("")}</div>`
+    : `<p style="margin:0;font-size:13px;color:var(--ink-3)">No other numbers recorded.</p>`;
+  $("#detailBody").innerHTML = `
+    <div class="dsec">
+      <h4>Part number</h4>
+      ${eqPlateHTML(p.oem)}
+      <p class="hint" style="margin-top:6px">As printed on the BNF PLUS stock list.</p>
+    </div>
+    <div class="dsec"><h4>Size &amp; type</h4><div class="altlist">${facts}</div></div>
+    ${fitSec}
+    <div class="dsec"><h4>${p.vertical === "impellers" ? "Cross-reference numbers" : "Also sold as"}</h4>${altBlock}</div>
+    <div class="dsec">
+      <h4>Price</h4>
+      ${priceHTML(p)}
+      <p class="hint">${[stockLine(p).replace(/<[^>]+>/g, "").replace("●", "").trim(), askPriceHint(), esc(v ? v.name : "")].filter(Boolean).join(" · ")}</p>
+    </div>
+    <button class="gobtn" data-add="${esc(p.id)}">Add to order</button>`;
+  $("#detailTitle").textContent = `${p.name}`;
+  openDrawer("#detail");
+}
+
 /* ---------- Detail drawer: the full interchange view ---------- */
 function openDetail(id) {
   const p = PART_BY_ID[id];
   if (!p) return;
+  if (isBnf(p)) return openBnfDetail(p);
   if (isEq(p)) return openEqDetail(p);
   const pn = parsePN(p.oem);
   const others = sameJob(p);
@@ -558,6 +784,7 @@ function openDetail(id) {
     <div class="dsec"><h4>Also sold as</h4>${altBlock}</div>
     <div class="dsec"><h4>Same job, other model families</h4>${jobBlock}</div>
     ${p.note ? `<div class="dsec"><h4>Note</h4><div class="notebox">${esc(p.note)}</div></div>` : ""}
+    ${refsDetailHTML(p)}
 
     <div class="dsec">
       <h4>Price</h4>
@@ -644,7 +871,8 @@ function renderCart() {
       <div class="info">
         <div class="nm">${esc(p.name)}</div>
         <div class="pn">${esc(p.oem)}</div>
-        ${isEq(p) ? `<div class="pn">For ${esc(machineLabel(p))}</div>` : ""}
+        ${isBnf(p) ? `<div class="pn">BNF PLUS stock ${esc(p.sku)}</div>` : ""}
+        ${isEq(p) && machineLabel(p) ? `<div class="pn">For ${esc(machineLabel(p))}</div>` : ""}
         <div class="qty">
           <button data-q="${p.id}|${q - 1}" aria-label="Fewer">−</button>
           <span>${q}</span>
@@ -678,7 +906,8 @@ function orderText() {
     ...lines.map(({ p, q }) => hasPrice(p)
       ? `${q} × ${p.name}\n   ${p.oem} — MVR ${money(p.price * q)}`
       : isEq(p)
-        ? `${q} × ${p.name}\n   ${p.oem} — price to confirm\n   For: ${machineLabel(p)}`
+        ? `${q} × ${p.name}\n   ${p.oem} — price to confirm` + (isBnf(p) ? `\n   BNF PLUS stock ${p.sku}` : "") +
+          (machineLabel(p) ? `\n   For: ${machineLabel(p)}` : "")
         : `${q} × ${p.name}\n   ${p.oem} — price to confirm`),
     "",
     pricedLines.length ? `Subtotal: MVR ${money(sub)}` : "Subtotal: —",
@@ -960,7 +1189,7 @@ function renderZones() {
 /* ---------- Wire up ---------- */
 function render() {
   renderVerticals(); renderHero(); renderPickers();
-  if (state.vertical !== "bikes" && !EQ.loaded) { renderResults(); syncURL(); return; }
+  if (!vertReady(state.vertical)) { renderResults(); syncURL(); return; }
   renderRail(); renderResults(); syncURL();
 }
 
@@ -987,29 +1216,47 @@ function applyDeepLink() {
   const apply = () => {
     const model = m && MODEL_BY_ID[m];
     if (model) {
-      state.vertical = model.vertical || "bikes";
+      /* ?v=impellers&m=<engine> lists the impellers for that engine, not the engine page */
+      if (!isBnfV(state.vertical)) state.vertical = model.vertical || "bikes";
       state.brand = model.brand; state.model = m;
     } else if (b) state.brand = b;
     render();
   };
   if (v && VERT_BY_ID[v]) state.vertical = v;
-  const needEq = state.vertical !== "bikes" || (m && !MODEL_BY_ID[m]) || (q && q.trim().length >= 2);
-  if (needEq) { ensureEquip(); loadEquip().then(apply, () => {}); }
+  const wide = (q && q.trim().length >= 2) || (m && !MODEL_BY_ID[m] && !isBnfV(state.vertical));
+  if (wide) { ensureFor(state.vertical); loadAll().then(apply); }
+  else if (state.vertical !== "bikes") { ensureFor(state.vertical); loadFor(state.vertical).then(apply, () => {}); }
   else if (m || b || q) apply();
 }
 
 function chooseVertical(v) {
   if (!VERT_BY_ID[v]) return;
-  if (v === state.vertical && (EQ.loaded || v === "bikes")) return;
+  if (v === state.vertical && vertReady(v)) return;
   state.vertical = v;
   state.brand = state.model = state.cat = null;
-  if (v !== "bikes") ensureEquip();
+  if (v !== "bikes") ensureFor(v);
   render();
 }
 
+/* A BNF impeller tag on an engine part: open that impeller on the Impellers page. */
+function showImpeller(sku) {
+  closeDrawers();
+  state.vertical = "impellers";
+  state.brand = state.model = state.cat = null;
+  state.q = sku; $("#q").value = sku;
+  ensureFor("impellers");
+  render();
+  $("#rTitle").scrollIntoView({ block: "start", behavior: "smooth" });
+}
+
 document.addEventListener("click", (e) => {
-  const t = e.target.closest("[data-vertical],[data-brand],[data-model],[data-cat],[data-add],[data-detail],[data-q],[data-clear],[data-close]");
+  const t = e.target.closest("[data-imp],[data-vertical],[data-brand],[data-model],[data-cat],[data-add],[data-detail],[data-q],[data-clear],[data-close]");
   if (!t) return;
+  if (t.dataset.imp) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;   // new tab: let the link work
+    e.preventDefault();
+    return showImpeller(t.dataset.imp);
+  }
 
   if (t.dataset.vertical !== undefined) {
     chooseVertical(t.dataset.vertical);
@@ -1037,14 +1284,15 @@ document.addEventListener("click", (e) => {
 /* Phones have no "/" shortcut and less room: keep the search hint short. */
 if (matchMedia("(max-width: 640px)").matches) $("#q").placeholder = "Part number, model or what it does…";
 
-/* Typing a query pulls in the equipment catalogue (debounced) so a part number
-   like 6CE-WS24A-00 or an engine code like KTA19 is found from any page. */
+/* Typing a query pulls in the equipment catalogue and the belts / impellers
+   (debounced) so a part number like 6CE-WS24A-00, an engine code like KTA19 or
+   a belt size like 8PK1440 is found from any page. */
 let eqSearchT;
 $("#q").addEventListener("input", (e) => {
   state.q = e.target.value; renderRail(); renderResults();
-  if (!EQ.loaded && state.q.trim().length >= 2) {
+  if (!(EQ.loaded && BN.loaded) && state.q.trim().length >= 2) {
     clearTimeout(eqSearchT);
-    eqSearchT = setTimeout(() => loadEquip().then(() => { renderRail(); renderResults(); }, () => {}), 250);
+    eqSearchT = setTimeout(() => loadAll().then(() => { renderRail(); renderResults(); }), 250);
   }
 });
 $("#cartOpen").addEventListener("click", () => { renderCart(); openDrawer("#cart"); });
@@ -1078,4 +1326,4 @@ saveCart();
 renderCart();
 applyDeepLink();
 /* An order saved with equipment lines needs the equipment catalogue to show them. */
-if (Object.keys(state.cart).some(id => !PART_BY_ID[id])) loadEquip().then(renderCart, () => {});
+if (Object.keys(state.cart).some(id => !PART_BY_ID[id])) loadAll().then(renderCart);

@@ -60,6 +60,8 @@ page.on("pageerror", e => errors.push("pageerror: " + e.message));
 page.on("console", m => { if (m.type() === "error") errors.push("console: " + m.text()); });
 const equipReqs = [];
 page.on("request", r => { if (r.url().includes("data-equip.js")) equipReqs.push(r.url()); });
+const bnfReqs = [];
+page.on("request", r => { if (r.url().includes("data-bnf.js")) bnfReqs.push(r.url()); });
 
 await page.goto(url);
 await page.waitForTimeout(900);
@@ -69,8 +71,9 @@ ok(errors.length === 0, "no JS errors" + (errors.length ? " → " + errors.join(
 const total = await page.locator(".card").count();
 ok(total > 100, `catalogue renders (${total} cards)`);
 ok(equipReqs.length === 0, "data-equip.js is not requested on the default bike page");
+ok(bnfReqs.length === 0, "data-bnf.js is not requested on the default bike page");
 ok(await page.locator('#vertChips [data-vertical="bikes"][aria-pressed="true"]').count() === 1, "category picker shows Bikes selected by default");
-ok(await page.locator("#vertChips [data-vertical]").count() === 7, "category picker lists 7 categories");
+ok(await page.locator("#vertChips [data-vertical]").count() === 9, "category picker lists 9 categories (7 + Belts, Impellers)");
 ok(await page.locator(".eqcard").count() === 0 && !(await page.locator("#rNote").isVisible()), "no equipment cards or model note on the bike default");
 ok(await page.locator(".card .art, .card .nophoto, .card svg[role=img], .card img").count() === 0, "photoless cards have no image area, icon, drawing or stock image");
 ok(!/No photo yet/i.test(await page.locator("#grid, .grid").first().textContent()), "no 'No photo yet' label on cards");
@@ -619,6 +622,145 @@ await page2.waitForTimeout(300);
 const overflow2 = await page2.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 ok(overflow2 <= 1, `no horizontal overflow at 390px on an equipment page (${overflow2}px)`);
 await page2.close();
+
+
+/* ================= Belts and impellers (BNF PLUS stock) ================= */
+console.log("\nBelts");
+{
+  const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  pg.on("pageerror", e => errors.push("pageerror(bnf): " + e.message));
+  pg.on("console", m => { if (m.type() === "error") errors.push("console(bnf): " + m.text()); });
+  const reqs = [];
+  pg.on("request", r => { if (/data-(equip|bnf)\.js/.test(r.url())) reqs.push(r.url().split("/").pop()); });
+  await pg.goto(url);
+  await pg.waitForTimeout(500);
+  await pg.click('[data-vertical="belts"]');
+  await pg.waitForSelector(".bnfcard", { timeout: 8000 });
+  ok(reqs.join() === "data-bnf.js", `Belts loads only data-bnf.js (${reqs.join(", ")})`);
+  ok(await pg.locator(".card").count() === 550 && (await pg.locator("#rCount").textContent()) === "550 belts", "Belts lists 550 belts");
+  ok(await pg.locator(".card:has(.price .asklab)").count() === 550, "every belt reads Ask for price");
+  ok(await pg.locator(".card .art, .card img").count() === 0, "belt cards have no photo area");
+  ok((await pg.locator("#brandChips").innerText()).split("\n").join("|") === "V-ribbed (PK)|Classical V|Raw edge & cogged|Timing & metric", "Step 1 lists the belt types, ribbed first");
+  ok((await pg.locator("#step1Label").textContent()).includes("belt type") && (await pg.locator("#step2Label").textContent()).includes("size"), "step labels talk about belt type and size");
+  await pg.click('#brandChips [data-brand="V-ribbed (PK)"]');
+  await pg.waitForTimeout(200);
+  const groupsPK = await pg.locator("#modelChips [data-model]").evaluateAll(els => els.map(e => e.dataset.model));
+  ok(groupsPK.join() === "belts-4pk,belts-5pk,belts-6pk,belts-7pk,belts-8pk,belts-9pk,belts-10pk,belts-12pk,belts-15pk,belts-23pk", "Step 2 groups PK belts by rib count");
+  await pg.click('#modelChips [data-model="belts-8pk"]');
+  await pg.waitForTimeout(250);
+  const lens = await pg.locator(".card .plate .val").evaluateAll(els => els.map(e => +e.textContent.match(/(\d+)$/)[1]));
+  ok(lens.length === 142 && lens.every((x, i) => !i || lens[i - 1] <= x), `8PK lists 142 belts, shortest first (${lens[0]}–${lens[lens.length - 1]} mm)`);
+  ok((await pg.locator("#rTitle").textContent()) === "8PK V-ribbed belts" && pg.url().includes("v=belts&m=belts-8pk"), "8PK heading and ?v=belts&m=belts-8pk URL");
+  ok(await pg.locator(".bnfcard .stockline", { hasText: /In stock|Order in/ }).count() === 142, "every 8PK card shows In stock or Order in");
+  ok(!/\bMVR\s*\d/.test(await pg.locator("#grid").innerText()), "no price shown on any belt card");
+  await pg.screenshot({ path: path.join(shots, "13-belts-8pk.png") });
+  const beltId = await pg.locator(".card [data-detail]").first().getAttribute("data-detail");
+  await pg.click(`[data-detail="${beltId}"]`);
+  await pg.waitForTimeout(350);
+  const bBody = await pg.locator("#detailBody").textContent();
+  ok(/Size & type/.test(bBody) && /BNF PLUS stock no\./.test(bBody) && /Ask for price/.test(bBody) && !/undefined|NaN|\bnull\b/.test(bBody) &&
+     (await outsideLinks(pg, "#detail")).length === 0 && !SOURCE_TEXT.test(bBody), "belt drawer: size, stock no., ask for price; no source, no outside link");
+  await pg.click("#detailBody [data-add]");
+  await pg.waitForTimeout(250);
+  await pg.click("#detail [data-close]");
+  await pg.click("#cartOpen");
+  await pg.waitForTimeout(300);
+  const bLine = await pg.locator("#cartBody .line").last().textContent();
+  ok(/BNF PLUS stock BLT/.test(bLine) && /price to confirm/.test(bLine) && !/For /.test(bLine), "belt cart line: stock no., price to confirm, no machine");
+  await pg.click("#cart [data-close]");
+  await pg.waitForTimeout(250);
+
+  console.log("\nImpellers");
+  await pg.click('[data-vertical="impellers"]');
+  await pg.waitForTimeout(400);
+  ok(await pg.locator(".card").count() === 63 && (await pg.locator("#rCount").textContent()) === "63 impellers", "Impellers lists 63 impellers");
+  ok(await pg.locator(".card:has(.price .asklab)").count() === 63 && await pg.locator(".card .art, .card img").count() === 0, "every impeller: Ask for price, no photo");
+  ok(await pg.evaluate(() => !PART_BY_ID.imp1080), "IMP1080 (Sherwood G1010 pump) is not listed");
+  const impChips = await pg.locator(".bnfcard", { hasText: "IMP1043" }).locator(".fitchip").allTextContents();
+  ok(impChips.join() === "Yanmar 6HYM-WET", `IMP1043 shows its matched engine (${impChips.join(", ")})`);
+  await pg.screenshot({ path: path.join(shots, "14-impellers.png") });
+  await pg.click('#brandChips [data-brand="Cummins"]');
+  await pg.waitForTimeout(250);
+  ok((await pg.locator(".card [data-detail]").evaluateAll(els => els.map(e => PART_BY_ID[e.dataset.detail].sku))).sort().join() === "IMP1036,IMP1037", "Impellers › Cummins lists IMP1036 and IMP1037");
+  await pg.close();
+}
+
+console.log("\nBelt and impeller search from the default page");
+{
+  const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  pg.on("pageerror", e => errors.push("pageerror(bnf2): " + e.message));
+  await pg.goto(url);
+  await pg.waitForTimeout(500);
+  const finds = async (q, want) => {
+    await pg.fill("#q", q);
+    await pg.waitForSelector(".bnfcard", { timeout: 8000 }).catch(() => {});
+    await pg.waitForTimeout(300);
+    const got = await pg.locator(".card [data-detail]").evaluateAll(els => els.map(e => PART_BY_ID[e.dataset.detail].sku || PART_BY_ID[e.dataset.detail].id));
+    ok(want.every(w => got.includes(w)), `search "${q}" on the Bikes page finds ${want.join(" + ")} (${got.length} result${got.length === 1 ? "" : "s"})`);
+    return got;
+  };
+  ok((await finds("8PK1440", ["BLT443"])).length === 1, "8PK1440 is exact");
+  await finds("8PK 1440", ["BLT443"]);
+  await finds("1440", ["BLT443"]);
+  await finds("5PK890", ["BLT044", "BLT522"]);
+  await finds("A68", ["BLT504"]);
+  await finds("B87", ["BLT518"]);
+  await finds("IMP1036", ["IMP1036"]);
+  await finds("125613-42762", ["IMP1043", "IMP1002", "m01249"]);
+  await finds("3897337", ["IMP1036", "m00020"]);
+  await finds("8PK1440", ["BLT443"]);
+  await pg.screenshot({ path: path.join(shots, "15-search-8pk1440.png") });
+  await pg.close();
+}
+
+console.log("\nImpeller tags on engine parts");
+{
+  const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  pg.on("pageerror", e => errors.push("pageerror(bnf3): " + e.message));
+  await pg.goto(url + "?v=marine_diesel&m=yanmar-6hym-wet");
+  await pg.waitForSelector(".eqcard", { timeout: 8000 });
+  await pg.waitForFunction(() => PART_BY_ID.m01249 && PART_BY_ID.m01249.bnfImp, null, { timeout: 8000 });
+  await pg.evaluate(() => renderResults());
+  const card = pg.locator(".eqcard", { has: pg.locator('[data-detail="m01249"]') });
+  const tagText = await card.locator(".refs").innerText();
+  ok(/BNF PLUS stock/i.test(tagText) && /IMP1043 · order in/.test(tagText) && /IMP1002 · in stock/.test(tagText), `Yanmar 125613-42762 shows both impellers honestly (${tagText.replace(/\n/g, " ")})`);
+  const hrefs = await card.locator(".implink").evaluateAll(els => els.map(a => a.getAttribute("href")));
+  ok(hrefs.join() === "?v=impellers&q=IMP1043,?v=impellers&q=IMP1002", "the tags link to the Impellers listing (same site)");
+  ok((await outsideLinks(pg, "main")).length === 0, "no outside link on the engine page");
+  await pg.screenshot({ path: path.join(shots, "16-yanmar-impeller-tag.png") });
+  await pg.click('[data-detail="m01249"]');
+  await pg.waitForTimeout(300);
+  ok(/Impellers that cross-reference this number/.test(await pg.locator("#detailBody").textContent()), "engine part drawer lists the cross-referencing impellers");
+  await pg.keyboard.press("Escape");
+  await card.locator('.implink[data-imp="IMP1043"]').click();
+  await pg.waitForTimeout(400);
+  ok(pg.url().includes("v=impellers") && await pg.locator('.bnfcard [data-detail="imp1043"]').count() === 1, "clicking IMP1043 opens it on the Impellers page");
+  await pg.goto(url + "?v=marine_diesel&m=cummins-marine-qsl");
+  await pg.waitForFunction(() => PART_BY_ID.m00020 && PART_BY_ID.m00020.bnfImp, null, { timeout: 8000 });
+  await pg.evaluate(() => renderResults());
+  ok(/IMP1036/.test(await pg.locator(".eqcard", { has: pg.locator('[data-detail="m00020"]') }).locator(".refs").innerText()), "Cummins QSL Kit, WP Repair (389733700) shows IMP1036");
+  const tagged = await pg.evaluate(() => ["m00003", "m01339"].map(id => PART_BY_ID[id] && PART_BY_ID[id].bnf && PART_BY_ID[id].bnf.sku));
+  ok(tagged.join() === "FIL1784,FIL1397", "ported BNF filter tags are on m00003 / m01339");
+  await pg.goto(url + "?v=impellers&m=yanmar-6hym-wet");
+  await pg.waitForSelector(".bnfcard", { timeout: 8000 });
+  await pg.waitForTimeout(250);
+  ok((await pg.locator("#rTitle").textContent()) === "Yanmar 6HYM-WET · impellers" && await pg.locator(".card").count() === 2, "?v=impellers&m=<engine> lists that engine's impellers");
+  await pg.goto(url + "?v=belts");
+  await pg.waitForSelector(".bnfcard", { timeout: 8000 });
+  ok(await pg.locator('#vertChips [data-vertical="belts"][aria-pressed="true"]').count() === 1, "?v=belts opens the Belts section");
+  await pg.setViewportSize({ width: 390, height: 844 });
+  await pg.waitForTimeout(300);
+  ok(await pg.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth) <= 1, "no horizontal overflow at 390px on Belts");
+  await pg.close();
+}
+{
+  const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await pg.goto(url);
+  await pg.waitForTimeout(400);
+  const bearing = pg.locator(".card", { has: pg.locator('[data-detail="n0117"]') });
+  ok(/BNF PLUS stock/i.test(await bearing.locator(".refs").innerText()) && !/MVR|price/i.test(await bearing.locator(".refs").innerText()), "bike bearing n0117 shows its BNF PLUS stock line, no price");
+  await pg.close();
+}
 
 
 /* ================= Online checkout ================= */

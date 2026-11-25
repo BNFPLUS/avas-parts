@@ -3941,7 +3941,127 @@ const PARTS = [
   "sources": [
    "https://www.bike-parts-honda.com/honda-motorcycle/125-SCOOTER/LEAD/2023/NHX125N_TH/Frame/FRONT-WHEEL/108334/F2040/2/47367"
   ],
-  "askPrice": true
+  "askPrice": true,
+  "bnf": {
+   "kind": "bearing_confirmed",
+   "designation": "6201U",
+   "matches": [
+    {
+     "sku": "BGC1448",
+     "brand": "NACHI",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGS1055",
+     "brand": "SKF",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BRG0483",
+     "brand": "IKC",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BRG0093",
+     "brand": "KOYO",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1126",
+     "brand": "FAG",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1142",
+     "brand": "FAG",
+     "pn": "6201",
+     "avail": "low"
+    },
+    {
+     "sku": "BGC1359",
+     "brand": "NSK",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1269",
+     "brand": "NTN",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BRG0484",
+     "brand": "IKC",
+     "pn": "6201",
+     "avail": "stock"
+    },
+    {
+     "sku": "BGC1909",
+     "brand": "NSK",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BRG0071",
+     "brand": "KOYO",
+     "pn": "6201",
+     "avail": "stock"
+    },
+    {
+     "sku": "BGC1375",
+     "brand": "NSK",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1285",
+     "brand": "NTN",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1464",
+     "brand": "NACHI",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1038",
+     "brand": "SKF",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1024",
+     "brand": "SKF",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BCC1338",
+     "brand": "SKF",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BCC1529",
+     "brand": "NSK",
+     "pn": "6201",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGS1329",
+     "brand": "SKF",
+     "pn": "6201/C3",
+     "avail": "indent"
+    }
+   ]
+  }
  },
  {
   "id": "n0118",
@@ -15679,7 +15799,121 @@ const PARTS = [
    "https://www.bike-parts-honda.com/honda-motorcycle/150-MOTO/WINNER/2024/FS150FAR/Frame/REAR-WHEEL/108996/F1940/2/50263"
   ],
   "askPrice": true,
-  "added_by": "hondamv"
+  "added_by": "hondamv",
+  "bnf": {
+   "kind": "bearing_confirmed",
+   "designation": "6004UU",
+   "matches": [
+    {
+     "sku": "BGC1429",
+     "brand": "NACHI",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGS1033",
+     "brand": "SKF",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1107",
+     "brand": "FAG",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1197",
+     "brand": "KOYO",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1340",
+     "brand": "NSK",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1250",
+     "brand": "NTN",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGS1034",
+     "brand": "FAG",
+     "pn": "6004",
+     "avail": "stock"
+    },
+    {
+     "sku": "BGC1208",
+     "brand": "KOYO",
+     "pn": "6004",
+     "avail": "stock"
+    },
+    {
+     "sku": "BGC1351",
+     "brand": "NSK",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1261",
+     "brand": "NTN",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1440",
+     "brand": "NACHI",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1016",
+     "brand": "SKF",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1005",
+     "brand": "SKF",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BCC1317",
+     "brand": "SKF",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BGC1118",
+     "brand": "FAG",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BRG0022",
+     "brand": "KOYO",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BRG0041",
+     "brand": "KOYO",
+     "pn": "6004",
+     "avail": "indent"
+    },
+    {
+     "sku": "BCC1693",
+     "brand": "SKF",
+     "pn": "6004/C3",
+     "avail": "indent"
+    }
+   ]
+  }
  },
  {
   "id": "n0569",

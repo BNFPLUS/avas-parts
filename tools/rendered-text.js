@@ -1,7 +1,8 @@
 /* Finds outside website / domain names in text the site renders.
 
    Rendered: part and model names, notes, notices, catalogue labels, cross-
-   reference numbers and lookup tables in data.js and data-equip.js, plus the
+   reference numbers and lookup tables in data.js, data-equip.js and data-bnf.js
+   (belts / impellers, BNF PLUS stock tags), plus the
    UI copy in app.js (string and template literals) and index.html (markup,
    minus <link>/<script src> tags and xmlns). Not rendered, so not scanned:
    source_url, sources, catalogue_url, manual_url, sheesha_url, EQUIP.urls,
@@ -19,7 +20,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 
-const TLD = "com|net|org|mv|eu|co|uk|th|vn|jp|io|parts|wiki|me|shop|store|info|biz|de|fr|au|in|cn|tw|my|id|ph|sg|nz|us|ca|hu|ru|tv|app|dev|site|online|za";
+const TLD = "com|net|org|mv|eu|co|uk|th|vn|jp|io|parts|wiki|me|shop|store|info|biz|de|fr|au|in|cn|tw|my|id|ph|sg|nz|us|ca|hu|ru|tv|app|dev|site|online|za|plus";  // plus: bnf.plus
 const HOST = new RegExp(`(?:https?://|www\\.)[^\\s)"'<>]*|\\b(?:[a-z0-9-]+\\.)+(?:${TLD})\\b`, "gi");
 const ALLOWED = /^(?:(?:[a-z0-9-]+\.)*avas\.parts|bearing\.wiki|wa\.me|https:\/\/wa\.me\/.*|challenges\.cloudflare\.com|https:\/\/challenges\.cloudflare\.com\/.*|https:\/\/(?:api\.)?avas\.parts\/?.*)$/i;
 /* Rendered data fields. Lookup tables (CATS, FAMILY, GROUP, ZONES, verticals,
@@ -33,7 +34,9 @@ function load(root) {
   vm.runInContext(fs.readFileSync(path.join(root, "data.js"), "utf8") +
     "\n;globalThis.__D = {MODELS, PARTS, CATS, ZONES, FAMILY, GROUP, SHOP};", ctx);
   vm.runInContext(fs.readFileSync(path.join(root, "data-equip.js"), "utf8") + "\n;globalThis.__E = EQUIP;", ctx);
-  return { D: ctx.__D, E: ctx.__E };
+  const bnf = path.join(root, "data-bnf.js");
+  if (fs.existsSync(bnf)) vm.runInContext(fs.readFileSync(bnf, "utf8") + "\n;globalThis.__B = BNF;", ctx);
+  return { D: ctx.__D, E: ctx.__E, B: ctx.__B || null };
 }
 
 /* Second-level labels of every host the internal URL data points at. */
@@ -127,7 +130,7 @@ function uiCopy(root) {
 }
 
 function renderedDomainHits(root = path.join(__dirname, "..")) {
-  const { D, E } = load(root);
+  const { D, E, B } = load(root);
   const labels = siteLabels(D, E).map(l => l.replace(/[-.]/g, "[-. ]?"));
   const labelRe = new RegExp(`\\b(?:${labels.join("|")})\\b`, "gi");
   const hits = [];
@@ -139,6 +142,16 @@ function renderedDomainHits(root = path.join(__dirname, "..")) {
   E.models.forEach(m => fields(m, `data-equip.js models ${m.id}`, labelRe, hits));
   walk(E.verticals, "data-equip.js verticals", labelRe, hits);
   walk(E.cats, "data-equip.js cats", labelRe, hits);
+  if (B) {
+    B.parts.forEach(p => fields(p, `data-bnf.js parts ${p.id}`, labelRe, hits));
+    B.parts.forEach(p => { if (p.bnf) walk(p.bnf, `data-bnf.js parts ${p.id}.bnf`, labelRe, hits); });
+    B.groups.forEach(g => walk(g, `data-bnf.js groups ${g.id}`, labelRe, hits));
+    Object.values(B.xparts).forEach(x => fields(x, `data-bnf.js xparts ${x.id}`, labelRe, hits));
+    walk(B.verticals, "data-bnf.js verticals", labelRe, hits);
+    walk(B.cats, "data-bnf.js cats", labelRe, hits);
+  }
+  /* BNF PLUS stock tags on site parts are rendered too. */
+  [...D.PARTS, ...E.parts].forEach(p => { if (p.bnf) walk(p.bnf, `${p.vertical ? "data-equip.js" : "data.js"} ${p.id}.bnf`, labelRe, hits); });
   for (const [file, texts] of Object.entries(uiCopy(root))) texts.forEach(t => scan(t, file, labelRe, hits));
   return hits;
 }

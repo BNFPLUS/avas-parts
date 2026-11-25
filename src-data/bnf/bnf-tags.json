@@ -1,0 +1,709 @@
+{
+ "note": "BNF PLUS stock tags for parts that exist on the site (ported from preview-catalogue). SKU, brand, their number and availability only. Never a price.",
+ "bike": [
+  {
+   "id": "n0117",
+   "oem": "91052-KVG-B01",
+   "bnf": {
+    "kind": "bearing_confirmed",
+    "designation": "6201U",
+    "matches": [
+     {
+      "sku": "BGC1448",
+      "brand": "NACHI",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGS1055",
+      "brand": "SKF",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BRG0483",
+      "brand": "IKC",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BRG0093",
+      "brand": "KOYO",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1126",
+      "brand": "FAG",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1142",
+      "brand": "FAG",
+      "pn": "6201",
+      "avail": "low"
+     },
+     {
+      "sku": "BGC1359",
+      "brand": "NSK",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1269",
+      "brand": "NTN",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BRG0484",
+      "brand": "IKC",
+      "pn": "6201",
+      "avail": "stock"
+     },
+     {
+      "sku": "BGC1909",
+      "brand": "NSK",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BRG0071",
+      "brand": "KOYO",
+      "pn": "6201",
+      "avail": "stock"
+     },
+     {
+      "sku": "BGC1375",
+      "brand": "NSK",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1285",
+      "brand": "NTN",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1464",
+      "brand": "NACHI",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1038",
+      "brand": "SKF",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1024",
+      "brand": "SKF",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BCC1338",
+      "brand": "SKF",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BCC1529",
+      "brand": "NSK",
+      "pn": "6201",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGS1329",
+      "brand": "SKF",
+      "pn": "6201/C3",
+      "avail": "indent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "n0568",
+   "oem": "91053-K2P-VE1",
+   "bnf": {
+    "kind": "bearing_confirmed",
+    "designation": "6004UU",
+    "matches": [
+     {
+      "sku": "BGC1429",
+      "brand": "NACHI",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGS1033",
+      "brand": "SKF",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1107",
+      "brand": "FAG",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1197",
+      "brand": "KOYO",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1340",
+      "brand": "NSK",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1250",
+      "brand": "NTN",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGS1034",
+      "brand": "FAG",
+      "pn": "6004",
+      "avail": "stock"
+     },
+     {
+      "sku": "BGC1208",
+      "brand": "KOYO",
+      "pn": "6004",
+      "avail": "stock"
+     },
+     {
+      "sku": "BGC1351",
+      "brand": "NSK",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1261",
+      "brand": "NTN",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1440",
+      "brand": "NACHI",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1016",
+      "brand": "SKF",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1005",
+      "brand": "SKF",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BCC1317",
+      "brand": "SKF",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BGC1118",
+      "brand": "FAG",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BRG0022",
+      "brand": "KOYO",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BRG0041",
+      "brand": "KOYO",
+      "pn": "6004",
+      "avail": "indent"
+     },
+     {
+      "sku": "BCC1693",
+      "brand": "SKF",
+      "pn": "6004/C3",
+      "avail": "indent"
+     }
+    ]
+   }
+  }
+ ],
+ "equipment": [
+  {
+   "id": "m00003",
+   "oem": "LF3959",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1784",
+    "brand": "FLEETGUARD",
+    "pn": "LF-3959",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL1784",
+      "brand": "FLEETGUARD",
+      "pn": "LF-3959",
+      "avail": "indent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m00014",
+   "oem": "LF9009",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1601",
+    "brand": "LASEN",
+    "pn": "LF-9009",
+    "avail": "stock",
+    "matches": [
+     {
+      "sku": "FIL1601",
+      "brand": "LASEN",
+      "pn": "LF-9009",
+      "avail": "stock"
+     },
+     {
+      "sku": "FIL1233",
+      "brand": "FLEETGUARD",
+      "pn": "LF9009",
+      "avail": "stock"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m00023",
+   "oem": "WF2075",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1399",
+    "brand": "FLEETGUARD",
+    "pn": "WF2075",
+    "avail": "stock",
+    "matches": [
+     {
+      "sku": "FIL1399",
+      "brand": "FLEETGUARD",
+      "pn": "WF2075",
+      "avail": "stock"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01279",
+   "oem": "1R-0739",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1401",
+    "brand": "CATERPILLAR",
+    "pn": "1R-0739",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL1401",
+      "brand": "CATERPILLAR",
+      "pn": "1R-0739",
+      "avail": "indent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01280",
+   "oem": "1R-0751",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1404",
+    "brand": "CATERPILLAR",
+    "pn": "1R-0751",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL1404",
+      "brand": "CATERPILLAR",
+      "pn": "1R-0751",
+      "avail": "indent"
+     },
+     {
+      "sku": "FIL1608",
+      "brand": "LASEN",
+      "pn": "1R-0751",
+      "avail": "stock"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01300",
+   "oem": "1R-1807",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1407",
+    "brand": "LASEN",
+    "pn": "1R-1807",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL1407",
+      "brand": "LASEN",
+      "pn": "1R-1807",
+      "avail": "indent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01309",
+   "oem": "FS1280",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1746",
+    "brand": "FLEETGUARD",
+    "pn": "FS-1280",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL1746",
+      "brand": "FLEETGUARD",
+      "pn": "FS-1280",
+      "avail": "indent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01310",
+   "oem": "LF3349",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1782",
+    "brand": "FLEETGUARD",
+    "pn": "LF-3349",
+    "avail": "stock",
+    "matches": [
+     {
+      "sku": "FIL1782",
+      "brand": "FLEETGUARD",
+      "pn": "LF-3349",
+      "avail": "stock"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01314",
+   "oem": "LF16011",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1333",
+    "brand": "FLEETGUARD",
+    "pn": "LF16011",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL1333",
+      "brand": "FLEETGUARD",
+      "pn": "LF16011",
+      "avail": "indent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01316",
+   "oem": "FF5052",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1172",
+    "brand": "FLEETGUARD",
+    "pn": "FF5052",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL1172",
+      "brand": "FLEETGUARD",
+      "pn": "FF5052",
+      "avail": "indent"
+     },
+     {
+      "sku": "FIL2097",
+      "brand": "LASEN",
+      "pn": "FF5052",
+      "avail": "indent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01318",
+   "oem": "FS1251",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1187",
+    "brand": "FLEETGUARD",
+    "pn": "FS1251",
+    "avail": "stock",
+    "matches": [
+     {
+      "sku": "FIL1187",
+      "brand": "FLEETGUARD",
+      "pn": "FS1251",
+      "avail": "stock"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01320",
+   "oem": "LF3000",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL2105",
+    "brand": "FLEETGUARD",
+    "pn": "LF-3000",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL2105",
+      "brand": "FLEETGUARD",
+      "pn": "LF-3000",
+      "avail": "indent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01321",
+   "oem": "WF2075",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1399",
+    "brand": "FLEETGUARD",
+    "pn": "WF2075",
+    "avail": "stock",
+    "matches": [
+     {
+      "sku": "FIL1399",
+      "brand": "FLEETGUARD",
+      "pn": "WF2075",
+      "avail": "stock"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01325",
+   "oem": "FF202",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1788",
+    "brand": "FLEETGUARD",
+    "pn": "FF-202",
+    "avail": "stock",
+    "matches": [
+     {
+      "sku": "FIL1788",
+      "brand": "FLEETGUARD",
+      "pn": "FF-202",
+      "avail": "stock"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01327",
+   "oem": "LF777",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1232",
+    "brand": "FLEETGUARD",
+    "pn": "LF777",
+    "avail": "stock",
+    "matches": [
+     {
+      "sku": "FIL1232",
+      "brand": "FLEETGUARD",
+      "pn": "LF777",
+      "avail": "stock"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01329",
+   "oem": "FS1006",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1512",
+    "brand": "FLEETGUARD",
+    "pn": "FS1006",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL1512",
+      "brand": "FLEETGUARD",
+      "pn": "FS1006",
+      "avail": "indent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01331",
+   "oem": "FF5580",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1738",
+    "brand": "FLEETGUARD",
+    "pn": "FF5580",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL1738",
+      "brand": "FLEETGUARD",
+      "pn": "FF5580",
+      "avail": "indent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01332",
+   "oem": "LF9009",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1601",
+    "brand": "LASEN",
+    "pn": "LF-9009",
+    "avail": "stock",
+    "matches": [
+     {
+      "sku": "FIL1601",
+      "brand": "LASEN",
+      "pn": "LF-9009",
+      "avail": "stock"
+     },
+     {
+      "sku": "FIL1233",
+      "brand": "FLEETGUARD",
+      "pn": "LF9009",
+      "avail": "stock"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01333",
+   "oem": "WF2076",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1775",
+    "brand": "SURE",
+    "pn": "WF-2076",
+    "avail": "stock",
+    "matches": [
+     {
+      "sku": "FIL1775",
+      "brand": "SURE",
+      "pn": "WF-2076",
+      "avail": "stock"
+     },
+     {
+      "sku": "FIL1392",
+      "brand": "FLEETGUARD",
+      "pn": "WF2076",
+      "avail": "stock"
+     },
+     {
+      "sku": "FIL2146",
+      "brand": "LASEN",
+      "pn": "WF2076",
+      "avail": "stock"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01334",
+   "oem": "FS19732",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1602",
+    "brand": "LASEN",
+    "pn": "FS-19732",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL1602",
+      "brand": "LASEN",
+      "pn": "FS-19732",
+      "avail": "indent"
+     },
+     {
+      "sku": "FIL1194",
+      "brand": "FLEETGUARD",
+      "pn": "FS19732",
+      "avail": "indent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01336",
+   "oem": "FS1040",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1740",
+    "brand": "FLEETGUARD",
+    "pn": "FS1040",
+    "avail": "stock",
+    "matches": [
+     {
+      "sku": "FIL1740",
+      "brand": "FLEETGUARD",
+      "pn": "FS1040",
+      "avail": "stock"
+     }
+    ]
+   }
+  },
+  {
+   "id": "m01339",
+   "oem": "LF3345",
+   "bnf": {
+    "kind": "filter_exact",
+    "sku": "FIL1397",
+    "brand": "FLEETGUARD",
+    "pn": "LF3345",
+    "avail": "indent",
+    "matches": [
+     {
+      "sku": "FIL1397",
+      "brand": "FLEETGUARD",
+      "pn": "LF3345",
+      "avail": "indent"
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -262,6 +262,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .tier.genuine    { color: var(--hot); }
 .tier.oem-alt    { color: var(--sea); }
 .tier.aftermarket{ color: var(--ink-3); }
+.tier.brand      { color: var(--ink-2); }
 
 /* --- SIGNATURE: the segmented part-number plate --- */
 .plate {
@@ -324,6 +325,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
   text-transform: uppercase; color: var(--ink-3); font-weight: 500; margin-right: 4px;
 }
 .mnote-note { color: var(--ink); }
+
+/* BNF PLUS stock references: stock tags, impeller links, belt / impeller size */
+.refs { display: flex; flex-direction: column; gap: 4px; }
+.bnfline { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-2); line-height: 1.35; overflow-wrap: anywhere; }
+.bnfline b { font-weight: 600; color: var(--sea); letter-spacing: .06em; text-transform: uppercase; font-size: 9.5px; margin-right: 3px; }
+.implink { color: var(--sea); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.sizeline { font-family: var(--f-mono); font-size: 11px; color: var(--ink-2); }
 
 /* fitment ribbon */
 .ribbon { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -597,6 +605,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .cardname { font-size: 17px; }
   .decode { font-size: 12.5px; }
   .moreb { padding: 8px 0; margin: -6px 0; font-size: 12px; }
+  .implink { display: inline-block; padding: 6px 2px; margin: -6px 0; }
   .cardfoot { align-items: center; flex-wrap: wrap; }
   .addbtn { min-height: 44px; min-width: 88px; padding: 0 18px; font-size: 14px; }
 

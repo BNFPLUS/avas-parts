@@ -23,6 +23,9 @@ const app  = read("app.js");
    app.js sees the EQUIP global and skips the request. */
 let equip = "";
 try { equip = read("data-equip.js"); } catch { console.warn("data-equip.js missing — run node tools/build-equip.js; bundling bikes only"); }
+/* Belts and impellers (BNF PLUS stock), lazy-loaded the same way. */
+let bnf = "";
+try { bnf = read("data-bnf.js"); } catch { console.warn("data-bnf.js missing — run node tools/build-bnf.js; bundling without belts and impellers"); }
 /* Optional — only exists once import-images.js has been run. */
 let images = "";
 try { images = read("images.js"); } catch { images = "const IMAGES = {};"; }
@@ -51,7 +54,7 @@ html = html
   .replace(/<link href="https:\/\/fonts\.googleapis\.com[^>]*>\s*/g, "")
   .replace(/<link rel="stylesheet" href="styles\.css">/, () => `<style>\n${css}\n</style>`)
   .replace(/<script src="data\.js"><\/script>\s*<script src="images\.js"><\/script>\s*<script src="art\.js"><\/script>\s*<script src="app\.js"><\/script>/,
-           () => `<script>\n${data}\n${equip}\n${images}\n${art}\n${app}\n</script>`);
+           () => `<script>\n${data}\n${equip}\n${bnf}\n${images}\n${art}\n${app}\n</script>`);
 
 /* Sanity: nothing external may remain */
 const external = [...html.matchAll(/(?:src|href)="(https?:\/\/[^"]+)"/g)].map(m => m[1]);
@@ -100,6 +103,15 @@ for (const m of app.matchAll(/href="\$\{([^}]*)\}"/g)) {
 const domHits = require("./tools/rendered-text").renderedDomainHits(__dirname);
 if (domHits.length) fail("rendered text names an outside site:\n  " +
   domHits.slice(0, 20).map(h => `${h.where}: ${h.found.join(", ")}`).join("\n  "));
+
+/* BNF PLUS prices are not public: no price field on a belt or impeller, no
+   price_mvr anywhere in dist. */
+if (/price_mvr|price_note/i.test(html)) fail("dist contains a BNF price field (price_mvr / price_note)");
+if (bnf) {
+  const B = new Function(bnf + "\nreturn BNF;")();
+  const priced = B.parts.filter(p => p.price !== null || p.askPrice !== true || Object.keys(p).some(k => /price_|cost|bin|rop/i.test(k)));
+  if (priced.length) fail("belts / impellers must be price:null + askPrice:true with no price fields: " + priced.slice(0, 5).map(p => p.id).join(", "));
+}
 
 /* No counter view and no staff data in dist. */
 const COUNTER = [

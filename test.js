@@ -439,10 +439,127 @@ const mvrModels = [...MODELS, ...E.models].filter(m => dealerModelIds.has(m.id) 
 ok(!mvrModels.length, "dealer model notes with an MVR price: " + mvrModels.join(", "));
 console.log(`  ${PARTS.length + E.parts.length} part notes checked`);
 
+const { renderedDomainHits } = require("./tools/rendered-text");
+const renderedDomainHitsFn = renderedDomainHits;
+
+sec("Belts and impellers from BNF PLUS stock (data-bnf.js)");
+const bctx = { console };
+vm.createContext(bctx);
+vm.runInContext(fs.readFileSync("data-bnf.js", "utf8") + "\n;globalThis.__B = BNF;", bctx);
+const B = bctx.__B;
+const BELTS = B.parts.filter(p => p.vertical === "belts"), IMPS = B.parts.filter(p => p.vertical === "impellers");
+const csvRows = (f) => fs.readFileSync(f, "utf8").trim().split("\n").length - 1;
+ok(csvRows("src-data/bnf/belts.csv") === 550 && BELTS.length === 550, `Belts lists all 550 belts.csv rows (${BELTS.length})`);
+ok(csvRows("src-data/bnf/impellers.csv") === 64 && IMPS.length === 63, `Impellers lists 63 of 64 rows (${IMPS.length})`);
+ok(!IMPS.some(p => p.sku === "IMP1080") && !/G1010/.test(JSON.stringify(B)), "IMP1080 (Sherwood G1010 pump) is skipped");
+for (const f of ["src-data/bnf/belts.csv", "src-data/bnf/impellers.csv"])
+  ok(!/price|cost/i.test(fs.readFileSync(f, "utf8").split("\n")[0]), `${f} has no price / cost column`);
+ok(B.parts.every(p => p.price === null && p.askPrice === true), "every belt and impeller is price:null + askPrice:true");
+const bnfPriceKeys = B.parts.filter(p => Object.keys(p).some(k => /price_mvr|price_note|cost|^bin$|^rop$/i.test(k)) ||
+  Object.entries(p).some(([k, v]) => /price/i.test(k) && typeof v === "number")).map(p => p.id);
+ok(!bnfPriceKeys.length, "no belt / impeller row has a numeric price, price_mvr, cost, bin or rop: " + bnfPriceKeys.slice(0, 10).join(", "));
+ok(!/price_mvr|price_note/.test(fs.readFileSync("data-bnf.js", "utf8") + fs.readFileSync("data.js", "utf8") + fs.readFileSync("data-equip.js", "utf8") + app),
+   "no price_mvr / price_note anywhere in the shipped data or app.js");
+ok(B.parts.every(p => !p.img && !A.IMAGES[p.id] && A.artHTML(p) === ""), "belts and impellers have no photo and render no image area");
+ok(B.parts.every(p => !("src" in p) && !p.sources && !p.source_url && !p.catalogue_url), "belts and impellers ship no source or catalogue url");
+ok(B.parts.every(p => (p.stock === 1 && !p.orderIn) || (p.stock === 0 && p.orderIn === true)), "availability is a 0/1 flag: In stock or Order in");
+ok(BELTS.filter(p => p.orderIn).length === 95 && IMPS.filter(p => p.orderIn).length === 17, "indent rows show Order in (95 belts, 17 impellers)");
+const bid = new Set(B.parts.map(p => p.id));
+ok(bid.size === B.parts.length && !PARTS.some(p => bid.has(p.id)) && !E.parts.some(p => bid.has(p.id)), "belt / impeller ids are unique across the site");
+const G = Object.fromEntries(B.groups.map(g => [g.id, g]));
+ok(BELTS.every(p => G[p.grp] && G[p.grp].vertical === "belts" && !p.fits.length), "every belt sits in a group and fits no engine");
+const grpCount = (id) => BELTS.filter(p => p.grp === id).length;
+ok(grpCount("belts-4pk") === 124 && grpCount("belts-6pk") === 127 && grpCount("belts-8pk") === 142 && grpCount("belts-a") === 52 && grpCount("belts-b") === 53 && grpCount("belts-m") === 2,
+   "PK by rib count, classical by section: 4PK 124, 6PK 127, 8PK 142, A 52, B 53, M 2");
+const lenOf = (p) => +(p.oem.match(/(\d+)$/) || [])[1];
+ok(["belts-8pk", "belts-a"].every(g => { const l = BELTS.filter(p => p.grp === g).map(lenOf); return l.every((x, i) => !i || l[i - 1] <= x); }), "belts sort by length within a group");
+ok(BELTS.filter(p => p.oem.replace(/\s/g, "") === "5PK890").map(p => p.sku).sort().join() === "BLT044,BLT522", "5PK890 stays two rows (Mitsuboshi BLT044, Mitsusmi BLT522)");
+ok(["Mitsuboshi", "Mitsusmi"].every(b => BELTS.some(p => p.brand === b)) && IMPS.every(p => p.brand === "Hengshui"), "product brand shown: Mitsuboshi / Mitsusmi / Hengshui");
+const vui = app.match(/const VERTICALS_UI = \[([\s\S]*?)\];/);
+ok(vui && /id: "belts"[^}]*bnf: true/.test(vui[1]) && /id: "impellers"[^}]*bnf: true/.test(vui[1]), "VERTICALS_UI has Belts and Impellers chips");
+ok(app.includes('"data-bnf.js"') && !html.includes('src="data-bnf.js"'), "data-bnf.js is lazy-loaded by app.js, not by index.html");
+
+// Search: the app's own haystack + term matcher on the shipped rows.
+{
+  const sctx = { console, VERT_BY_ID: { belts: { name: "Belts" }, impellers: { name: "Impellers" } },
+    CAT_BY_ID: Object.fromEntries(B.cats.map(c => [c.id, c])),
+    MODEL_BY_ID: Object.fromEntries([...B.groups, ...Object.values(B.models)].map(m => [m.id, m])),
+    isEq: (p) => !!p.vertical };
+  vm.createContext(sctx);
+  const grab = (re, what) => { const m = app.match(re); ok(m, `app.js defines ${what}`); return m ? m[0] : ""; };
+  vm.runInContext([grab(/const squash = [^\n]+/, "squash()"), grab(/function eqModelText[\s\S]*?\n}\n/, "eqModelText()"),
+    grab(/function bnfHaystack[\s\S]*?\n}\n/, "bnfHaystack()"),
+    "let state = { q: '' };", grab(/const qTerms = [^\n]+/, "qTerms()"), grab(/const termsMatch = [\s\S]*?;\n/, "termsMatch()"),
+    "globalThis.__S = (q) => { state.q = q; const t = qTerms(); return BNF_PARTS.filter(p => termsMatch(p, t)); };"].join("\n"), sctx);
+  sctx.BNF_PARTS = B.parts.map(p => ({ ...p, _h: sctx.bnfHaystack ? sctx.bnfHaystack(p) : "" }));
+  vm.runInContext("var BNF_PARTS = globalThis.BNF_PARTS;", sctx);
+  const find = (q) => sctx.__S(q).map(p => p.sku);
+  ok(find("8PK1440").includes("BLT443") && find("8PK 1440").includes("BLT443") && find("8pk-1440").includes("BLT443"), "search 8PK1440 / 8PK 1440 / 8pk-1440 finds the belt (BLT443)");
+  ok(find("1440").includes("BLT443"), "search 1440 finds the 8PK 1440 belt");
+  ok(find("5PK890").length === 2, "search 5PK890 finds both brands");
+  ok(find("A68").includes("BLT504") && find("B87").includes("BLT518"), "search A68 / B87 find the classical V-belts");
+  ok(find("IMP1043").join() === "IMP1043", "search by impeller SKU finds it");
+  ok(find("125613-42762").sort().join() === "IMP1002,IMP1043", "search 125613-42762 (Yanmar OEM xref) finds IMP1043 and IMP1002");
+  ok(find("3897337").join() === "IMP1036" && find("6593").join() === "IMP1014", "search 3897337 / 6593 (OEM xrefs) find the BNF impeller");
+  ok(find("6HYM").sort().join() === "IMP1002,IMP1043", "search 6HYM finds the impellers matched to the Yanmar 6HYM");
+}
+
+sec("Impeller cross-reference matcher (tools/match-impeller-xref.js)");
+const MX = require("./tools/match-impeller-xref");
+const mx = (xref, oem) => MX.matchImpellers([{ sku: "T", pn: "", xref }], [{ id: "p", oem, alts: [] }]).length === 1;
+ok(mx("8200-01, 125613-42762, 500115", "125613-42762"), "125613-42762 ↔ 125613-42762");
+ok(mx("7600-01K, 3802444, 3897337, 3916852", "389733700"), "Cummins 3897337 ↔ 389733700 (trailing 00)");
+ok(mx("7608-01K, 27000, 27000K, 3974456", "397445600"), "Cummins 3974456 ↔ 397445600 (trailing 00)");
+ok(!mx("Mercury, Mariner, Mercruiser Bravo I, II, III", "MERCURY") && MX.keys("MERCURY").length === 0, "brand word MERCURY never matches");
+ok(!mx("7054-01, 6593, 8514", "6593") && MX.keys("6593").length === 0, "short number 6593 never matches");
+ok(!mx("7054, 3897337", "7054-01") && !mx("3897337", "38973371") && !mx("3897337", "13897337"), "no substring matches (7054 vs 7054-01, 3897337 vs 38973371)");
+ok(!mx("3897330", "389733") && !mx("8973370", "89733700") , "trailing 00 only folds on long all-digit numbers");
+ok(MX.tokens("Detroit Diesel P, N: 5196168, ohn Deere DZ108622, GLM: 89700").join() === "5196168,DZ108622",
+   "labels and brand words are stripped; short numbers dropped");
+ok(JSON.stringify(B.links.m01249) === JSON.stringify(["IMP1043", "IMP1002"]), "Yanmar 125613-42762 (m01249) links to IMP1043 and IMP1002");
+ok(JSON.stringify(B.links.m00020) === JSON.stringify(["IMP1036"]), "Cummins QSL WP repair kit m00020 links to IMP1036");
+ok(JSON.stringify(B.links.m00005) === JSON.stringify(["IMP1037"]), "Cummins QSB WP repair kit m00005 links to IMP1037");
+ok(Object.keys(B.links).every(id => E.parts.some(p => p.id === id) || PARTS.some(p => p.id === id)), "every link names a site part");
+const impBy = Object.fromEntries(IMPS.map(p => [p.sku, p]));
+ok(impBy.IMP1043.fits.join() === "yanmar-6hym-wet" && impBy.IMP1002.fits.join() === "yanmar-6hym-wet", "IMP1043 / IMP1002 fitment chips: Yanmar 6HYM");
+ok(impBy.IMP1036.fits.join() === "cummins-marine-qsl" && impBy.IMP1037.fits.sort().join() === "cummins-marine-qsb5-9,cummins-marine-qsb6-7", "IMP1036 → Cummins QSL; IMP1037 → Cummins QSB5.9 / QSB6.7");
+ok(IMPS.filter(p => p.fits.length).length === 4 && IMPS.filter(p => !p.fits.length).every(p => !p.xparts), "only matched impellers carry engines (no invented fitment)");
+ok(app.includes("?v=impellers&amp;q=") && !/href="https?:[^"]*imp/i.test(app), "the impeller tag links inside the site only");
+
+sec("BNF PLUS stock tags ported from preview-catalogue (24)");
+const TAGS = JSON.parse(fs.readFileSync("src-data/bnf/bnf-tags.json", "utf8"));
+const EQ_TAG_IDS = ["m00003", "m00014", "m00023", "m01279", "m01280", "m01300", "m01309", "m01310", "m01314", "m01316", "m01318",
+  "m01320", "m01321", "m01325", "m01327", "m01329", "m01331", "m01332", "m01333", "m01334", "m01336", "m01339"];
+ok(TAGS.equipment.map(t => t.id).join() === EQ_TAG_IDS.join() && TAGS.bike.map(t => t.id).join() === "n0117,n0568", "src-data/bnf/bnf-tags.json holds the 22 equipment + 2 bike tags");
+const eqTagged = E.parts.filter(p => p.bnf).map(p => p.id).sort();
+ok(eqTagged.join() === EQ_TAG_IDS.join(), `the 22 equipment filters carry a bnf tag (${eqTagged.length})`);
+ok(E.parts.filter(p => p.bnf).every(p => p.bnf.kind === "filter_exact" && p.bnf.sku && p.bnf.pn && p.bnf.brand), "equipment tags: filter_exact with SKU, brand, number");
+const bikeTagged = PARTS.filter(p => p.bnf).map(p => p.id).sort();
+ok(bikeTagged.join() === "n0117,n0568" && PARTS.filter(p => p.bnf).every(p => p.bnf.kind === "bearing_confirmed" && p.bnf.matches.length), "the 2 bike bearings (n0117, n0568) carry their bearing tags");
+const tagJSON = JSON.stringify([...E.parts, ...PARTS].filter(p => p.bnf).map(p => p.bnf));
+ok(!/price|cost|mvr/i.test(tagJSON), "no ported tag carries a price");
+ok(!PARTS.some(p => /^h3[45]\d\d$/.test(p.id)), "the 27 Honda fiche-only tags (h3442–h3522) are not imported");
+ok(/function refsHTML/.test(app) && /function bnfSummary/.test(app) && /bnfText\(p\.bnf\)/.test(app), "app.js renders and searches BNF tags (refsHTML / bnfSummary / haystack)");
+
+sec("Rendered-text guard still bites");
+{
+  const os = require("os"), path = require("path");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "avas-rt-"));
+  for (const f of ["data.js", "data-equip.js", "data-bnf.js", "app.js", "index.html"]) fs.copyFileSync(f, path.join(tmp, f));
+  const bsrc = fs.readFileSync("data-bnf.js", "utf8").replace('"name":"Flexible impeller"', '"name":"Flexible impeller see bnfplus.com"');
+  fs.writeFileSync(path.join(tmp, "data-bnf.js"), bsrc);
+  const hitsBad = renderedDomainHitsFn(tmp);
+  ok(hitsBad.some(h => /data-bnf\.js/.test(h.where) && h.found.some(f => /bnfplus\.com/i.test(f))), "a forbidden domain in a belt / impeller name is caught");
+  fs.copyFileSync("data-bnf.js", path.join(tmp, "data-bnf.js"));
+  const esrc = fs.readFileSync("data-equip.js", "utf8").replace('"note":"FIG 29 cooling pumpsea water"', '"note":"FIG 29 cooling pumpsea water, see bnf.plus"');
+  fs.writeFileSync(path.join(tmp, "data-equip.js"), esrc);
+  ok(esrc.includes("bnf.plus") && renderedDomainHitsFn(tmp).some(h => h.found.some(f => /bnf\.plus/i.test(f))), "a forbidden domain in an engine part note is caught");
+  fs.rmSync(tmp, { recursive: true, force: true });
+}
+
 sec("No outside site or domain in rendered text");
 // Notes, names, notices, catalogue labels and UI copy must not name an outside
 // website (tools/rendered-text.js). Internal URL fields are not scanned.
-const { renderedDomainHits } = require("./tools/rendered-text");
 const domHits = renderedDomainHits(__dirname);
 ok(!domHits.length, "rendered text names an outside site: " +
   domHits.slice(0, 10).map(h => `${h.where} (${h.found.join(", ")})`).join("; "));

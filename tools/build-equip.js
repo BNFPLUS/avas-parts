@@ -25,7 +25,9 @@
    - Models with no parts are kept (RANGE_MODELS are empty by design); the site
      shows "0 parts" and asks for a price and the engine serial.
    - `stock` passes through only as a public flag (Mercury 115 rows: 1 = In stock);
-     the held quantity stays out of the site. */
+     the held quantity stays out of the site.
+   - BNF PLUS stock tags from src-data/bnf/bnf-tags.json go onto the parts they
+     name (p.bnf); belts and impellers themselves are built by tools/build-bnf.js. */
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
@@ -255,6 +257,16 @@ const rangeWithParts = models.filter(m => m.empty && used.has(m.id)).map(m => m.
 if (rangeWithParts.length) throw new Error("RANGE_MODELS entries that picked up parts: " + rangeWithParts.join(", "));
 for (const m of models) delete m.empty;
 
+/* BNF PLUS stock tags (SKU, brand, their number, availability; never a price)
+   on equipment parts that exist on the site. src-data/bnf/bnf-tags.json. */
+const BNF_TAGS = JSON.parse(fs.readFileSync(path.join(root, "src-data/bnf/bnf-tags.json"), "utf8")).equipment;
+for (const t of BNF_TAGS) {
+  const p = parts.find(x => x.id === t.id);
+  if (!p || p.oem !== t.oem) throw new Error(`BNF tag ${t.id} ${t.oem}: part missing or number changed`);
+  if (/price|cost/i.test(JSON.stringify(t.bnf))) throw new Error("BNF tag carries a price field: " + t.id);
+  p.bnf = t.bnf;
+}
+
 /* Notes are shown as text: no outside site or domain names (tools/dealer-notes.js). */
 for (const x of [...models, ...parts]) if (x.note) x.note = publicNote(x.note);
 
@@ -275,6 +287,7 @@ console.log(`rows dropped with no part number at all: ${noNumber.length}${noNumb
 console.log(`rows merged by OEM within a vertical: ${merged} (pumps: ${mergedPumps})`);
 console.log(`empty engine entries kept (0 parts): ${emptyModels.length}`);
 console.log(`output: ${EQUIP.models.length} models, ${parts.length} parts`);
+console.log(`BNF PLUS stock tags on equipment parts: ${BNF_TAGS.length}`);
 console.log(`dealer marine (Parsun): ${parsun.length} models, ${parts.filter(p => p.fits.some(f => parsun.some(m => m.id === f))).length} parts`);
 for (const v of verticals.filter(v => v.id !== "bikes")) {
   const nm = EQUIP.models.filter(m => m.vertical === v.id).length;
