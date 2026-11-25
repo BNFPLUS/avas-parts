@@ -51,7 +51,7 @@ const MODEL_META = {
   "yamaha-f40a-2008":                ["F40A 40 hp (2008+)", 40, "hp", 1],
   "yamaha-f50-2006":                 ["F50 50 hp (2006+)", 50, "hp", 1],
   "yamaha-f115-2014":                ["F115 115 hp (2014+)", 115, "hp", 1],
-  "yamaha-f150-f175-2.7-2.8l":       ["F150 / F175 2.7–2.8L 150–175 hp", 150, "hp", 1],
+  "yamaha-f150-f175-2.7-2.8l":       ["F150 / F175 2.7–2.8L 150–175 hp", 150, "hp", 1, ["F175G", "F175"]],
   "yamaha-f200-f225-v6-3.3l":        ["F200 / F225 V6 3.3L 200–225 hp", 200, "hp", 1],
   "yamaha-f250-v6-3.3l":             ["F225 / F250 V6 3.3L 225–250 hp", 225, "hp", 1],
   "yamaha-f250-f300-v6-4.2l-2010":   ["F250 / F300 V6 4.2L 250–300 hp (2010+)", 250, "hp", 1],
@@ -70,9 +70,12 @@ const MODEL_META = {
   "yanmar-6aym-wst":   ["6AYM-WST", 20.4, "L", 0],
 
   /* ---- Jet skis (size = engine cc) ---- */
-  "yamaha-waverunner-vx-1050-tr1-2015":     ["WaveRunner VX TR-1 1050 (2015)", 1049, "cc", 0, ["V1"]],
-  "yamaha-waverunner-jetblaster-2022":      ["WaveRunner JetBlaster TR-1 1050 (2022+)", 1049, "cc", 0],
-  "yamaha-waverunner-fx-1.8l-ho-svho-2009": ["WaveRunner FX 1.8L HO / SVHO", 1812, "cc", 0, ["FX Cruiser"]],
+  "yamaha-waverunner-vx-1050-tr1-2015":     ["WaveRunner VX 1050 (TR-1)", 1049, "cc", 0, ["VX 1050", "V1", "TR-1"]],
+  "yamaha-waverunner-vx-cruiser-1050":      ["WaveRunner VX Cruiser 1050", 1049, "cc", 0, ["VX Cruiser", "TR-1"]],
+  "yamaha-waverunner-vx-deluxe-1050":       ["WaveRunner VX Deluxe 1050", 1049, "cc", 0, ["VX Deluxe", "TR-1"]],
+  "yamaha-waverunner-jetblaster-2022":      ["WaveRunner JetBlaster TR-1 1050 (2022+)", 1049, "cc", 0, ["Jet Blaster", "Jet Blaster Pro"]],
+  "yamaha-waverunner-jetblaster-pro-1050":  ["WaveRunner Jet Blaster Pro 1050", 1049, "cc", 0, ["JetBlaster Pro", "Jet Blaster", "TR-1"]],
+  "yamaha-waverunner-fx-1.8l-ho-svho-2009": ["WaveRunner FX SVHO 1800", 1812, "cc", 0, ["FX 1800", "FX SVHO", "FX Cruiser", "1.8L HO"]],
   "yamaha-waverunner-vx-1.8l-ho-2016":      ["WaveRunner VX 1.8L HO (2016–2020)", 1812, "cc", 0, ["VX Cruiser"]],
   "seadoo-spark-900ace-2014":               ["Spark 900 ACE (2014+)", 899, "cc", 0],
   "seadoo-gti-130-170-1630ace-2020":        ["GTI 130 / 170 1630 ACE (2020+)", 1630, "cc", 0],
@@ -136,7 +139,7 @@ const MODEL_META = {
   "honda-eu70is-generator": ["EU70is inverter generator", 7, "kVA", 0],
 };
 
-/* [id, vertical, brand, name, size, unit, family] — empty model entries. */
+/* [id, vertical, brand, name, size, unit, family, search aliases?] — empty model entries. */
 const RANGE_MODELS = [
   /* Mercury, Hassan Marine range (SeaPro, Verado V10, Avator). SeaPro 115 stays
      empty: the 115 stock list is confirmed for the FourStroke 2.1L 115 only. */
@@ -162,12 +165,12 @@ const RANGE_MODELS = [
   ["yamaha-f6",           "outboards", "Yamaha", "F6 6 hp",          6, "hp", 1],
   ["yamaha-f15",          "outboards", "Yamaha", "F15 15 hp",       15, "hp", 1],
   ["yamaha-f25",          "outboards", "Yamaha", "F25 25 hp",       25, "hp", 1],
-  ["yamaha-f60",          "outboards", "Yamaha", "F60 60 hp",       60, "hp", 1],
+  ["yamaha-f60",          "outboards", "Yamaha", "F60 60 hp",       60, "hp", 1, ["FT60", "FT60J"]],
   ["yamaha-f80",          "outboards", "Yamaha", "F80 80 hp",       80, "hp", 1],
   ["yamaha-f100",         "outboards", "Yamaha", "F100 100 hp",    100, "hp", 1],
   ["yamaha-f350",         "outboards", "Yamaha", "F350 350 hp",    350, "hp", 1],
-  ["yamaha-v8-f400",      "outboards", "Yamaha", "V8 F400 400 hp", 400, "hp", 1],
-  ["yamaha-xto-450",      "outboards", "Yamaha", "XTO 450 hp",     450, "hp", 1],
+  ["yamaha-v8-f400",      "outboards", "Yamaha", "V8 F400 400 hp", 400, "hp", 1, ["F400"]],
+  ["yamaha-xto-450",      "outboards", "Yamaha", "XTO 450 hp",     450, "hp", 1, ["XTO", "F450"]],
 
   /* Suzuki, MTCC outboard range not covered by an existing group. DF200A is the
      inline-4, not the DF200 V6 3.6L group; DF250AP is kept apart from the
@@ -201,6 +204,16 @@ const RANGE_MODELS = [
 
   /* Yamaha WaveRunners on Alia with a 1.9L engine; the 1.8L parts are not
      re-pointed to them. */
-  ["yamaha-waverunner-fx-1.9l-ho",        "jetski", "Yamaha", "WaveRunner FX 1.9L HO",        1898, "cc", 0],
-  ["yamaha-waverunner-vx-cruiser-1.9l-ho","jetski", "Yamaha", "WaveRunner VX Cruiser 1.9L HO", 1898, "cc", 0],
+  ["yamaha-waverunner-fx-1.9l-ho",        "jetski", "Yamaha", "WaveRunner FX Series 1900",     1898, "cc", 0, ["FX 1900", "FX 1.9L HO"]],
+  ["yamaha-waverunner-vx-cruiser-1.9l-ho","jetski", "Yamaha", "WaveRunner VX Cruiser HO 1900", 1898, "cc", 0, ["VX Cruiser HO", "VX 1900", "1.9L HO"]],
 ];
+
+/* Trim models that take the same service parts as an engine already listed.
+   source id -> target ids; tools/build-equip.js adds the targets to every part
+   that fits the source. Targets are real models (DEALER_MARINE_MODELS), not
+   RANGE_MODELS, so they ship with parts. */
+const SHARE_FITS = {
+  /* VX Cruiser and VX Deluxe 1050 run the same TR-1 1049 cc engine as the VX 1050. */
+  "yamaha-waverunner-vx-1050-tr1-2015": ["yamaha-waverunner-vx-cruiser-1050", "yamaha-waverunner-vx-deluxe-1050"],
+  "yamaha-waverunner-jetblaster-2022":  ["yamaha-waverunner-jetblaster-pro-1050"],
+};

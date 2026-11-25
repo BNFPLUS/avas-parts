@@ -42,10 +42,10 @@ vm.runInContext(
   fs.readFileSync(path.join(root, "src-data/data-dealers-next.js"), "utf8") + "\n" +
   fs.readFileSync(path.join(root, "src-data/data-engine-range.js"), "utf8") +
   "\n;globalThis.__X = {VERTICALS, MARINE_CATS, MARINE_MODELS, MARINE_PARTS, POWER_MODELS, POWER_PARTS," +
-  " DEALER_MARINE_MODELS, DEALER_MARINE_PARTS, MODEL_META, RANGE_MODELS};",
+  " DEALER_MARINE_MODELS, DEALER_MARINE_PARTS, MODEL_META, RANGE_MODELS, SHARE_FITS};",
   ctx);
 const { VERTICALS, MARINE_CATS, POWER_MODELS, POWER_PARTS, DEALER_MARINE_MODELS, DEALER_MARINE_PARTS,
-  MODEL_META, RANGE_MODELS } = ctx.__X;
+  MODEL_META, RANGE_MODELS, SHARE_FITS } = ctx.__X;
 /* Dealer marine rows (Parsun) share the marine schema, so they go through the
    same path as the scraped marine catalogue. Their notes lose reference prices
    and dated stock remarks first (tools/dealer-notes.js). */
@@ -135,9 +135,9 @@ for (const m of MARINE_MODELS) {
   }));
 }
 /* Empty engine entries: no parts, no catalogue or source link, no note. */
-for (const [id, vertical, brand, name, size, unit, fam] of RANGE_MODELS) {
+for (const [id, vertical, brand, name, size, unit, fam, aka] of RANGE_MODELS) {
   if (models.some(m => m.id === id)) throw new Error("range model id collision " + id);
-  models.push({ id, vertical, brand, name, size, unit, fam, empty: true });
+  models.push({ id, vertical, brand, name, size, unit, fam, ...(aka && aka.length ? { aka } : {}), empty: true });
 }
 const unusedMeta = Object.keys(MODEL_META).filter(id => !models.some(m => m.id === id));
 if (unusedMeta.length) throw new Error("MODEL_META entries with no model: " + unusedMeta.join(", "));
@@ -246,6 +246,17 @@ const parts = [...byKey.values()].map(r => {
   });
   return out;
 });
+
+/* Trim models sharing another model's service parts (SHARE_FITS,
+   src-data/data-engine-range.js): every part fitting the source also fits
+   the targets. */
+for (const [from, to] of Object.entries(SHARE_FITS)) {
+  if (!MODEL[from]) throw new Error("SHARE_FITS source is not a model: " + from);
+  for (const t of to) if (!MODEL[t] || MODEL[t].empty) throw new Error("SHARE_FITS target must be a non-range model: " + t);
+  const shared = parts.filter(p => p.fits.includes(from));
+  if (!shared.length) throw new Error("SHARE_FITS source has no parts: " + from);
+  for (const p of shared) p.fits = uniq([...p.fits, ...to]);
+}
 
 /* Models with no parts stay in the picker. Only RANGE_MODELS are expected to be
    empty; a scraped model losing all its parts is a build error. */

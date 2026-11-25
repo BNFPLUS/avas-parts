@@ -34,7 +34,18 @@ const FAMILY = {
  "1S7": "Yamaha LC135",
  "P99": "Honda genuine oils & chemicals",
  "M99": "Honda genuine gear oil",
- "B8R": "Yamaha Aerox Alpha 155"
+ "B8R": "Yamaha Aerox Alpha 155",
+ "B9Y": "Yamaha NMAX Turbo / Aerox Alpha Turbo",
+ "2PV": "Yamaha MX King 150",
+ "1PA": "Yamaha MX King / Jupiter MX rear brake",
+ "38B": "Yamaha oil filter (Jupiter MX / MX King / Exciter)",
+ "B3Y": "Yamaha Fazzio / Grand Filano / Gear Ultima 125",
+ "B8B": "Yamaha Fazzio / Grand Filano 125",
+ "BEJ": "Yamaha Fazzio / Grand Filano CVT",
+ "BKF": "Yamaha Fazzio 125",
+ "B5D": "Yamaha Gear 125 / Freego",
+ "2PH": "Yamaha Gear / Freego 125",
+ "2BM": "Yamaha 125 scooter front brake"
 };
 const GROUP = {
  "12191": "Cylinder gasket",
@@ -996,6 +1007,116 @@ const MODELS = [
   "note": "Only Auto Care retailer numbers.",
   "pop": 1,
   "status": "dealers-2026-11 draft: verify"
+ },
+ {
+  "id": "yamaha-nmax-turbo155-gpd155d",
+  "brand": "Yamaha",
+  "name": "NMAX Turbo 155",
+  "market": "MV/ID (ASEAN)",
+  "generation": "2024+",
+  "years": "2024–2026",
+  "cc": 155,
+  "seg": "auto",
+  "catalogue_code": "GPD155D-F",
+  "family_codes": [
+   "B9Y"
+  ],
+  "note": "Yamaha Maldives current range. Service numbers to be checked against the frame number.",
+  "pop": 4,
+  "status": "yamaha-maldives-2026 preview: verify"
+ },
+ {
+  "id": "yamaha-mx-king150-2pv",
+  "brand": "Yamaha",
+  "name": "MX King 150",
+  "market": "MV/ID (ASEAN)",
+  "generation": "2PV",
+  "years": "2015–2026",
+  "cc": 150,
+  "seg": "underbone",
+  "catalogue_code": "2PV",
+  "family_codes": [
+   "2PV"
+  ],
+  "note": "Yamaha Maldives current range. Service numbers to be checked against the frame number.",
+  "pop": 3,
+  "status": "yamaha-maldives-2026 preview: verify"
+ },
+ {
+  "id": "yamaha-gear-ultima125",
+  "brand": "Yamaha",
+  "name": "Gear Ultima 125",
+  "market": "MV/ID (ASEAN)",
+  "generation": "2025+",
+  "years": "2025–2026",
+  "cc": 125,
+  "seg": "auto",
+  "catalogue_code": "LCP125",
+  "family_codes": [
+   "B3Y",
+   "B5D"
+  ],
+  "note": "Yamaha Maldives current range. Service numbers to be checked against the frame number.",
+  "pop": 3,
+  "status": "yamaha-maldives-2026 preview: verify"
+ },
+ {
+  "id": "yamaha-fazzio125",
+  "brand": "Yamaha",
+  "name": "Fazzio 125",
+  "market": "MV/ID (ASEAN)",
+  "generation": "2022+",
+  "years": "2022–2026",
+  "cc": 125,
+  "seg": "auto",
+  "catalogue_code": "LCF125",
+  "family_codes": [
+   "B8B",
+   "BKF",
+   "B3Y",
+   "BEJ"
+  ],
+  "note": "Yamaha Maldives current range. Service numbers to be checked against the frame number.",
+  "pop": 3,
+  "status": "yamaha-maldives-2026 preview: verify"
+ },
+ {
+  "id": "yamaha-grand-filano125",
+  "brand": "Yamaha",
+  "name": "Grand Filano Hybrid 125",
+  "market": "MV/ID (ASEAN)",
+  "generation": "2018+",
+  "years": "2018–2026",
+  "cc": 125,
+  "seg": "auto",
+  "catalogue_code": "LTF125-F",
+  "family_codes": [
+   "B8B",
+   "B3Y",
+   "BEJ"
+  ],
+  "note": "Yamaha Maldives current range. Service numbers to be checked against the frame number.",
+  "pop": 3,
+  "status": "yamaha-maldives-2026 preview: verify"
+ },
+ {
+  "id": "yamaha-freego125",
+  "brand": "Yamaha",
+  "name": "Freego 125 Connected",
+  "market": "MV/ID (ASEAN)",
+  "generation": "2019+",
+  "years": "2019–2026",
+  "cc": 125,
+  "seg": "auto",
+  "catalogue_code": "LTK125",
+  "family_codes": [
+   "B5D",
+   "2PH"
+  ],
+  "note": "Yamaha Maldives current range. Service numbers to be checked against the frame number.",
+  "pop": 3,
+  "status": "yamaha-maldives-2026 preview: verify",
+  "notice": "Freego batteries differ by variant: the Freego 125 Connected takes a YTZ6V, some other Freego versions take a YTZ4V. Send your frame number and we will check which one your bike needs."
  }
 ];
 const PARTS = [
@@ -14293,15 +14414,21 @@ const PARTS = [
    "2DP-F5805-10"
   ],
   "fits": [
-   "nmax155"
+   "nmax155",
+   "yamaha-nmax-turbo155-gpd155d",
+   "yamaha-mx-king150-2pv"
   ],
   "tier": "genuine",
   "price": 445,
   "stock": 1,
   "old_id": "p027",
   "price_flag": "kept_from_p027",
-  "source_url": null,
-  "legacy": "yamaha_pending_alia_catalogue"
+  "legacy": "yamaha_pending_alia_catalogue",
+  "merged_from": [
+   "d0104"
+  ],
+  "sources": [],
+  "note": "VERIFY (NMAX Turbo, MX King 150): number seen on a public ASEAN Yamaha parts listing; confirm against the frame number."
  },
  {
   "id": "p028",
@@ -14406,18 +14533,20 @@ const PARTS = [
   "fits": [
    "aerox155",
    "nmax155",
-   "yamaha-aerox-alpha155-std-id"
+   "yamaha-aerox-alpha155-std-id",
+   "yamaha-nmax-turbo155-gpd155d"
   ],
   "tier": "genuine",
   "price": 340,
   "stock": 1,
-  "note": "2020-on Connected models.; VERIFY: Indonesian Yamaha dealer lists for NMAX New / Aerox New Connected; fit on Aerox Alpha not confirmed; catalogue: TM Motor Group dealer listing",
+  "note": "2020-on Connected models.; VERIFY: Indonesian Yamaha dealer lists for NMAX New / Aerox New Connected; fit on Aerox Alpha not confirmed; catalogue: TM Motor Group dealer listing; VERIFY (NMAX Turbo): number seen on a public ASEAN Yamaha parts listing; confirm against the frame number.",
   "old_id": "p046",
   "price_flag": "kept_from_p046",
   "source_url": "https://www.tmmotorgroup.com/produk?slug=element-air-cleaner-b6h1-567",
   "legacy": "yamaha_pending_alia_catalogue",
   "merged_from": [
-   "d0087"
+   "d0087",
+   "d0102"
   ],
   "sources": [
    "https://www.tmmotorgroup.com/produk?slug=element-air-cleaner-b6h1-567"
@@ -14507,7 +14636,8 @@ const PARTS = [
    "nmax155",
    "aerox155",
    "yamaha-aerox-alpha155-std-id",
-   "yamaha-exciter155-vva-b5v"
+   "yamaha-exciter155-vva-b5v",
+   "yamaha-nmax-turbo155-gpd155d"
   ],
   "tier": "oem-alt",
   "price": 180,
@@ -14515,10 +14645,11 @@ const PARTS = [
   "old_id": "p050",
   "price_flag": "kept_from_p050",
   "source_url": "https://yamahamaldives.com/wp-content/uploads/2025/03/AEROX-155_Warranty-Booklet-Owners-Manual.pdf",
-  "note": "[Honda fitment re-derived from plug code in catalogue]; VERIFY: from Alia Aerox 155 owner manual (GDR155 generation); Alpha not confirmed; catalogue: Alia owner manual",
+  "note": "[Honda fitment re-derived from plug code in catalogue]; VERIFY: from Alia Aerox 155 owner manual (GDR155 generation); Alpha not confirmed; catalogue: Alia owner manual; Specified in the Maldives-market owner's manual (NMAX Turbo 155)",
   "legacy": "yamaha_pending_alia_catalogue",
   "merged_from": [
-   "d0089"
+   "d0089",
+   "d0103"
   ],
   "sources": [
    "https://yamahamaldives.com/wp-content/uploads/2025/03/AEROX-155_Warranty-Booklet-Owners-Manual.pdf",
@@ -14721,16 +14852,20 @@ const PARTS = [
   ],
   "fits": [
    "nmax155",
-   "aerox155"
+   "aerox155",
+   "yamaha-nmax-turbo155-gpd155d"
   ],
   "tier": "aftermarket",
   "price": 950,
   "stock": 1,
   "old_id": "p083",
   "price_flag": "kept_from_p083",
-  "source_url": null,
-  "note": " [Honda fitment re-derived from OEM tyre size in catalogue; Yamaha fitment unverified]",
-  "legacy": "yamaha_pending_alia_catalogue"
+  "note": "[Honda fitment re-derived from OEM tyre size in catalogue; Yamaha fitment unverified]; Front size specified in the Maldives-market owner's manual (NMAX Turbo 155)",
+  "legacy": "yamaha_pending_alia_catalogue",
+  "merged_from": [
+   "d0106"
+  ],
+  "sources": []
  },
  {
   "id": "p084",
@@ -14747,16 +14882,20 @@ const PARTS = [
    "honda-adv160-th-2023",
    "nmax155",
    "aerox155",
-   "honda-adv160-2025-as"
+   "honda-adv160-2025-as",
+   "yamaha-nmax-turbo155-gpd155d"
   ],
   "tier": "aftermarket",
   "price": 1150,
   "stock": 1,
-  "note": "Also the rear on ADV 150 and ADV 160. [Honda fitment re-derived from OEM tyre size in catalogue; Yamaha fitment unverified]",
+  "note": "Also the rear on ADV 150 and ADV 160. [Honda fitment re-derived from OEM tyre size in catalogue; Yamaha fitment unverified]; Rear size specified in the Maldives-market owner's manual (NMAX Turbo 155)",
   "old_id": "p084",
   "price_flag": "kept_from_p084",
-  "source_url": null,
-  "legacy": "yamaha_pending_alia_catalogue"
+  "legacy": "yamaha_pending_alia_catalogue",
+  "merged_from": [
+   "d0107"
+  ],
+  "sources": []
  },
  {
   "id": "p085",
@@ -18428,11 +18567,12 @@ const PARTS = [
   "v": 1,
   "alts": [],
   "fits": [
-   "yamaha-aerox-alpha155-std-id"
+   "yamaha-aerox-alpha155-std-id",
+   "yamaha-nmax-turbo155-gpd155d"
   ],
   "tier": "genuine",
   "price": null,
-  "note": "VERIFY: dealer article: Aerox Alpha Standard/CyberCity/Turbo rear disc pad; catalogue: authorised Yamaha dealer article (Indonesia)",
+  "note": "VERIFY: dealer article: Aerox Alpha Standard/CyberCity/Turbo rear disc pad; catalogue: authorised Yamaha dealer article (Indonesia); VERIFY (NMAX Turbo): number seen on a public ASEAN Yamaha parts listing; confirm against the frame number.",
   "catalogue_name": "BRAKE PAD KIT",
   "priority": "A",
   "source_url": "https://www.yamahabrm.co.id/news/kampas-rem-belakang-aerox-tromol-cakram-kode-harga",
@@ -18441,7 +18581,10 @@ const PARTS = [
   ],
   "askPrice": true,
   "confirmed": "verify",
-  "added_by": "dealers-2026-11"
+  "added_by": "dealers-2026-11",
+  "merged_from": [
+   "d0105"
+  ]
  },
  {
   "id": "d0086",
@@ -18451,11 +18594,16 @@ const PARTS = [
   "v": 1,
   "alts": [],
   "fits": [
-   "yamaha-aerox-alpha155-std-id"
+   "yamaha-aerox-alpha155-std-id",
+   "yamaha-nmax-turbo155-gpd155d",
+   "yamaha-gear-ultima125",
+   "yamaha-fazzio125",
+   "yamaha-grand-filano125",
+   "yamaha-freego125"
   ],
   "tier": "genuine",
   "price": null,
-  "note": "VERIFY: dealer article: YTZ6V for Aerox Alpha Standard and CyberCity (Turbo: YTZ7V 2DP-H2100-31); catalogue: authorised Yamaha dealer article (Indonesia)",
+  "note": "VERIFY: dealer article: YTZ6V for Aerox Alpha Standard and CyberCity (Turbo: YTZ7V 2DP-H2100-31); catalogue: authorised Yamaha dealer article (Indonesia); Battery type YTZ6V specified in the Maldives-market owner's manual (NMAX Turbo, Gear Ultima, Fazzio, Grand Filano, Freego Connected); genuine number to be checked for these models",
   "catalogue_name": "BATTERY",
   "priority": "A",
   "source_url": "https://www.yamahabrm.co.id/news/aki-aerox-alpha-tipe-ytz6v-ytz7v-per-varian",
@@ -18464,7 +18612,10 @@ const PARTS = [
   ],
   "askPrice": true,
   "confirmed": "verify",
-  "added_by": "dealers-2026-11"
+  "added_by": "dealers-2026-11",
+  "merged_from": [
+   "d0108"
+  ]
  },
  {
   "id": "d0088",
@@ -18564,13 +18715,16 @@ const PARTS = [
   "name": "Oil filter element",
   "oem": "38B-E3440-01",
   "v": 1,
-  "alts": [],
+  "alts": [
+   "38B-E3440-00"
+  ],
   "fits": [
-   "yamaha-exciter155-vva-b5v"
+   "yamaha-exciter155-vva-b5v",
+   "yamaha-mx-king150-2pv"
   ],
   "tier": "genuine",
   "price": null,
-  "note": "VERIFY: listed on the Thai Yamaha Exciter 155 oil-pump fiche (search index only, page not opened); later number 1S7-E3440-00 also sold as equivalent - verify; catalogue: Thai Yamaha parts fiche",
+  "note": "VERIFY: listed on the Thai Yamaha Exciter 155 oil-pump fiche (search index only, page not opened); later number 1S7-E3440-00 also sold as equivalent - verify; catalogue: Thai Yamaha parts fiche; VERIFY (MX King 150): number seen on a public ASEAN Yamaha parts listing; 38B-E3440-00 is the earlier number; confirm against the frame number.",
   "catalogue_name": "ELEMENT ASSY, OIL CLEANER",
   "priority": "A",
   "source_url": "https://mototh.com/en/parts/598/Yamaha+EXCITER+155+ALL+NEW+2022/11785/OIL+PUMP",
@@ -18579,7 +18733,10 @@ const PARTS = [
   ],
   "askPrice": true,
   "confirmed": "verify",
-  "added_by": "dealers-2026-11"
+  "added_by": "dealers-2026-11",
+  "merged_from": [
+   "d0110"
+  ]
  },
  {
   "id": "d0095",
@@ -18681,11 +18838,12 @@ const PARTS = [
   "v": 0,
   "alts": [],
   "fits": [
-   "yamaha-exciter155-vva-b5v"
+   "yamaha-exciter155-vva-b5v",
+   "yamaha-mx-king150-2pv"
   ],
   "tier": "aftermarket",
   "price": null,
-  "note": "size from Litus spec sheet; catalogue: dealer spec",
+  "note": "size from Litus spec sheet; catalogue: dealer spec; Front size specified in the Maldives-market owner's manual (MX King 150)",
   "catalogue_name": "",
   "priority": "B",
   "source_url": "https://www.litusautomobiles.com/motorcycles/exciter-155-vva-standard-2026",
@@ -18694,7 +18852,10 @@ const PARTS = [
   ],
   "askPrice": true,
   "confirmed": "yes",
-  "added_by": "dealers-2026-11"
+  "added_by": "dealers-2026-11",
+  "merged_from": [
+   "d0114"
+  ]
  },
  {
   "id": "d0100",
@@ -18704,11 +18865,12 @@ const PARTS = [
   "v": 0,
   "alts": [],
   "fits": [
-   "yamaha-exciter155-vva-b5v"
+   "yamaha-exciter155-vva-b5v",
+   "yamaha-mx-king150-2pv"
   ],
   "tier": "aftermarket",
   "price": null,
-  "note": "size from Litus spec sheet; catalogue: dealer spec",
+  "note": "size from Litus spec sheet; catalogue: dealer spec; Rear size specified in the Maldives-market owner's manual (MX King 150)",
   "catalogue_name": "",
   "priority": "B",
   "source_url": "https://www.litusautomobiles.com/motorcycles/exciter-155-vva-standard-2026",
@@ -18717,7 +18879,310 @@ const PARTS = [
   ],
   "askPrice": true,
   "confirmed": "yes",
-  "added_by": "dealers-2026-11"
+  "added_by": "dealers-2026-11",
+  "merged_from": [
+   "d0115"
+  ]
+ },
+ {
+  "id": "d0101",
+  "cat": "cvt",
+  "name": "V-belt, drive",
+  "oem": "B9Y-E7641-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-nmax-turbo155-gpd155d"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "note": "VERIFY: number seen on a public ASEAN Yamaha parts listing; confirm against the frame number. NMAX Turbo belt; not the B8R / B65 belt.",
+  "catalogue_name": "V-BELT",
+  "priority": "A",
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0109",
+  "cat": "engine",
+  "name": "Spark plug NGK CR8E",
+  "oem": "CR8E",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-mx-king150-2pv"
+  ],
+  "tier": "oem-alt",
+  "price": null,
+  "note": "Specified in the Maldives-market owner's manual",
+  "catalogue_name": "NGK/CR8E",
+  "priority": "A",
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0111",
+  "cat": "engine",
+  "name": "Air filter element",
+  "oem": "2PV-E4450-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-mx-king150-2pv"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "note": "VERIFY: number seen on a public ASEAN Yamaha parts listing; confirm against the frame number.",
+  "catalogue_name": "ELEMENT, AIR CLEANER",
+  "priority": "A",
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0112",
+  "cat": "brake",
+  "name": "Brake pad kit, rear",
+  "oem": "1PA-F5806-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-mx-king150-2pv"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "note": "VERIFY: number seen on a public ASEAN Yamaha parts listing; confirm against the frame number.",
+  "catalogue_name": "BRAKE PAD KIT",
+  "priority": "A",
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0113",
+  "cat": "elec",
+  "name": "Battery YTZ4V",
+  "oem": "YTZ4V",
+  "v": 1,
+  "alts": [
+   "GTZ4V"
+  ],
+  "fits": [
+   "yamaha-mx-king150-2pv"
+  ],
+  "tier": "oem-alt",
+  "price": null,
+  "note": "Specified in the Maldives-market owner's manual (YTZ4V or GTZ4V)",
+  "catalogue_name": "BATTERY",
+  "priority": "A",
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0116",
+  "cat": "cvt",
+  "name": "V-belt, drive",
+  "oem": "B3Y-E7641-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-gear-ultima125",
+   "yamaha-fazzio125",
+   "yamaha-grand-filano125"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "note": "VERIFY: number seen on a public ASEAN Yamaha parts listing; confirm against the frame number. Shared by Fazzio, Grand Filano and Gear Ultima.",
+  "catalogue_name": "V-BELT",
+  "priority": "A",
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0117",
+  "cat": "cvt",
+  "name": "V-belt, drive",
+  "oem": "2PH-E7641-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-freego125"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "note": "VERIFY: number seen on a public ASEAN Yamaha parts listing; confirm against the frame number. Earlier Gear / Freego belt, not the B3Y belt.",
+  "catalogue_name": "V-BELT",
+  "priority": "A",
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0118",
+  "cat": "engine",
+  "name": "Air filter element",
+  "oem": "B5D-E4450-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-gear-ultima125",
+   "yamaha-freego125"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "note": "VERIFY: number seen on a public ASEAN Yamaha parts listing; confirm against the frame number. Gear 125 / Freego element.",
+  "catalogue_name": "ELEMENT, AIR CLEANER",
+  "priority": "A",
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0119",
+  "cat": "engine",
+  "name": "Air filter element",
+  "oem": "B8B-E4450-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-fazzio125",
+   "yamaha-grand-filano125"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "note": "VERIFY: number seen on a public ASEAN Yamaha parts listing; confirm against the frame number. Fazzio / Grand Filano element.",
+  "catalogue_name": "ELEMENT, AIR CLEANER",
+  "priority": "A",
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0120",
+  "cat": "cvt",
+  "name": "Roller weight set",
+  "oem": "BEJ-WE763-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-fazzio125",
+   "yamaha-grand-filano125"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "note": "VERIFY: number seen on a public ASEAN Yamaha parts listing; confirm against the frame number.",
+  "catalogue_name": "WEIGHT SET",
+  "priority": "B",
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0121",
+  "cat": "engine",
+  "name": "Spark plug NGK CR6HSA",
+  "oem": "CR6HSA",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-fazzio125",
+   "yamaha-grand-filano125",
+   "yamaha-freego125",
+   "yamaha-gear-ultima125"
+  ],
+  "tier": "oem-alt",
+  "price": null,
+  "note": "Specified in the Maldives-market owner's manual",
+  "catalogue_name": "NGK/CR6HSA",
+  "priority": "A",
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0122",
+  "cat": "brake",
+  "name": "Brake pad kit, front",
+  "oem": "2BM-F5805-00",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-fazzio125",
+   "yamaha-grand-filano125",
+   "yamaha-freego125",
+   "yamaha-gear-ultima125"
+  ],
+  "tier": "genuine",
+  "price": null,
+  "note": "VERIFY: number seen on a public ASEAN Yamaha parts listing; confirm against the frame number. Rear brake on these 125s is a drum.",
+  "catalogue_name": "BRAKE PAD KIT",
+  "priority": "A",
+  "askPrice": true,
+  "confirmed": "verify",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0123",
+  "cat": "tyre",
+  "name": "Tyre 110/70-12, front / rear",
+  "oem": "110/70-12",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-gear-ultima125",
+   "yamaha-fazzio125",
+   "yamaha-grand-filano125"
+  ],
+  "tier": "aftermarket",
+  "price": null,
+  "note": "Size specified in the Maldives-market owner's manual",
+  "catalogue_name": "",
+  "priority": "B",
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0124",
+  "cat": "tyre",
+  "name": "Tyre 100/90-12, front",
+  "oem": "100/90-12",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-freego125"
+  ],
+  "tier": "aftermarket",
+  "price": null,
+  "note": "Front size specified in the Maldives-market owner's manual (Freego)",
+  "catalogue_name": "",
+  "priority": "B",
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "yamaha-maldives-2026"
+ },
+ {
+  "id": "d0125",
+  "cat": "tyre",
+  "name": "Tyre 110/90-12, rear",
+  "oem": "110/90-12",
+  "v": 1,
+  "alts": [],
+  "fits": [
+   "yamaha-freego125"
+  ],
+  "tier": "aftermarket",
+  "price": null,
+  "note": "Rear size specified in the Maldives-market owner's manual (Freego)",
+  "catalogue_name": "",
+  "priority": "B",
+  "askPrice": true,
+  "confirmed": "yes",
+  "added_by": "yamaha-maldives-2026"
  }
 ];
 const ZONES = [

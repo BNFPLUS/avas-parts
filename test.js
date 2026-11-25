@@ -156,11 +156,17 @@ const merged = new Set(PARTS.flatMap(p => p.merged_from || []));
 const lost = DL.DEALER_PARTS.filter(d => !seen[d.id] && !merged.has(d.id)).map(d => d.id);
 ok(!lost.length, "dealer parts neither added nor merged: " + lost.join(", "));
 const newParts = PARTS.filter(p => /^d\d{4}$/.test(p.id));
-const badNew = newParts.filter(p => !isAsk(p) || !(p.sources || []).length || !p.source_url).map(p => p.id);
-ok(newParts.length > 0 && !badNew.length, "new dealer parts must be askPrice with sources: " + badNew.join(", "));
+/* dealers-2026-11 rows keep their research sources; yamaha-maldives-2026 rows ship none. */
+const YM = "yamaha-maldives-2026";
+const badNew = newParts.filter(p => !isAsk(p) || (p.added_by === YM
+  ? p.source_url || p.sources || p.catalogue_url || "cost" in p || "bin" in p || "rop" in p || "quantity" in p
+  : !(p.sources || []).length || !p.source_url)).map(p => p.id);
+ok(newParts.length > 0 && !badNew.length, "new dealer parts must be askPrice with sources (Yamaha Maldives rows: none, no cost/bin/rop): " + badNew.join(", "));
+/* A dealer row that later rows were merged onto keeps its own note as the start of its note. */
 const flagDrift = newParts.filter(p => {
   const d = DL.DEALER_PARTS.find(x => x.id === p.id);
-  return p.v !== d.v || p.confirmed !== d.confirmed || p.note !== cleanNote(d.note) || JSON.stringify(p.sources) !== JSON.stringify(d.sources);
+  const noteOk = (p.merged_from || []).length ? (p.note || "").startsWith(cleanNote(d.note)) : p.note === cleanNote(d.note);
+  return p.v !== d.v || p.confirmed !== d.confirmed || !noteOk || JSON.stringify(p.sources) !== JSON.stringify(d.sources);
 }).map(p => p.id);
 ok(!flagDrift.length, "new dealer parts changed v/confirmed/note/sources: " + flagDrift.join(", "));
 console.log(`  ${newParts.length} dealer parts added, ${merged.size} merged onto existing numbers`);
@@ -321,7 +327,7 @@ console.log(`  ${unv} numbers marked "to be confirmed"; ${E.urls.length} distinc
 ok(app.includes('"data-equip.js"') && !html.includes('src="data-equip.js"'), "data-equip.js is lazy-loaded by app.js, not by index.html");
 const parsun = E.models.filter(m => m.brand === "Parsun");
 ok(parsun.length === 6 && parsun.every(m => m.vertical === "outboards"), `Parsun has 6 outboard models (${parsun.length})`);
-const parsunDealerIds = DL.DEALER_MARINE_MODELS.map(m => m.id);
+const parsunDealerIds = DL.DEALER_MARINE_MODELS.filter(m => m.brand === "Parsun").map(m => m.id);
 ok(parsunDealerIds.length === 4 && parsunDealerIds.every(id => E.models.some(m => m.id === id)), "the 4 MotoX Parsun models with parts are all in the picker");
 const pids = new Set(parsun.map(m => m.id));
 const parsunParts = E.parts.filter(p => p.fits.some(f => pids.has(f)));
@@ -425,6 +431,50 @@ if (sortSrc) {
 for (const v of ENGINE_V) {
   const ms = E.models.filter(m => m.vertical === v);
   console.log(`  ${v.padEnd(14)} ${ms.length} models (${ms.filter(m => !fitCount[m.id]).length} empty)`);
+}
+
+sec("Yamaha Maldives range (preview)");
+{
+  const ymModels = DL.DEALER_MODELS.filter(m => m.status && m.status.startsWith(YM));
+  ok(ymModels.length === 6, `6 Yamaha Maldives bike models (${ymModels.length})`);
+  ok(ymModels.every(m => !m.catalogue_url && !/https?:|www\.|alia|litus|\bMVR\b/i.test(m.note || "")), "new Yamaha bike models: no catalogue_url, no shop / site name or price in the note");
+  const ymRows = DL.DEALER_PARTS.filter(d => d.added_by === YM);
+  ok(ymRows.every(d => d.price === null && d.askPrice === true && !d.source_url && !d.sources &&
+    ["verify", "yes"].includes(d.confirmed) && !/https?:|www\.|\.com\b|alia|litus|tokopedia|tmmotor|mototh|partsvu/i.test(d.note || "")),
+    "Yamaha Maldives rows: ask for price, no source, customer-safe note");
+  ok(ymRows.filter(d => d.cat === "cvt" || /filter|pad/i.test(d.name)).every(d => d.confirmed === "verify"),
+    "Yamaha Maldives belts, filters, pads and rollers are verify");
+  const fitsOn = (oem, id) => { const p = byOem(oem); return !!p && p.fits.includes(id); };
+  const T = "yamaha-nmax-turbo155-gpd155d", K = "yamaha-mx-king150-2pv", G = "yamaha-gear-ultima125",
+        F = "yamaha-fazzio125", L = "yamaha-grand-filano125", R = "yamaha-freego125";
+  ok(fitsOn("B9Y-E7641-00", T) && !fitsOn("B8R-E7641-00", T), "NMAX Turbo belt is B9Y-E7641-00, not the B8R belt");
+  ok(["B6H-E4451-00", "CPR8EA-9", "2DP-F5805-00", "B6H-F5805-00", "110/70-13 TL", "130/70-13 TL", "BN1-H2100-00"].every(o => fitsOn(o, T)), "NMAX Turbo shares the NMAX / Aerox rows");
+  ok(MODELS.some(m => m.id === "nmax155") && PARTS.filter(p => p.fits.includes("nmax155")).length === 11, "older NMAX 155 kept with its 11 parts");
+  ok(!PARTS.some(p => /oil filter/i.test(p.name) && p.fits.includes(T)), "no oil filter invented for NMAX Turbo");
+  ok(["CR8E", "38B-E3440-01", "2PV-E4450-00", "2DP-F5805-00", "1PA-F5806-00", "YTZ4V", "90/80-17", "120/70-17"].every(o => fitsOn(o, K)), "MX King 150 service parts");
+  ok(byOem("38B-E3440-01").alts.includes("38B-E3440-00") && !byOem("38B-E3440-00"), "38B-E3440-00 is an alternate on the oil filter row");
+  ok([G, F, L].every(id => fitsOn("B3Y-E7641-00", id)) && !fitsOn("B3Y-E7641-00", R) && fitsOn("2PH-E7641-00", R), "B3Y belt on Gear Ultima / Fazzio / Filano; Freego takes 2PH");
+  ok([F, L, R, G].every(id => fitsOn("CR6HSA", id) && fitsOn("2BM-F5805-00", id) && fitsOn("BN1-H2100-00", id)), "125 scooters share CR6HSA, 2BM pads and the YTZ6V battery");
+  ok(fitsOn("B5D-E4450-00", G) && fitsOn("B5D-E4450-00", R) && fitsOn("B8B-E4450-00", F) && fitsOn("B8B-E4450-00", L), "air filters: B5D Gear / Freego, B8B Fazzio / Filano");
+  ok(fitsOn("BEJ-WE763-00", F) && fitsOn("BEJ-WE763-00", L), "BEJ roller weights on Fazzio and Grand Filano");
+  ok(![G, F, L, R].some(id => PARTS.some(p => p.fits.includes(id) && p.cat === "brake" && /rear/i.test(p.name))), "no rear pad on the drum-braked 125s");
+  ok(/YTZ4V/.test(MODELS.find(m => m.id === R).notice || ""), "Freego carries a battery-variant notice");
+  ok(["B9Y", "2PV", "B3Y", "B8B", "BEJ", "B5D", "2PH"].every(k => FAMILY[k]), "new Yamaha family codes decode");
+  const eq = (id) => E.models.find(m => m.id === id);
+  const eqN = (id) => E.parts.filter(p => p.fits.includes(id)).length;
+  const VX = "yamaha-waverunner-vx-1050-tr1-2015", JB = "yamaha-waverunner-jetblaster-2022";
+  ok(eqN(VX) === 29 && eqN("yamaha-waverunner-vx-cruiser-1050") === 29 && eqN("yamaha-waverunner-vx-deluxe-1050") === 29, "VX Cruiser / Deluxe 1050 share the 29 VX 1050 parts");
+  ok(eqN(JB) === 4 && eqN("yamaha-waverunner-jetblaster-pro-1050") === 4, "Jet Blaster Pro shares the 4 JetBlaster parts");
+  ok(eqN("yamaha-waverunner-fx-1.8l-ho-svho-2009") === 46 && eqN("yamaha-waverunner-vx-1.8l-ho-2016") === 8, "FX SVHO 1800 (46) and VX 1.8L HO (8) unchanged");
+  ok(eqN("yamaha-waverunner-fx-1.9l-ho") === 0 && eqN("yamaha-waverunner-vx-cruiser-1.9l-ho") === 0, "1.9L WaveRunners stay empty");
+  const jsNames = ["WaveRunner VX 1050 (TR-1)", "WaveRunner VX Cruiser 1050", "WaveRunner VX Deluxe 1050", "WaveRunner Jet Blaster Pro 1050",
+    "WaveRunner FX SVHO 1800", "WaveRunner FX Series 1900", "WaveRunner VX Cruiser HO 1900"];
+  ok(jsNames.every(n => E.models.some(m => m.vertical === "jetski" && m.brand === "Yamaha" && m.name === n)), "jet ski picker lists the current Yamaha Maldives WaveRunners");
+  ok(["yamaha-waverunner-vx-cruiser-1050", "yamaha-waverunner-vx-deluxe-1050", "yamaha-waverunner-jetblaster-pro-1050"].every(id => eq(id) && !eq(id).catalogue_url && !eq(id).note),
+    "new WaveRunner trims ship no catalogue link or note");
+  ok((eq("yamaha-f60").aka || []).includes("FT60") && (eq("yamaha-xto-450").aka || []).includes("F450") &&
+     (eq("yamaha-v8-f400").aka || []).includes("F400") && (eq("yamaha-f150-f175-2.7-2.8l").aka || []).includes("F175G"), "outboard search aliases");
+  ok(["yamaha-f6", "yamaha-f60", "yamaha-f350", "yamaha-4hp-2stroke"].every(id => eq(id) && eqN(id) === 0), "Yamaha F6 / F60 / F350 / 4 hp still listed, empty");
 }
 
 sec("No reference prices in customer notes");

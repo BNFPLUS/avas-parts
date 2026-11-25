@@ -21,7 +21,7 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
-const { cleanNote, cleanModelNote } = require("./dealer-notes");
+const { cleanNote, cleanModelNote, publicNote } = require("./dealer-notes");
 
 const root = path.join(__dirname, "..");
 const DATA = path.join(root, "data.js");
@@ -41,7 +41,8 @@ const uniq = (a) => [...new Set(a.filter(Boolean))];
 const addNote = (p, n) => {
   if (!n) return;
   const cur = (p.note || "").trim();
-  if (cur.includes(n)) return;
+  /* Notes are cleaned after merging, so compare against the cleaned form too. */
+  if (cur.includes(n) || cur.includes(publicNote(n))) return;
   p.note = cur ? `${cur}; ${n}` : n;
 };
 const byId = (id) => D.PARTS.find(p => p.id === id);
@@ -53,6 +54,21 @@ D.BRANDS = uniq([...D.BRANDS, ...DEALER_NEW_BRANDS]);
 
 /* B8R is the Aerox Alpha family code; lets the superseding belt number decode. */
 if (!D.FAMILY.B8R) D.FAMILY.B8R = "Yamaha Aerox Alpha 155";
+/* Yamaha Maldives 2026 range (NMAX Turbo, MX King, 125 scooters). */
+const NEW_FAMILY = {
+  B9Y: "Yamaha NMAX Turbo / Aerox Alpha Turbo",
+  "2PV": "Yamaha MX King 150",
+  "1PA": "Yamaha MX King / Jupiter MX rear brake",
+  "38B": "Yamaha oil filter (Jupiter MX / MX King / Exciter)",
+  B3Y: "Yamaha Fazzio / Grand Filano / Gear Ultima 125",
+  B8B: "Yamaha Fazzio / Grand Filano 125",
+  BEJ: "Yamaha Fazzio / Grand Filano CVT",
+  BKF: "Yamaha Fazzio 125",
+  B5D: "Yamaha Gear 125 / Freego",
+  "2PH": "Yamaha Gear / Freego 125",
+  "2BM": "Yamaha 125 scooter front brake",
+};
+for (const [k, v] of Object.entries(NEW_FAMILY)) if (!D.FAMILY[k]) D.FAMILY[k] = v;
 
 /* ---------- Models ---------- */
 /* Dealer names repeat the make ("CFMoto 150SC"); the site prints make + name,
@@ -74,8 +90,10 @@ for (const m of D.MODELS) {
 /* Explicit merge targets that the plain number match would get wrong.
    d0094 (2DP-F5805-00 for Exciter 155) belongs on the Exciter front-pad row,
    where B63-F5805-00 is primary and 2DP-F5805-00 its alternate.
-   d0083 (B8R-E7641-00 belt) supersedes the existing B65-E7641-00 belt row p016. */
-const TARGET = { d0094: "p029", d0083: "p016" };
+   d0083 (B8R-E7641-00 belt) supersedes the existing B65-E7641-00 belt row p016.
+   d0106 / d0107 (NMAX Turbo tyre sizes) go on the existing tubeless 13-inch
+   rows, whose shop code carries a " TL" suffix the size alone does not match. */
+const TARGET = { d0094: "p029", d0083: "p016", d0106: "p083", d0107: "p084" };
 /* Tyres the dealer gives by size only: the size is the shop code, as for the
    existing tyre rows (OWN_SKU in app.js). */
 const tyreSize = (p) => (p.cat === "tyre" && !p.oem && (p.name.match(/\d+\/\d+-\d+/) || [])[0]) || null;
@@ -85,6 +103,7 @@ function mergeInto(t, d) {
   if (t.merged_from.includes(d.id)) return;
   t.merged_from.push(d.id);
   t.fits = uniq([...t.fits, ...d.fits]);
+  t.alts = uniq([...(t.alts || []), ...(d.alts || [])]).filter(a => a !== t.oem);
   t.sources = uniq([...(t.sources || []), t.source_url, d.source_url, ...(d.sources || [])]);
   if (!t.source_url) t.source_url = d.source_url;
   addNote(t, d.note);
