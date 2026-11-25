@@ -1,8 +1,8 @@
 /* Finds outside website / domain names in text the site renders.
 
    Rendered: part and model names, notes, notices, catalogue labels, cross-
-   reference numbers and lookup tables in data.js, data-equip.js and data-bnf.js
-   (belts / impellers, BNF PLUS stock tags), plus the
+   reference numbers and lookup tables in data.js, data-equip.js, data-bnf.js
+   (belts / impellers, BNF PLUS stock tags) and data-dive.js (dive O-rings), plus the
    UI copy in app.js (string and template literals) and index.html (markup,
    minus <link>/<script src> tags and xmlns). Not rendered, so not scanned:
    source_url, sources, catalogue_url, manual_url, sheesha_url, EQUIP.urls,
@@ -26,7 +26,8 @@ const ALLOWED = /^(?:(?:[a-z0-9-]+\.)*avas\.parts|bearing\.wiki|wa\.me|https:\/\
 /* Rendered data fields. Lookup tables (CATS, FAMILY, GROUP, ZONES, verticals,
    cats) are rendered whole. */
 const FIELDS = ["name", "note", "notice", "catalogue_name", "catalogue", "engine", "kind",
-  "model_number", "aka", "alts", "oem", "years", "size", "unit", "units", "tagline", "hours", "email"];
+  "model_number", "aka", "alts", "oem", "years", "size", "unit", "units", "tagline", "hours", "email",
+  "use", "material", "brand", "title"];
 
 function load(root) {
   const ctx = {};
@@ -36,7 +37,9 @@ function load(root) {
   vm.runInContext(fs.readFileSync(path.join(root, "data-equip.js"), "utf8") + "\n;globalThis.__E = EQUIP;", ctx);
   const bnf = path.join(root, "data-bnf.js");
   if (fs.existsSync(bnf)) vm.runInContext(fs.readFileSync(bnf, "utf8") + "\n;globalThis.__B = BNF;", ctx);
-  return { D: ctx.__D, E: ctx.__E, B: ctx.__B || null };
+  const dive = path.join(root, "data-dive.js");
+  if (fs.existsSync(dive)) vm.runInContext(fs.readFileSync(dive, "utf8") + "\n;globalThis.__V = DIVE;", ctx);
+  return { D: ctx.__D, E: ctx.__E, B: ctx.__B || null, V: ctx.__V || null };
 }
 
 /* Second-level labels of every host the internal URL data points at. */
@@ -130,7 +133,7 @@ function uiCopy(root) {
 }
 
 function renderedDomainHits(root = path.join(__dirname, "..")) {
-  const { D, E, B } = load(root);
+  const { D, E, B, V } = load(root);
   const labels = siteLabels(D, E).map(l => l.replace(/[-.]/g, "[-. ]?"));
   const labelRe = new RegExp(`\\b(?:${labels.join("|")})\\b`, "gi");
   const hits = [];
@@ -149,6 +152,12 @@ function renderedDomainHits(root = path.join(__dirname, "..")) {
     Object.values(B.xparts).forEach(x => fields(x, `data-bnf.js xparts ${x.id}`, labelRe, hits));
     walk(B.verticals, "data-bnf.js verticals", labelRe, hits);
     walk(B.cats, "data-bnf.js cats", labelRe, hits);
+  }
+  if (V) {
+    V.parts.forEach(p => fields(p, `data-dive.js parts ${p.id}`, labelRe, hits));
+    V.groups.forEach(g => walk(g, `data-dive.js groups ${g.id}`, labelRe, hits));
+    walk(V.verticals, "data-dive.js verticals", labelRe, hits);
+    walk(V.cats, "data-dive.js cats", labelRe, hits);
   }
   /* BNF PLUS stock tags on site parts are rendered too. */
   [...D.PARTS, ...E.parts].forEach(p => { if (p.bnf) walk(p.bnf, `${p.vertical ? "data-equip.js" : "data.js"} ${p.id}.bnf`, labelRe, hits); });

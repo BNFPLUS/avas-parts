@@ -12,7 +12,8 @@ const PART_BY_ID  = Object.fromEntries(PARTS.map(p => [p.id, p]));
 /* ---------- Verticals: bikes live in data.js; everything else (outboards,
    marine diesel, jet skis, generators, pumps, machinery) is in data-equip.js,
    which is only fetched when someone asks for it. Belts and impellers (BNF PLUS
-   stock, bnf: true) are in data-bnf.js, fetched the same way. ---------- */
+   stock, bnf: true) are in data-bnf.js, fetched the same way. Diving (FKM
+   O-rings in scuba sizes, also BNF PLUS stock) is in data-dive.js. ---------- */
 const VERTICALS_UI = [
   { id: "bikes",         name: "Bikes",                  unit: "bike",    pick: "model" },
   { id: "outboards",     name: "Outboards",              unit: "engine",  pick: "engine" },
@@ -23,16 +24,19 @@ const VERTICALS_UI = [
   { id: "machinery",     name: "Heavy machinery",        unit: "machine", pick: "machine" },
   { id: "belts",         name: "Belts",                  unit: "belt",    pick: "size", bnf: true },
   { id: "impellers",     name: "Impellers",              unit: "impeller", pick: "engine", bnf: true },
+  { id: "diving",        name: "Diving",                 unit: "O-ring",  pick: "use", bnf: true, dive: true },
 ];
 const VERT_BY_ID = Object.fromEntries(VERTICALS_UI.map(v => [v.id, v]));
 const EQ = { loaded: false, loading: null, failed: false, parts: [], models: [], cats: [] };
 const BN = { loaded: false, loading: null, failed: false, parts: [], groups: [], cats: [] };
+const DV = { loaded: false, loading: null, failed: false, parts: [], groups: [], cats: [] };
 const isEq = (p) => !!p.vertical;
 const isBnfV = (v) => !!(VERT_BY_ID[v] && VERT_BY_ID[v].bnf);
-const isBnf = (p) => !!p.sku;                 // a belt or impeller row from BNF PLUS stock
+const isDiveV = (v) => !!(VERT_BY_ID[v] && VERT_BY_ID[v].dive);
+const isBnf = (p) => !!p.sku;                 // a belt, impeller or dive O-ring row from BNF PLUS stock
 /* What a part is listed under: a belt group (8PK, A section) or the machines it fits. */
 const partModels = (p) => p.grp ? [p.grp] : p.fits;
-const store = (v) => isBnfV(v) ? BN : EQ;
+const store = (v) => isDiveV(v) ? DV : isBnfV(v) ? BN : EQ;
 const vertReady = (v) => v === "bikes" || store(v).loaded;
 
 const state = {
@@ -154,15 +158,18 @@ function eqHaystack(p) {
   ].join(" ").toLowerCase();
 }
 
-/* Belts and impellers: the number as printed and squashed ("8PK 1440" and
-   "8PK1440"), stock number, brand, size, cross-reference numbers, the belt
-   group and any engine an impeller cross-references to. */
+/* Belts, impellers and dive O-rings: the number as printed and squashed
+   ("8PK 1440" and "8PK1440"), stock number, brand, size, cross-reference
+   numbers, the belt or dive group, any engine an impeller cross-references to,
+   and an O-ring's use and search words ("12.42x1.78", "yoke", "tank neck"). */
 function bnfHaystack(p) {
   const v = VERT_BY_ID[p.vertical], g = p.grp && MODEL_BY_ID[p.grp];
   return [
     p.name, p.oem, squash(p.oem), p.sku, p.alt_sku || "", p.brand, p.size || "",
     (p.alts || []).join(" "), (p.alts || []).map(squash).join(" "),
-    g ? `${g.name} ${g.title || ""}` : "",
+    p.use || "", p.material || "", p.find || "",
+    /* a dive O-ring's own use is searched, not its group ("DIN and yoke …") */
+    g && !p.use ? `${g.name} ${g.title || ""}` : "",
     p.fits.map(id => MODEL_BY_ID[id] ? eqModelText(MODEL_BY_ID[id]) : "").join(" "),
     CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : "", v ? v.name : "",
     "bnf plus stock",
@@ -194,7 +201,7 @@ function inScope(p, terms) {
 }
 
 function pool() {
-  const extra = (EQ.loaded ? EQ.parts : []).concat(BN.loaded ? BN.parts : []);
+  const extra = (EQ.loaded ? EQ.parts : []).concat(BN.loaded ? BN.parts : [], DV.loaded ? DV.parts : []);
   if (!extra.length) return PARTS;
   if (state.vertical === "bikes") return PARTS.concat(extra);
   /* current vertical first, then the rest of the equipment, then bikes */
@@ -246,6 +253,17 @@ function integrateBnf() {
   linkBnf();
 }
 
+/* Dive O-ring groups (Tank neck, valve face, …) act as Step 1 picks. */
+function integrateDive() {
+  const D = DIVE;
+  D.verticals.forEach(v => { if (VERT_BY_ID[v.id]) Object.assign(VERT_BY_ID[v.id], { name: v.name, unit: v.unit }); });
+  D.groups.forEach(g => { MODEL_BY_ID[g.id] = g; });
+  D.cats.forEach(c => { CAT_BY_ID[c.id] = c; });
+  D.parts.forEach(p => { p._h = bnfHaystack(p); PART_BY_ID[p.id] = p; });
+  DV.parts = D.parts; DV.groups = D.groups; DV.cats = D.cats;
+  DV.loaded = true; DV.failed = false;
+}
+
 /* Engine parts whose number a BNF impeller cross-references get the impeller
    SKUs (p.bnfImp), shown as a stock tag linking to the Impellers listing. */
 function linkBnf() {
@@ -278,9 +296,10 @@ function lazyScript(st, file, has, integrate) {
 }
 const loadEquip = () => lazyScript(EQ, "data-equip.js", () => typeof EQUIP !== "undefined", integrateEquip);
 const loadBnf = () => lazyScript(BN, "data-bnf.js", () => typeof BNF !== "undefined", integrateBnf);
-const loadFor = (v) => isBnfV(v) ? loadBnf() : loadEquip();
-/* A search looks everywhere: equipment, belts and impellers. */
-const loadAll = () => Promise.allSettled([loadEquip(), loadBnf()]);
+const loadDive = () => lazyScript(DV, "data-dive.js", () => typeof DIVE !== "undefined", integrateDive);
+const loadFor = (v) => isDiveV(v) ? loadDive() : isBnfV(v) ? loadBnf() : loadEquip();
+/* A search looks everywhere: equipment, belts, impellers and dive O-rings. */
+const loadAll = () => Promise.allSettled([loadEquip(), loadBnf(), loadDive()]);
 
 function ensureFor(v) {
   if (vertReady(v)) return;
@@ -301,7 +320,15 @@ const BNF_COPY = {
     lede: "Flexible impellers from BNF PLUS stock. Type the impeller number or the engine maker's number from the old part, such as 125613-42762 or 3897337. Where that number matches an engine part we list, the engine is shown.",
     step1: "Step 1 — pick the engine make (matched impellers)", step2: "Step 2 — pick the engine",
   },
+  diving: {
+    lede: "FKM (Viton) O-rings in standard scuba sizes, from BNF PLUS stock. Pick where the O-ring goes, or type the size: AS568-014, 014, 12.42x1.78.",
+    step1: "Pick where the O-ring goes", step2: "",
+  },
 };
+/* Shown on the Diving section, above the O-rings. */
+const DIVE_SAFETY = "Regulators, first and second stages, BCD inflators and other life-support parts must be serviced by a certified technician. " +
+  "This list is only FKM O-rings for seals you can replace yourself: tank neck, valve face, port plugs, hose and inflator ends. " +
+  "If you need a service kit or you are not sure of the size, ask us.";
 
 function renderVerticals() {
   $("#vertChips").innerHTML = VERTICALS_UI.map(v =>
@@ -311,6 +338,9 @@ function renderVerticals() {
 
 function renderHero() {
   const v = VERT_BY_ID[state.vertical];
+  const safety = $("#diveNote");
+  safety.hidden = !isDiveV(state.vertical);
+  if (!safety.hidden && !safety.textContent) safety.innerHTML = `<b>Safety</b> ${esc(DIVE_SAFETY)}`;
   if (state.vertical === "bikes") {
     if ($("#lede").innerHTML !== BIKE_COPY.lede) $("#lede").innerHTML = BIKE_COPY.lede;
     if ($("#step1Label").innerHTML !== BIKE_COPY.step1) $("#step1Label").innerHTML = BIKE_COPY.step1;
@@ -348,6 +378,15 @@ function renderEqPickers() {
     $("#brandChips").innerHTML = st.failed
       ? `<span class="loading">Could not load this catalogue. <button class="clearbtn" data-vertical="${state.vertical}">Try again</button></span>`
       : `<span class="loading" role="status">Loading the ${esc(VERT_BY_ID[state.vertical].name.toLowerCase())} catalogue…</span>`;
+    wrap.hidden = true; $("#modelChips").innerHTML = "";
+    return;
+  }
+  /* Diving: the use groups are the only pick, straight away. */
+  if (isDiveV(state.vertical)) {
+    const n = (id) => DV.parts.filter(p => p.grp === id).length;
+    $("#brandChips").innerHTML = DV.groups.map(g =>
+      `<button class="chip" data-model="${esc(g.id)}" aria-pressed="${state.model === g.id}">${esc(g.name)}<span class="cc">${n(g.id)} O-ring${n(g.id) === 1 ? "" : "s"}</span></button>`
+    ).join("");
     wrap.hidden = true; $("#modelChips").innerHTML = "";
     return;
   }
@@ -406,7 +445,7 @@ function renderRail() {
   $("#catWrap").innerHTML =
     `<button class="catbtn" data-cat="" aria-pressed="${!state.cat}">
        <span>All parts</span><span class="k">${base.length}</span></button>` +
-    CATS.concat(EQ.cats, BN.cats).filter(c => counts[c.id]).map(c =>
+    CATS.concat(EQ.cats, BN.cats, DV.cats).filter(c => counts[c.id]).map(c =>
       `<button class="catbtn" data-cat="${c.id}" aria-pressed="${state.cat === c.id}">
          <span>${esc(c.name)}</span><span class="k">${counts[c.id]}</span></button>`
     ).join("");
@@ -498,6 +537,7 @@ function bnfCardHTML(p) {
     </div>
     ${eqPlateHTML(p.oem)}
     ${p.size ? `<div class="sizeline">${esc(p.size)}</div>` : ""}
+    ${p.use ? `<div class="useline">${esc(p.use)}</div>` : ""}
     ${fitNames ? `<div class="ribbon">${fitNames}</div>` : ""}
     <div class="refs"><div class="bnfline"><b>BNF PLUS stock</b> ${esc(p.sku)}</div></div>
     <button class="moreb" data-detail="${esc(p.id)}">${p.vertical === "impellers" ? "Cross-reference &amp; fitment →" : "Size &amp; details →"}</button>
@@ -607,14 +647,14 @@ function renderResults() {
     $("#rNote").hidden = true;
     $("#catWrap").innerHTML = "";
     $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1"><h3>${failed ? "Could not load this catalogue" : "Loading the catalogue…"}</h3>
-      <p>${failed ? "Check your connection and pick the category again." : isBnfV(state.vertical) ? "Every belt and impeller in BNF PLUS stock." : "Part numbers for every engine and machine we cover."}</p></div>`;
+      <p>${failed ? "Check your connection and pick the category again." : isDiveV(state.vertical) ? "FKM O-rings in standard scuba sizes." : isBnfV(state.vertical) ? "Every belt and impeller in BNF PLUS stock." : "Part numbers for every engine and machine we cover."}</p></div>`;
     return;
   }
   const r = results();
   const m = state.model ? MODEL_BY_ID[state.model] : null;
   const vu = VERT_BY_ID[state.vertical], bnfV = isBnfV(state.vertical);
   let title = "All parts";
-  if (state.vertical !== "bikes") title = bnfV ? `All ${vu.name.toLowerCase()}` : `${vu.name} · all parts`;
+  if (state.vertical !== "bikes") title = vu.dive ? "FKM O-rings for diving" : bnfV ? `All ${vu.name.toLowerCase()}` : `${vu.name} · all parts`;
   if (m) title = m.title || (bnfV ? `${m.brand} ${m.name} · ${vu.name.toLowerCase()}` : `${m.brand} ${m.name}`);
   else if (state.brand) title = state.vertical === "bikes" ? state.brand : `${state.brand} ${VERT_BY_ID[state.vertical].name.toLowerCase()}`;
   if (state.cat && CAT_BY_ID[state.cat]) title += ` · ${CAT_BY_ID[state.cat].name}`;
@@ -696,6 +736,8 @@ function openBnfDetail(p) {
   const row = (k, val) => val ? `<div class="altrow"><span>${esc(val)}</span><span class="tag">${esc(k)}</span></div>` : "";
   const facts = [
     row("size", p.size),
+    row("use", p.use),
+    row("material", p.material),
     row("type", g ? g.title || g.name : CAT_BY_ID[p.cat] ? CAT_BY_ID[p.cat].name : ""),
     row("brand", p.brand),
     row("BNF PLUS stock no.", p.sku + (p.alt_sku ? " / " + p.alt_sku : "")),
@@ -720,6 +762,7 @@ function openBnfDetail(p) {
       <p class="hint" style="margin-top:6px">As printed on the BNF PLUS stock list.</p>
     </div>
     <div class="dsec"><h4>Size &amp; type</h4><div class="altlist">${facts}</div></div>
+    ${isDiveV(p.vertical) ? `<div class="dsec"><p class="hint" style="margin:0">${esc(DIVE_SAFETY)}</p></div>` : ""}
     ${fitSec}
     <div class="dsec"><h4>${p.vertical === "impellers" ? "Cross-reference numbers" : "Also sold as"}</h4>${altBlock}</div>
     <div class="dsec">
@@ -1218,7 +1261,8 @@ function applyDeepLink() {
     if (model) {
       /* ?v=impellers&m=<engine> lists the impellers for that engine, not the engine page */
       if (!isBnfV(state.vertical)) state.vertical = model.vertical || "bikes";
-      state.brand = model.brand; state.model = m;
+      /* Diving picks a group directly; there is no make to show. */
+      state.brand = isDiveV(state.vertical) ? null : model.brand; state.model = m;
     } else if (b) state.brand = b;
     render();
   };
@@ -1284,13 +1328,14 @@ document.addEventListener("click", (e) => {
 /* Phones have no "/" shortcut and less room: keep the search hint short. */
 if (matchMedia("(max-width: 640px)").matches) $("#q").placeholder = "Part number, model or what it does…";
 
-/* Typing a query pulls in the equipment catalogue and the belts / impellers
-   (debounced) so a part number like 6CE-WS24A-00, an engine code like KTA19 or
-   a belt size like 8PK1440 is found from any page. */
+/* Typing a query pulls in the equipment catalogue, the belts / impellers and
+   the dive O-rings (debounced) so a part number like 6CE-WS24A-00, an engine
+   code like KTA19, a belt size like 8PK1440 or an O-ring like AS-014 is found
+   from any page. */
 let eqSearchT;
 $("#q").addEventListener("input", (e) => {
   state.q = e.target.value; renderRail(); renderResults();
-  if (!(EQ.loaded && BN.loaded) && state.q.trim().length >= 2) {
+  if (!(EQ.loaded && BN.loaded && DV.loaded) && state.q.trim().length >= 2) {
     clearTimeout(eqSearchT);
     eqSearchT = setTimeout(() => loadAll().then(() => { renderRail(); renderResults(); }), 250);
   }

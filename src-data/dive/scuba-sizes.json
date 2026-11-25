@@ -1,0 +1,177 @@
+{
+  "match_tolerance_mm": 0.02,
+  "material": "FKM only",
+  "sizes": [
+    {
+      "dash": "214",
+      "id_mm": 24.99,
+      "cs_mm": 3.53,
+      "group": "tank-neck",
+      "group_name": "Tank neck",
+      "use": "Tank neck O-ring, 3/4\" NPS (most aluminium and steel cylinders)",
+      "in_eg_list": false,
+      "why": "This is the standard tank-neck size for most scuba cylinders. The e.g. list named -112 for neck, but -112 is the DIN face; -214 is the neck O-ring.",
+      "predicted_skus": [
+        "ORN2708"
+      ]
+    },
+    {
+      "dash": "116",
+      "id_mm": 18.72,
+      "cs_mm": 2.62,
+      "group": "tank-neck",
+      "group_name": "Tank neck",
+      "use": "Tank neck O-ring, 7/8\" UNF (Genesis-type steel cylinders)",
+      "in_eg_list": false,
+      "why": "The other standard tank-neck size, for small-neck Genesis-type cylinders.",
+      "predicted_skus": [
+        "ORN2706"
+      ]
+    },
+    {
+      "dash": "014",
+      "id_mm": 12.42,
+      "cs_mm": 1.78,
+      "group": "valve-face",
+      "group_name": "DIN and yoke valve face",
+      "use": "Yoke (K-valve) face O-ring",
+      "in_eg_list": true,
+      "predicted_skus": [
+        "ORN2700"
+      ]
+    },
+    {
+      "dash": "015",
+      "id_mm": 14.0,
+      "cs_mm": 1.78,
+      "group": "valve-face",
+      "group_name": "DIN and yoke valve face",
+      "use": "Cylinder valve bonnet nut",
+      "in_eg_list": true,
+      "predicted_skus": [
+        "ORN2703"
+      ]
+    },
+    {
+      "dash": "112",
+      "id_mm": 12.37,
+      "cs_mm": 2.62,
+      "group": "valve-face",
+      "group_name": "DIN and yoke valve face",
+      "use": "DIN regulator / DIN valve face (standard)",
+      "in_eg_list": true,
+      "predicted_skus": [
+        "ORN2702"
+      ]
+    },
+    {
+      "dash": "111",
+      "id_mm": 10.77,
+      "cs_mm": 2.62,
+      "group": "valve-face",
+      "group_name": "DIN and yoke valve face",
+      "use": "DIN regulator / DIN valve face (smaller groove, some regulators)",
+      "in_eg_list": false,
+      "why": "The smaller DIN face size used on some regulators. Exact FKM match in BNF.",
+      "predicted_skus": [
+        "ORN2698"
+      ]
+    },
+    {
+      "dash": "110",
+      "id_mm": 9.19,
+      "cs_mm": 2.62,
+      "group": "valve-face",
+      "group_name": "DIN and yoke valve face",
+      "use": "Older / MDE-style yoke valve face",
+      "in_eg_list": true,
+      "expect_match": false,
+      "predicted_skus": []
+    },
+    {
+      "dash": "906",
+      "id_mm": 10.47,
+      "cs_mm": 2.46,
+      "group": "valve-face",
+      "group_name": "DIN and yoke valve face",
+      "use": "DIN / tube-fitting size (AS568-906)",
+      "in_eg_list": true,
+      "expect_match": false,
+      "note": "No AS-906 and no exact-size FKM in BNF. BS-906 exists as NBR, indent, but its size is 11.89 \u00d7 1.98 mm (a different 900-series size), not AS568-906.",
+      "predicted_skus": []
+    },
+    {
+      "dash": "013",
+      "id_mm": 10.82,
+      "cs_mm": 1.78,
+      "group": "ports-hoses",
+      "group_name": "Port plugs and hose ends",
+      "use": "First-stage large LP port plug and 1/2\" LP hose end",
+      "in_eg_list": true,
+      "predicted_skus": [
+        "ORN2699"
+      ]
+    },
+    {
+      "dash": "012",
+      "id_mm": 9.25,
+      "cs_mm": 1.78,
+      "group": "ports-hoses",
+      "group_name": "Port plugs and hose ends",
+      "use": "First-stage HP port plug and 7/16\" HP hose end",
+      "in_eg_list": false,
+      "why": "Standard HP port / hose size. Exact FKM match in BNF.",
+      "predicted_skus": [
+        "ORN2697"
+      ]
+    },
+    {
+      "dash": "011",
+      "id_mm": 7.65,
+      "cs_mm": 1.78,
+      "group": "ports-hoses",
+      "group_name": "Port plugs and hose ends",
+      "use": "First-stage LP port plug and 3/8\" LP hose end",
+      "in_eg_list": true,
+      "predicted_skus": [
+        "ORN2696"
+      ]
+    },
+    {
+      "dash": "010",
+      "id_mm": 6.07,
+      "cs_mm": 1.78,
+      "group": "ports-hoses",
+      "group_name": "Port plugs and hose ends",
+      "use": "LP hose end",
+      "in_eg_list": true,
+      "predicted_skus": [
+        "ORN2695"
+      ]
+    },
+    {
+      "dash": "008",
+      "id_mm": 4.47,
+      "cs_mm": 1.78,
+      "group": "inflator-hoses",
+      "group_name": "Inflator and hose ends",
+      "use": "Hose and inflator ends",
+      "in_eg_list": true,
+      "predicted_skus": [
+        "ORN2694"
+      ]
+    },
+    {
+      "dash": "006",
+      "id_mm": 2.9,
+      "cs_mm": 1.78,
+      "group": "inflator-hoses",
+      "group_name": "Inflator and hose ends",
+      "use": "Inflator hose end",
+      "in_eg_list": true,
+      "predicted_skus": [
+        "ORN2692"
+      ]
+    }
+  ]
+}

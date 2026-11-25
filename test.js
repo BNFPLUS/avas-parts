@@ -504,6 +504,79 @@ ok(app.includes('"data-bnf.js"') && !html.includes('src="data-bnf.js"'), "data-b
   ok(find("6HYM").sort().join() === "IMP1002,IMP1043", "search 6HYM finds the impellers matched to the Yanmar 6HYM");
 }
 
+sec("Diving: FKM O-rings from BNF PLUS stock (data-dive.js)");
+{
+  const dctx = { console };
+  vm.createContext(dctx);
+  const diveSrc = fs.readFileSync("data-dive.js", "utf8");
+  vm.runInContext(diveSrc + "\n;globalThis.__V = DIVE;", dctx);
+  const V = dctx.__V, DP = V.parts;
+  const WANT = ["ORN2708", "ORN2706", "ORN2700", "ORN2703", "ORN2702", "ORN2698", "ORN2699", "ORN2697", "ORN2696", "ORN2695", "ORN2694", "ORN2692"];
+  ok(DP.length === 12 && DP.map(p => p.sku).sort().join() === [...WANT].sort().join(), `Diving lists exactly the 12 README SKUs (${DP.map(p => p.sku).join(", ")})`);
+  ok(DP.every(p => p.vertical === "diving" && p.id === p.sku.toLowerCase()), "ids are the lowercase SKU, vertical diving");
+  ok(DP.every(p => p.price === null && p.askPrice === true), "every dive O-ring is price:null + askPrice:true");
+  ok(!DP.some(p => Object.keys(p).some(k => /price_mvr|price_note|cost|^bin$|^rop$/i.test(k)) ||
+    Object.entries(p).some(([k, v]) => /price/i.test(k) && typeof v === "number")), "no dive row has a numeric price, price_mvr, cost, bin or rop");
+  ok(!/price_mvr|price_note|"cost"|"bin"|"rop"/.test(diveSrc), "data-dive.js has no price_mvr / price_note / cost / bin / rop");
+  ok(DP.every(p => !p.img && !A.IMAGES[p.id] && A.artHTML(p) === ""), "dive O-rings have no photo and render no image area");
+  ok(DP.every(p => !("src" in p) && !p.sources && !p.source_url && !p.catalogue_url && !/https?:|www\./i.test(JSON.stringify(p))), "dive O-rings ship no source or outside url");
+  ok(DP.every(p => p.stock === 0 && p.orderIn === true), "all 12 are BNF indent → Order in (stock 0, orderIn)");
+  ok(DP.every(p => p.brand === "NQK" && p.material === "FKM (Viton)" && /^FKM O-ring AS568-\d{3}$/.test(p.name)), "brand NQK, material FKM, name FKM O-ring AS568-NNN");
+  ok(DP.every(p => /^\d+\.\d\d × \d+\.\d\d mm \(ID × CS\)$/.test(p.size) && /^AS568-\d{3}$/.test(p.oem)), "every card shows the AS568 dash and ID × CS in mm");
+  const byS = Object.fromEntries(DP.map(p => [p.sku, p]));
+  ok(byS.ORN2700.oem === "AS568-014" && byS.ORN2700.size === "12.42 × 1.78 mm (ID × CS)" && /Yoke/.test(byS.ORN2700.use), "ORN2700 is AS568-014, 12.42 × 1.78, yoke face");
+  ok(byS.ORN2708.oem === "AS568-214" && byS.ORN2706.oem === "AS568-116" && /Tank neck/.test(byS.ORN2708.use), "tank neck: AS568-214 (ORN2708), AS568-116 (ORN2706)");
+  ok(V.groups.map(g => g.name).join("|") === "Tank neck|DIN and yoke valve face|Port plugs and hose ends|Inflator and hose ends", "groups in order: Tank neck, valve face, port plugs, inflator");
+  const inG = (id) => DP.filter(p => p.grp === id).map(p => p.oem).join();
+  ok(inG("dive-tank-neck") === "AS568-116,AS568-214" && inG("dive-valve-face") === "AS568-014,AS568-015,AS568-111,AS568-112" &&
+     inG("dive-ports-hoses") === "AS568-010,AS568-011,AS568-012,AS568-013" && inG("dive-inflator-hoses") === "AS568-006,AS568-008",
+     "each group lists its O-rings by dash number");
+  const EXCL = ["ORN1757", "ORN2693", "ORN2705", "ORN2707", "ORN2709", "ORN2711", "ORN2701", "ORN2704", "ORN2691", "ORN2713", "ORN2714"];
+  ok(!DP.some(p => EXCL.includes(p.sku)) && !EXCL.some(s => diveSrc.includes(s)), "the excluded FKM rows (AS-007, AS-016/019/022/024, 2×12, 2×14, 1.78×06.75, 4X95, 3.5X95) are not listed");
+  const NBR = ["ORN2710", "ORN2712", "ORN1772", "ORN1059", "ORN1241"];
+  ok(!NBR.some(s => diveSrc.includes(s)) && !/BS-023|BS-025|AS-110|BS-110|BS-906|AS568-110|AS568-906|AS-003|BS-003/.test(diveSrc),
+     "no NBR ring (BS-023, BS-025, AS-110, BS-110, BS-906, AS-003) and no card for AS568-110 / -906");
+  const { parseCSV } = require("./tools/bnf-csv");
+  const csv = parseCSV(fs.readFileSync("src-data/dive/fkm-orings.csv", "utf8"));
+  ok(csv.length === 23 && !/price|cost|mvr/i.test(fs.readFileSync("src-data/dive/fkm-orings.csv", "utf8").split("\n")[0]), "src-data/dive/fkm-orings.csv: 23 FKM rows, no price column");
+  ok(DP.every(p => { const r = csv.find(x => x.sku === p.sku); return r && [r.name, r.part_number, r.type, r.description].some(t => /\bFKM\b/.test(t)); }),
+     "every listed row says FKM in its name, number, type or description");
+  let refused = false;
+  try { parseCSV("sku,part_number,price_mvr\nORN2700,AS-014 FKM,12\n"); } catch (e) { refused = /refusing to build/.test(e.message); }
+  ok(refused, "the builder's CSV reader refuses a price column");
+  const before = diveSrc;
+  require("child_process").execFileSync("node", ["tools/build-dive.js"], { stdio: "ignore" });
+  ok(fs.readFileSync("data-dive.js", "utf8") === before, "tools/build-dive.js reproduces data-dive.js byte for byte");
+  ok(!/Genesis|Sherwood|Scubapro|Aqualung|Apeks|Mares|Cressi|MDE/i.test(JSON.stringify(V)), "no outside dive-gear brand in the dive copy");
+
+  const vui = app.match(/const VERTICALS_UI = \[([\s\S]*?)\];/);
+  ok(vui && /id: "diving"[^}]*dive: true/.test(vui[1]), "VERTICALS_UI has a Diving chip");
+  ok(app.includes('"data-dive.js"') && !html.includes('src="data-dive.js"') && /const loadAll = [^\n]*loadDive\(\)/.test(app),
+     "data-dive.js is lazy-loaded by app.js and part of loadAll() (home search finds it)");
+  const safety = (app.match(/const DIVE_SAFETY = ([\s\S]*?);\n/) || [])[1] || "";
+  ok(/certified technician/.test(safety) && /life-support/.test(safety) && /Regulators, first and second stages, BCD inflators/.test(safety) &&
+     /tank neck, valve face, port plugs, hose and inflator ends/.test(safety) && /service kit/.test(safety) && /ask us/.test(safety),
+     "the Diving safety note says: technician for life-support parts; O-rings only; ask us");
+  ok(/id="diveNote"/.test(html) && /\$\("#diveNote"\)/.test(app), "the safety note has its place in the Diving section hero");
+
+  const sctx = { console, VERT_BY_ID: { diving: { name: "Diving" } },
+    CAT_BY_ID: Object.fromEntries(V.cats.map(c => [c.id, c])),
+    MODEL_BY_ID: Object.fromEntries(V.groups.map(m => [m.id, m])), isEq: (p) => !!p.vertical };
+  vm.createContext(sctx);
+  const grab = (re) => (app.match(re) || [""])[0];
+  vm.runInContext([grab(/const squash = [^\n]+/), grab(/function eqModelText[\s\S]*?\n}\n/), grab(/function bnfHaystack[\s\S]*?\n}\n/),
+    "let state = { q: '' };", grab(/const qTerms = [^\n]+/), grab(/const termsMatch = [\s\S]*?;\n/),
+    "globalThis.__S = (q) => { state.q = q; const t = qTerms(); return DIVE_PARTS.filter(p => termsMatch(p, t)); };"].join("\n"), sctx);
+  sctx.DIVE_PARTS = DP.map(p => ({ ...p, _h: sctx.bnfHaystack(p) }));
+  vm.runInContext("var DIVE_PARTS = globalThis.DIVE_PARTS;", sctx);
+  const find = (q) => sctx.__S(q).map(p => p.sku).sort().join();
+  for (const q of ["AS-014", "AS014", "as568-014", "014", "12.42", "12.42x1.78", "12.42 x 1.78", "ORN2700", "yoke"])
+    ok(find(q) === "ORN2700", `search "${q}" finds the yoke face O-ring ORN2700 only (${find(q)})`);
+  ok(find("DIN") === "ORN2698,ORN2702", `search "DIN" finds the two DIN face O-rings (${find("DIN")})`);
+  ok(find("tank neck") === "ORN2706,ORN2708", `search "tank neck" finds the two tank neck O-rings (${find("tank neck")})`);
+  ok(find("inflator").split(",").length === 2 && find("FKM").split(",").length === 12, "search inflator / FKM find their cards");
+}
+
 sec("Impeller cross-reference matcher (tools/match-impeller-xref.js)");
 const MX = require("./tools/match-impeller-xref");
 const mx = (xref, oem) => MX.matchImpellers([{ sku: "T", pn: "", xref }], [{ id: "p", oem, alts: [] }]).length === 1;
@@ -554,6 +627,21 @@ sec("Rendered-text guard still bites");
   const esrc = fs.readFileSync("data-equip.js", "utf8").replace('"note":"FIG 29 cooling pumpsea water"', '"note":"FIG 29 cooling pumpsea water, see bnf.plus"');
   fs.writeFileSync(path.join(tmp, "data-equip.js"), esrc);
   ok(esrc.includes("bnf.plus") && renderedDomainHitsFn(tmp).some(h => h.found.some(f => /bnf\.plus/i.test(f))), "a forbidden domain in an engine part note is caught");
+  fs.copyFileSync("data-equip.js", path.join(tmp, "data-equip.js"));
+  fs.copyFileSync("data-dive.js", path.join(tmp, "data-dive.js"));
+  ok(!renderedDomainHitsFn(tmp).length, "the copied tree (with data-dive.js) is clean");
+  const dsrc = fs.readFileSync("data-dive.js", "utf8").replace('"use":"Yoke (K-valve) face O-ring"', '"use":"Yoke (K-valve) face O-ring, see bnfplus.com"');
+  fs.writeFileSync(path.join(tmp, "data-dive.js"), dsrc);
+  ok(dsrc.includes("bnfplus.com") && renderedDomainHitsFn(tmp).some(h => /data-dive\.js/.test(h.where) && h.found.some(f => /bnfplus\.com/i.test(f))), "a forbidden domain in a dive O-ring note is caught");
+  /* build.js refuses to bundle that tree */
+  for (const f of ["build.js", "styles.css", "art.js", "images.js"]) fs.copyFileSync(f, path.join(tmp, f));
+  fs.mkdirSync(path.join(tmp, "tools"));
+  for (const f of fs.readdirSync("tools")) fs.copyFileSync(path.join("tools", f), path.join(tmp, "tools", f));
+  const run = require("child_process").spawnSync("node", ["build.js"], { cwd: tmp, encoding: "utf8" });
+  ok(run.status !== 0 && /outside site/.test(run.stderr) && /data-dive\.js/.test(run.stderr), "build.js fails when a dive note names an outside site");
+  fs.copyFileSync("data-dive.js", path.join(tmp, "data-dive.js"));
+  const run2 = require("child_process").spawnSync("node", ["build.js"], { cwd: tmp, encoding: "utf8" });
+  ok(run2.status === 0, "build.js passes on the clean copy" + (run2.status ? ": " + run2.stderr : ""));
   fs.rmSync(tmp, { recursive: true, force: true });
 }
 

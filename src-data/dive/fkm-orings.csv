@@ -1,0 +1,24 @@
+sku,alt_sku,part_number,name,brand,category,type,description,erp_description,size,id_mm,od_mm,width_mm,xref,origin,uom,availability
+ORN1757,ORN2688,AS-007,NQK AS-007,NQK,O-Ring,AS568,O-ring AS Round FKM,,3.68 x 7.24 x 1.78,3.68,7.24,1.78,,Japan,pcs,indent
+ORN2714,ORN2714,3.5X95,NQK 3.5X95,NQK,O-Ring,Metric,O-ring CM Round FKM,,95.8 x 102.9 x 3.55,95.8,102.9,3.55,"3.5X95 FKM, 3.5X95",Japan,pcs,indent
+ORN2713,ORN2713,4X95,NQK 4X95,NQK,O-Ring,Metric,O-ring CM Round FKM,,95 x 103 x 4,95,103,4,"4X95 FKM, 4X95",Japan,pcs,indent
+ORN2701,,2X12 FKM,NQK 2X12 FKM,NQK,O-Ring,O-Ring FKM,O-Ring FKM (12 x 16 x 2) NQK,,12 x 16 x 2,12,16,2,,,pcs,indent
+ORN2704,,2X14 FKM,NQK 2X14 FKM,NQK,O-Ring,O-Ring FKM,O-Ring FKM (14 x 18 x 2) NQK,,14 x 18 x 2,14,18,2,,,pcs,indent
+ORN2708,,AS-214 FKM,NQK AS-214 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (24.99 x 32.05 x 3.53) NQK,,24.99 x 32.05 x 3.53,24.99,32.05,3.53,,,pcs,indent
+ORN2706,,AS-116 FKM,NQK AS-116 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (18.72 x 23.96 x 2.62) NQK,,18.72 x 23.96 x 2.62,18.72,23.96,2.62,,,pcs,indent
+ORN2711,,AS-024 FKM,NQK AS-024 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (28.3 x 31.86 x 1.78) NQK,,28.3 x 31.86 x 1.78,28.3,31.86,1.78,,,pcs,indent
+ORN2691,,1.78X06.75 FKM,NQK 1.78X06.75 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (6.75 x 10.31 x 1.78) NQK,,6.75 x 10.31 x 1.78,6.75,10.31,1.78,,,pcs,indent
+ORN2692,,AS-006 FKM,NQK AS-006 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (2.9 x 6.46 x 1.78) NQK,,2.9 x 6.46 x 1.78,2.9,6.46,1.78,,,pcs,indent
+ORN2693,,AS-007 FKM,NQK AS-007 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (3.68 x 7.24 x 1.78) NQK,,3.68 x 7.24 x 1.78,3.68,7.24,1.78,,,pcs,indent
+ORN2694,,AS-008 FKM,NQK AS-008 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (4.47 x 8.03 x 1.78) NQK,,4.47 x 8.03 x 1.78,4.47,8.03,1.78,,,pcs,indent
+ORN2695,,AS-010 FKM,NQK AS-010 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (6.07 x 9.63 x 1.78) NQK,,6.07 x 9.63 x 1.78,6.07,9.63,1.78,,,pcs,indent
+ORN2696,,AS-011 FKM,NQK AS-011 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (7.65 x 11.21 x 1.78) NQK,,7.65 x 11.21 x 1.78,7.65,11.21,1.78,,,pcs,indent
+ORN2697,,AS-012 FKM,NQK AS-012 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (9.25 x 12.81 x 1.78) NQK,,9.25 x 12.81 x 1.78,9.25,12.81,1.78,,,pcs,indent
+ORN2698,,AS-111 FKM,NQK AS-111 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (10.77 x 16.01 x 2.62) NQK,,10.77 x 16.01 x 2.62,10.77,16.01,2.62,,,pcs,indent
+ORN2699,,AS-013 FKM,NQK AS-013 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (10.82 x 14.38 x 1.78) NQK,,10.82 x 14.38 x 1.78,10.82,14.38,1.78,,,pcs,indent
+ORN2700,,AS-014 FKM,NQK AS-014 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (12.42 x 15.98 x 1.78) NQK,,12.42 x 15.98 x 1.78,12.42,15.98,1.78,,,pcs,indent
+ORN2702,,AS-112 FKM,NQK AS-112 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (12.37 x 17.61 x 2.62) NQK,,12.37 x 17.61 x 2.62,12.37,17.61,2.62,,,pcs,indent
+ORN2703,,AS-015 FKM,NQK AS-015 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (14 x 17.56 x 1.78) NQK,,14 x 17.56 x 1.78,14,17.56,1.78,,,pcs,indent
+ORN2705,,AS-016 FKM,NQK AS-016 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (15.6 x 19.16 x 1.78) NQK,,15.6 x 19.16 x 1.78,15.6,19.16,1.78,,,pcs,indent
+ORN2707,,AS-019 FKM,NQK AS-019 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (20.35 x 23.91 x 1.78) NQK,,20.35 x 23.91 x 1.78,20.35,23.91,1.78,,,pcs,indent
+ORN2709,,AS-022 FKM,NQK AS-022 FKM,NQK,O-Ring,O-Ring,O-Ring FKM (25.12 x 28.68 x 1.78) NQK,,25.12 x 28.68 x 1.78,25.12,28.68,1.78,,,pcs,indent

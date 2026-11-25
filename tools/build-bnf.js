@@ -33,25 +33,7 @@ const { loadData, writeData } = require("./staff-fields");
 const root = path.join(__dirname, "..");
 const src = (f) => path.join(root, "src-data/bnf", f);
 
-/* ---------- CSV ---------- */
-function parseCSV(text) {
-  const rows = []; let row = [], f = "", q = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (q) {
-      if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; }
-      else f += c;
-    } else if (c === '"') q = true;
-    else if (c === ",") { row.push(f); f = ""; }
-    else if (c === "\n") { row.push(f); rows.push(row); row = []; f = ""; }
-    else if (c !== "\r") f += c;
-  }
-  if (f || row.length) { row.push(f); rows.push(row); }
-  const head = rows.shift();
-  const bad = head.filter(h => /price|cost|mvr|margin/i.test(h));
-  if (bad.length) throw new Error(`refusing to build: price-like column(s) ${bad.join(", ")} — BNF PLUS prices never reach the site`);
-  return rows.filter(r => r.length > 1).map(r => Object.fromEntries(head.map((k, i) => [k, (r[i] || "").trim()])));
-}
+const { parseCSV } = require("./bnf-csv");
 const read = (f) => parseCSV(fs.readFileSync(src(f), "utf8"));
 
 const BRAND = { MITSUBOSHI: "Mitsuboshi", MITSUSMI: "Mitsusmi", HENGSHUI: "Hengshui", SHERWOOD: "Sherwood" };

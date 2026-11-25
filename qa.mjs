@@ -62,6 +62,8 @@ const equipReqs = [];
 page.on("request", r => { if (r.url().includes("data-equip.js")) equipReqs.push(r.url()); });
 const bnfReqs = [];
 page.on("request", r => { if (r.url().includes("data-bnf.js")) bnfReqs.push(r.url()); });
+const diveReqs = [];
+page.on("request", r => { if (r.url().includes("data-dive.js")) diveReqs.push(r.url()); });
 
 await page.goto(url);
 await page.waitForTimeout(900);
@@ -72,8 +74,10 @@ const total = await page.locator(".card").count();
 ok(total > 100, `catalogue renders (${total} cards)`);
 ok(equipReqs.length === 0, "data-equip.js is not requested on the default bike page");
 ok(bnfReqs.length === 0, "data-bnf.js is not requested on the default bike page");
+ok(diveReqs.length === 0, "data-dive.js is not requested on the default bike page");
+ok(!(await page.locator("#diveNote").isVisible()), "the diving safety note is not shown on the bike default");
 ok(await page.locator('#vertChips [data-vertical="bikes"][aria-pressed="true"]').count() === 1, "category picker shows Bikes selected by default");
-ok(await page.locator("#vertChips [data-vertical]").count() === 9, "category picker lists 9 categories (7 + Belts, Impellers)");
+ok(await page.locator("#vertChips [data-vertical]").count() === 10, "category picker lists 10 categories (7 + Belts, Impellers, Diving)");
 ok(await page.locator(".eqcard").count() === 0 && !(await page.locator("#rNote").isVisible()), "no equipment cards or model note on the bike default");
 ok(await page.locator(".card .art, .card .nophoto, .card svg[role=img], .card img").count() === 0, "photoless cards have no image area, icon, drawing or stock image");
 ok(!/No photo yet/i.test(await page.locator("#grid, .grid").first().textContent()), "no 'No photo yet' label on cards");
@@ -710,6 +714,101 @@ console.log("\nBelt and impeller search from the default page");
   await finds("3897337", ["IMP1036", "m00020"]);
   await finds("8PK1440", ["BLT443"]);
   await pg.screenshot({ path: path.join(shots, "15-search-8pk1440.png") });
+  await pg.close();
+}
+
+/* ================= Diving (FKM O-rings, BNF PLUS stock) ================= */
+console.log("\nDiving");
+{
+  const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  pg.on("pageerror", e => errors.push("pageerror(dive): " + e.message));
+  pg.on("console", m => { if (m.type() === "error") errors.push("console(dive): " + m.text()); });
+  const reqs = [];
+  pg.on("request", r => { if (/data-(equip|bnf|dive)\.js/.test(r.url())) reqs.push(r.url().split("/").pop()); });
+  await pg.goto(url);
+  await pg.waitForTimeout(500);
+  await pg.click('[data-vertical="diving"]');
+  await pg.waitForSelector(".bnfcard", { timeout: 8000 });
+  ok(reqs.join() === "data-dive.js", `Diving loads only data-dive.js (${reqs.join(", ")})`);
+  ok(await pg.locator(".card").count() === 12 && (await pg.locator("#rCount").textContent()) === "12 O-rings", "Diving lists 12 O-rings");
+  ok((await pg.locator("#rTitle").textContent()) === "FKM O-rings for diving" && pg.url().includes("v=diving"), "Diving heading and ?v=diving URL");
+  const skus = await pg.locator(".card [data-detail]").evaluateAll(els => els.map(e => PART_BY_ID[e.dataset.detail].sku));
+  ok(skus.join() === "ORN2706,ORN2708,ORN2700,ORN2703,ORN2698,ORN2702,ORN2695,ORN2696,ORN2697,ORN2699,ORN2692,ORN2694", `grouped by use, then dash (${skus.join(", ")})`);
+  const note = pg.locator("#diveNote");
+  const noteText = await note.textContent();
+  ok(await note.isVisible() && /certified technician/.test(noteText) && /life-support/.test(noteText) && /service kit/.test(noteText) && /ask us/.test(noteText),
+     "safety note is visible on the Diving section home");
+  const nb = await note.boundingBox(), gb = await pg.locator("#grid").boundingBox();
+  ok(nb && gb && nb.y < gb.y, "the safety note sits above the O-rings");
+  const groupChips = await pg.locator("#brandChips .chip").evaluateAll(els => els.map(e => e.firstChild.textContent + "/" + e.querySelector(".cc").textContent));
+  ok(groupChips.join("|") === "Tank neck/2 O-rings|DIN and yoke valve face/4 O-rings|Port plugs and hose ends/4 O-rings|Inflator and hose ends/2 O-rings" &&
+     !(await pg.locator("#modelRow").isVisible()), "the four use groups are the only pick, in order");
+  ok(await pg.locator(".card:has(.price .asklab)").count() === 12 && await pg.locator(".bnfcard .stockline", { hasText: "Order in" }).count() === 12, "every O-ring: Ask for price, Order in");
+  ok(await pg.locator(".card .art, .card img, .card .nophoto").count() === 0 && !/No photo yet/i.test(await pg.locator("#grid").innerText()), "no photo area and no 'No photo yet' box");
+  ok(!/\bMVR\s*\d/.test(await pg.locator("#grid").innerText()) && (await outsideLinks(pg, "main")).length === 0 && !SOURCE_TEXT.test(await pg.locator("main").innerText()),
+     "no price, no outside link, no source text on Diving");
+  const yoke = pg.locator(".bnfcard", { has: pg.locator('[data-detail="orn2700"]') });
+  const yokeText = await yoke.innerText();
+  ok(/AS568-014/.test(yokeText) && /12\.42 × 1\.78 mm/.test(yokeText) && /Yoke \(K-valve\) face O-ring/.test(yokeText) && /NQK/.test(yokeText) && /ORN2700/.test(yokeText),
+     "ORN2700 card: AS568-014, 12.42 × 1.78 mm, yoke face, NQK, stock no.");
+  await pg.screenshot({ path: path.join(shots, "17-diving.png") });
+  await pg.click('#brandChips [data-model="dive-tank-neck"]');
+  await pg.waitForTimeout(250);
+  ok((await pg.locator("#rTitle").textContent()) === "Tank neck O-rings" && pg.url().includes("v=diving&m=dive-tank-neck") &&
+     (await pg.locator(".card [data-detail]").evaluateAll(els => els.map(e => e.dataset.detail))).join() === "orn2706,orn2708", "Tank neck lists AS568-116 and AS568-214 (?v=diving&m=dive-tank-neck)");
+  ok(await note.isVisible(), "safety note stays on a group page");
+  await pg.click('[data-detail="orn2708"]');
+  await pg.waitForTimeout(300);
+  const dBody = await pg.locator("#detailBody").textContent();
+  ok(/Size & type/.test(dBody) && /FKM \(Viton\)/.test(dBody) && /BNF PLUS stock no\./.test(dBody) && /ORN2708/.test(dBody) && /Ask for price/.test(dBody) &&
+     /certified technician/.test(dBody) && !/undefined|NaN|\bnull\b/.test(dBody) && (await outsideLinks(pg, "#detail")).length === 0 && !SOURCE_TEXT.test(dBody),
+     "O-ring drawer: size, FKM, stock no., ask for price, safety line; no source or outside link");
+  await pg.click("#detailBody [data-add]");
+  await pg.waitForTimeout(250);
+  await pg.click("#detail [data-close]");
+  await pg.click("#cartOpen");
+  await pg.waitForTimeout(300);
+  const dLine = await pg.locator("#cartBody .line").last().textContent();
+  ok(/FKM O-ring AS568-214/.test(dLine) && /BNF PLUS stock ORN2708/.test(dLine) && /price to confirm/.test(dLine) && !/For /.test(dLine), "O-ring cart line: name, stock no., price to confirm");
+  await pg.click("#cart [data-close]");
+  await pg.goto(url + "?v=diving&m=dive-valve-face");
+  await pg.waitForSelector(".bnfcard", { timeout: 8000 });
+  await pg.waitForTimeout(250);
+  ok((await pg.locator("#rTitle").textContent()) === "DIN and yoke valve face O-rings" && await pg.locator(".card").count() === 4 &&
+     await pg.locator('#brandChips [data-model="dive-valve-face"][aria-pressed="true"]').count() === 1, "?v=diving&m=dive-valve-face deep link opens the valve face group");
+  await pg.setViewportSize({ width: 390, height: 844 });
+  await pg.waitForTimeout(300);
+  ok(await pg.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth) <= 1, "no horizontal overflow at 390px on Diving");
+  await pg.close();
+}
+
+console.log("\nDive O-ring search from the default page");
+{
+  const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  pg.on("pageerror", e => errors.push("pageerror(dive2): " + e.message));
+  await pg.goto(url);
+  await pg.waitForTimeout(500);
+  const finds = async (q, want, only) => {
+    await pg.fill("#q", q);
+    await pg.waitForFunction(() => typeof DV !== "undefined" && DV.loaded, null, { timeout: 8000 }).catch(() => {});
+    await pg.waitForTimeout(350);
+    const got = await pg.locator(".card [data-detail]").evaluateAll(els => els.map(e => PART_BY_ID[e.dataset.detail].sku || PART_BY_ID[e.dataset.detail].id));
+    const dive = got.filter(s => /^ORN/.test(s));
+    ok(want.every(w => got.includes(w)) && (!only || dive.sort().join() === [...want].sort().join()),
+       `search "${q}" on the Bikes page finds ${want.join(" + ")} (${dive.join(", ")}; ${got.length} result${got.length === 1 ? "" : "s"})`);
+  };
+  await finds("AS-014", ["ORN2700"], true);
+  await finds("AS014", ["ORN2700"], true);
+  await finds("014", ["ORN2700"], true);
+  await finds("12.42", ["ORN2700"], true);
+  await finds("12.42x1.78", ["ORN2700"], true);
+  await finds("ORN2700", ["ORN2700"], true);
+  await finds("yoke", ["ORN2700"], true);
+  await finds("DIN", ["ORN2702", "ORN2698"], true);
+  await finds("tank neck", ["ORN2708", "ORN2706"], true);
+  ok(await pg.locator('#vertChips [data-vertical="bikes"][aria-pressed="true"]').count() === 1 && !(await pg.locator("#diveNote").isVisible()), "still on the Bikes page; no safety note there");
+  await finds("AS-014", ["ORN2700"], true);
+  await pg.screenshot({ path: path.join(shots, "18-search-as014.png") });
   await pg.close();
 }
 
